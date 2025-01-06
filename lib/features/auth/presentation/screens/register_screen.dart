@@ -17,39 +17,29 @@ class RegisterScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40), // Espacio superior
-              const Text(
-                'Crea tu cuenta',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.black,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Regístrate para empezar',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: AppColors.gray,
+              const Center(
+                child: Column(
+                  children: [
+                    Text(
+                      'Crea tu cuenta',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.black,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      'Regístrate para empezar',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.gray,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 40),
-              // Nombre Input
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Nombre',
-                  labelStyle: const TextStyle(color: AppColors.darkGray),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGray),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.yellow),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
               // Email Input
               TextField(
                 decoration: InputDecoration(
