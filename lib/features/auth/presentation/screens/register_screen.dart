@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
+import 'package:juvuit_flutter/core/widgets/password_input_field.dart';
 import 'package:juvuit_flutter/core/widgets/social_login_button.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -57,38 +58,10 @@ class RegisterScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               // Contraseña Input
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Contraseña',
-                  labelStyle: const TextStyle(color: AppColors.darkGray),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGray),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.yellow),
-                  ),
-                ),
-              ),
+              const PasswordInputField(labelText: 'Contraseña'),
               const SizedBox(height: 20),
               // Confirmar Contraseña Input
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Confirmar contraseña',
-                  labelStyle: const TextStyle(color: AppColors.darkGray),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGray),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.yellow),
-                  ),
-                ),
-              ),
+              const PasswordInputField(labelText: 'Confirmar contraseña'),
               const SizedBox(height: 30),
               // Botón de Registro
               SizedBox(
@@ -114,7 +87,7 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 5),
+              const SizedBox(height: 15),
               // Botón de regresar al Login
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -129,7 +102,7 @@ class RegisterScreen extends StatelessWidget {
                     },
                     child: const Text(
                       'Inicia sesión',
-                      style: TextStyle(color: AppColors.yellow),
+                      style: TextStyle(color: AppColors.yellow, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
