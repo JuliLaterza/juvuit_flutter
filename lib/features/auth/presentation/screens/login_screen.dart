@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
+import 'package:juvuit_flutter/core/widgets/password_input_field.dart';
 import 'package:juvuit_flutter/core/widgets/social_login_button.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/register_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -52,22 +54,8 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              // Password Input
-              TextField(
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Contraseña',
-                  labelStyle: const TextStyle(color: AppColors.darkGray),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGray),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.yellow),
-                  ),
-                ),
-              ),
+              //Contraseña Input
+              const PasswordInputField(labelText: 'Contraseña'),
               const SizedBox(height: 30),
               // Login Button
               SizedBox(
@@ -93,7 +81,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               // Forgot Password & Sign Up
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -108,7 +96,7 @@ class LoginScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    child: const Text('Regístrate',style: TextStyle(color: AppColors.yellow)),
+                    child: const Text('Regístrate',style: TextStyle(color: AppColors.yellow, fontWeight: FontWeight.bold)),
                   ),
                 ], // Terminan los hijos del Row
               ),
