@@ -6,10 +6,10 @@ class PasswordInputField extends StatefulWidget {
   final TextEditingController? controller;
 
   const PasswordInputField({
-    Key? key,
+    super.key,
     required this.labelText,
     this.controller,
-  }) : super(key: key);
+  });
 
   @override
   State<PasswordInputField> createState() => _PasswordInputFieldState();
@@ -31,14 +31,14 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
       obscureText: _obscureText,
       decoration: InputDecoration(
         labelText: widget.labelText,
-        labelStyle: TextStyle(color: AppColors.darkGray),
+        labelStyle: const TextStyle(color: AppColors.darkGray),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.lightGray),
+          borderSide: const BorderSide(color: AppColors.lightGray),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.yellow),
+          borderSide: const BorderSide(color: AppColors.yellow),
         ),
         suffixIcon: IconButton(
           icon: Icon(
