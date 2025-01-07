@@ -5,19 +5,71 @@ import 'package:juvuit_flutter/core/widgets/social_login_button.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/register_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:juvuit_flutter/features/home/presentation/screens/home_screen.dart';
 
-
-
-
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
 
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false;
+
+  Future<void> _login() async {
+    // Validar campos vacíos
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      _showMessage('Por favor, llena todos los campos');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Login en Firebase con email y contraseña
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      _showMessage('Inicio de sesión exitoso');
+
+      // Navegar a HomeScreen
+      Navigator.pushReplacement(
+        // ignore: use_build_context_synchronously
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } on FirebaseAuthException catch (e) {
+      // Manejo de errores comunes de Firebase
+      if (e.code == 'user-not-found') {
+        _showMessage('Usuario no encontrado');
+      } else if (e.code == 'wrong-password') {
+        _showMessage('Contraseña incorrecta');
+      } else {
+        _showMessage('Error: ${e.message}');
+      }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255), // Fondo blanco
+      backgroundColor: AppColors.white, // Fondo blanco
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -28,23 +80,26 @@ class LoginScreen extends StatelessWidget {
               const Center(
                 child: Column(
                   children: [
-                    Text('J U V U I T',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.black,
-                    ),
+                    Text(
+                      'J U V U I T',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.black,
+                      ),
                     ),
                     SizedBox(height: 10),
-                    Text('Inicia sesión para continuar',style: TextStyle(fontSize: 16,color: AppColors.gray),
-              ),
-
+                    Text(
+                      'Inicia sesión para continuar',
+                      style: TextStyle(fontSize: 16, color: AppColors.gray),
+                    ),
                   ],
-                  ),
+                ),
               ),
               const SizedBox(height: 40),
               // Email Input
               TextField(
+                controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Correo electrónico',
                   labelStyle: const TextStyle(color: AppColors.darkGray),
@@ -59,16 +114,17 @@ class LoginScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 20),
-              //Contraseña Input
-              const PasswordInputField(labelText: 'Contraseña'),
+              // Contraseña Input
+              PasswordInputField(
+                labelText: 'Contraseña',
+                controller: _passwordController,
+              ),
               const SizedBox(height: 30),
-              // Login Button
+              // Botón de Login
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    
-                  },
+                  onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.yellow,
                     shape: RoundedRectangleBorder(
@@ -76,14 +132,18 @@ class LoginScreen extends StatelessWidget {
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text(
-                    'Iniciar sesión',
-                    style: TextStyle(
-                      color: AppColors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(
+                          color: AppColors.black,
+                        )
+                      : const Text(
+                          'Iniciar sesión',
+                          style: TextStyle(
+                            color: AppColors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 15),
@@ -91,7 +151,8 @@ class LoginScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('¿No tienes cuenta?',style: TextStyle(color: AppColors.gray)),
+                  const Text('¿No tienes cuenta?',
+                      style: TextStyle(color: AppColors.gray)),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -101,18 +162,29 @@ class LoginScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    child: const Text('Regístrate',style: TextStyle(color: AppColors.yellow, fontWeight: FontWeight.bold)),
+                    child: const Text('Regístrate',
+                        style: TextStyle(
+                            color: AppColors.yellow,
+                            fontWeight: FontWeight.bold)),
                   ),
-                ], // Terminan los hijos del Row
+                ],
               ),
               const SizedBox(height: 20),
-              SocialLoginButton(icon: FontAwesomeIcons.google, text: 'Continuar con Google', onPressed: (){
-                print('Google');
-              }),
+              SocialLoginButton(
+                icon: FontAwesomeIcons.google,
+                text: 'Continuar con Google',
+                onPressed: () {
+                  print('Google Login');
+                },
+              ),
               const SizedBox(height: 20),
-              SocialLoginButton(icon: FontAwesomeIcons.apple, text: 'Continuar con Apple', onPressed: (){
-                print('Apple');
-              }),
+              SocialLoginButton(
+                icon: FontAwesomeIcons.apple,
+                text: 'Continuar con Apple',
+                onPressed: () {
+                  print('Apple Login');
+                },
+              ),
             ],
           ),
         ),
