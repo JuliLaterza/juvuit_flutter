@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:852726617261:android:d48d846ebca1e8cc68e224",
+        "android_client_info": {
+          "package_name": "com.example.jflutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATBhEy7uvuMRwA1kGJHkcxtd0C3yMrZ4w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:852726617261:android:b694a62b3135b71868e224",
         "android_client_info": {
           "package_name": "com.example.juvuit_flutter"

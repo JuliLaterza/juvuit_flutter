@@ -4,10 +4,15 @@ import 'package:juvuit_flutter/core/widgets/password_input_field.dart';
 import 'package:juvuit_flutter/core/widgets/social_login_button.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/register_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+
 
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +67,7 @@ class LoginScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Lógica de autenticación
+                    
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.yellow,
