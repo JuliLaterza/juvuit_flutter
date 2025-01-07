@@ -7,6 +7,8 @@ class AppColors {
   static const Color gray = Color(0xFF757575);
   static const Color lightGray = Color(0xFFBDBDBD);
   static const Color white = Color(0xFFFFFFFF);
+  static const Color darkWhite = Color.fromARGB(255, 228, 228, 228);
+
 
   // Amarillos
   static const Color yellow = Color(0xFFFFD600); // Primario
