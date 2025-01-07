@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "852726617261",
+    "project_id": "juvuit-flutter",
+    "storage_bucket": "juvuit-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:852726617261:android:b694a62b3135b71868e224",
+        "android_client_info": {
+          "package_name": "com.example.juvuit_flutter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATBhEy7uvuMRwA1kGJHkcxtd0C3yMrZ4w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
