@@ -4,7 +4,8 @@ import 'package:juvuit_flutter/core/widgets/password_input_field.dart';
 import 'package:juvuit_flutter/core/widgets/social_login_button.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:juvuit_flutter/features/home/presentation/screens/home_screen.dart';
+import 'package:juvuit_flutter/features/events/presentation/screens/eventsScreen.dart';
+
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -53,7 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // Reemplazar toda la pila con HomeScreen
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const EventsScreen()),
         (route) => false,
       );
     } on FirebaseAuthException catch (e) {

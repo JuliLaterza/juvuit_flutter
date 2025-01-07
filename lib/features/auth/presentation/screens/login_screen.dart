@@ -5,7 +5,7 @@ import 'package:juvuit_flutter/core/widgets/social_login_button.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/register_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:juvuit_flutter/features/home/presentation/screens/home_screen.dart';
+import 'package:juvuit_flutter/features/events/presentation/screens/EventsScreen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
         // ignore: use_build_context_synchronously
         context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
+        MaterialPageRoute(builder: (context) => const EventsScreen()),
       );
     } on FirebaseAuthException catch (e) {
       // Manejo de errores comunes de Firebase
