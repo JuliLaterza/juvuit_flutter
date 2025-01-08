@@ -5,6 +5,8 @@ class Event {
   final DateTime date;
   final String imageUrl;
   final int attendeesCount;
+  final String description;
+  final String type;
 
   const Event({
     required this.id,
@@ -13,6 +15,8 @@ class Event {
     required this.date,
     required this.imageUrl,
     required this.attendeesCount,
+    required this.description,
+    required this.type,
   });
 
   // Si en el futuro necesitas convertir a/from JSON:
