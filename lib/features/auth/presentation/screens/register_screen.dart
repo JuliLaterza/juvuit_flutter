@@ -4,7 +4,7 @@ import 'package:juvuit_flutter/core/widgets/password_input_field.dart';
 import 'package:juvuit_flutter/core/widgets/social_login_button.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:juvuit_flutter/features/events/presentation/screens/eventsScreen.dart';
+import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
 
 
 class RegisterScreen extends StatefulWidget {
