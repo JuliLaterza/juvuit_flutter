@@ -1,15 +1,10 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:juvuit_flutter/firebase_options.dart';
-import 'features/auth/presentation/screens/login_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'core/utils/routes.dart';
 
-
-
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-);
+  await Firebase.initializeApp(); // Inicializa Firebase
   runApp(const MyApp());
 }
 
@@ -19,8 +14,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      title: 'J U V U I T',
       debugShowCheckedModeBanner: false,
-      home: LoginScreen(),
+      initialRoute: AppRoutes.login, // Ruta inicial
+      onGenerateRoute: AppRoutes.generateRoute,
     );
   }
 }
