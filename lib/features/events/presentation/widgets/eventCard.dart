@@ -108,6 +108,21 @@ class EventCard extends StatelessWidget {
                     ),
                     child: const Text('+ Info'),
                   ),
+                  const SizedBox(width: 8),
+                  OutlinedButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Venta de entradas ${event.title}')),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.black,
+                      side: const BorderSide(color: AppColors.darkYellow),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4), // Botón reducido
+                      textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                    child: const Text('Comprar entradas!'),
+                  ),
                 ],
               ),
             ),
