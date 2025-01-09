@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:juvuit_flutter/core/utils/colors.dart';
 
 class CompleteProfileForm extends StatefulWidget {
   final TextEditingController nameController;
@@ -49,6 +50,9 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           decoration: const InputDecoration(
             labelText: 'Nombre',
             border: OutlineInputBorder(),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.yellow)
+            )
           ),
         ),
         const SizedBox(height: 16),
@@ -57,7 +61,12 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(
             labelText: 'Edad',
-            border: OutlineInputBorder(),
+            border: OutlineInputBorder(
+              
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.yellow)
+            )
           ),
         ),
         const SizedBox(height: 16),
@@ -66,7 +75,12 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           maxLines: 3,
           decoration: const InputDecoration(
             labelText: 'Descripción',
-            border: OutlineInputBorder(),
+            border: OutlineInputBorder(
+              
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.yellow)
+            )
           ),
         ),
         const SizedBox(height: 16),
@@ -74,7 +88,11 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           value: _selectedSign,
           decoration: const InputDecoration(
             labelText: 'Signo Zodiacal',
-            border: OutlineInputBorder(),
+            border: OutlineInputBorder(
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.yellow)
+            )
           ),
           items: signosZodiacales.map((signoData) {
             return DropdownMenuItem<String>(
@@ -108,7 +126,12 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
             controller: widget.songControllers[i],
             decoration: InputDecoration(
               labelText: 'Canción ${i + 1}',
-              border: const OutlineInputBorder(),
+              border: const OutlineInputBorder(
+                borderSide: BorderSide(color: AppColors.yellow),
+              ),
+              focusedBorder: const OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.yellow)
+            )
             ),
           ),
         ],
@@ -117,7 +140,12 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           controller: widget.drinkController,
           decoration: const InputDecoration(
             labelText: 'Trago Favorito',
-            border: OutlineInputBorder(),
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.yellow),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.yellow)
+            )
           ),
         ),
       ],

@@ -53,6 +53,14 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         child: SafeArea(
           child: Column(
             children: [
+              const Text(
+                'Agrega tus fotos más fachas :)',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
               ImagePickerGrid(
                 images: _images,
                 onPickImage: _pickImage,
