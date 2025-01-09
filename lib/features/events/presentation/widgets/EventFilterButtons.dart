@@ -17,14 +17,14 @@ class EventFilterButtons extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         ElevatedButton(
-          onPressed: () => onFilterChanged('Festival'),
+          onPressed: () => onFilterChanged('Todos'),
           style: ElevatedButton.styleFrom(
             backgroundColor:
-                selectedType == 'Festival' ? AppColors.yellow : AppColors.black,
+                selectedType == 'Todos' ? AppColors.yellow : AppColors.black,
             foregroundColor:
-                selectedType == 'Festival' ? Colors.black : Colors.white,
+                selectedType == 'Todos' ? Colors.black : Colors.white,
           ),
-          child: const Text('Festival'),
+          child: const Text('Todos'),
         ),
         const SizedBox(width: 8),
         ElevatedButton(
@@ -39,15 +39,16 @@ class EventFilterButtons extends StatelessWidget {
         ),
         const SizedBox(width: 8),
         ElevatedButton(
-          onPressed: () => onFilterChanged('Todos'),
+          onPressed: () => onFilterChanged('Festival'),
           style: ElevatedButton.styleFrom(
             backgroundColor:
-                selectedType == 'Todos' ? AppColors.yellow : AppColors.black,
+                selectedType == 'Festival' ? AppColors.yellow : AppColors.black,
             foregroundColor:
-                selectedType == 'Todos' ? Colors.black : Colors.white,
+                selectedType == 'Festival' ? Colors.black : Colors.white,
           ),
-          child: const Text('Todos'),
+          child: const Text('Festival'),
         ),
+        
       ],
     );
   }
