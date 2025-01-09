@@ -24,9 +24,9 @@ class EventCard extends StatelessWidget {
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
               child: Image.network(
                 event.imageUrl,
-                height: 120, // Ajusta la altura de la imagen
+                height: 160, // Ajusta la altura de la imagen
                 width: double.infinity,
-                fit: BoxFit.cover,
+                fit: BoxFit.fill,
               ),
             ),
             Padding(
