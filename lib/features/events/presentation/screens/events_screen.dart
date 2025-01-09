@@ -23,12 +23,16 @@ class _EventsScreenState extends State<EventsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Momentos que Importan', style: TextStyle(fontStyle: FontStyle.normal),),
+        title: const Text(
+          'Momentos que Importan',
+          style: TextStyle(fontStyle: FontStyle.normal),
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
         child: Column(
           children: [
+            // Botones de filtro
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: EventFilterButtons(
@@ -47,7 +51,7 @@ class _EventsScreenState extends State<EventsScreen> {
                 itemBuilder: (context, index) {
                   final event = filteredEvents[index];
                   return Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                     child: EventCard(event: event),
                   );
                 },
