@@ -34,17 +34,17 @@ class ProfileScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // Foto de perfil principal
-              CircleAvatar(
+              const CircleAvatar(
                 radius: 80,
                 backgroundImage: NetworkImage(
-                  'https://via.placeholder.com/150', // Cambiar por la URL real de la foto
+                  'https://media.licdn.com/dms/image/v2/D4D22AQEkdTUhyF1X_w/feedshare-shrink_1280/feedshare-shrink_1280/0/1685664343346?e=1739404800&v=beta&t=J3gEDOh-24-DPMSv-L1UZYssjrMGruQjn5kdHPXG8Co', // Cambiar por la URL real de la foto
                 ),
               ),
               const SizedBox(height: 16),
               // Nombre y edad
-              Text(
-                'Nombre Usuario, 25', // Sustituir por datos reales
-                style: const TextStyle(
+              const Text(
+                'Juli, 26', // Sustituir por datos reales
+                style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: AppColors.black,
@@ -52,37 +52,37 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               // Descripción
-              Text(
-                'Aquí va una descripción breve sobre el usuario. Máximo 3 líneas.',
+              const Text(
+                '5 palabras, CRACK. 🤙🏼', // Sustituir por datos reales
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   color: AppColors.gray,
                 ),
               ),
               const SizedBox(height: 16),
               // Iconos de preferencias
-              Row(
+              const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Column(
-                    children: const [
+                    children: [
                       Icon(Icons.music_note, color: AppColors.yellow),
                       SizedBox(height: 4),
                       Text('Top Canciones', style: TextStyle(fontSize: 12)),
                     ],
                   ),
-                  const SizedBox(width: 24),
+                  SizedBox(width: 24),
                   Column(
-                    children: const [
+                    children: [
                       Icon(Icons.local_bar, color: AppColors.yellow),
                       SizedBox(height: 4),
                       Text('Trago Favorito', style: TextStyle(fontSize: 12)),
                     ],
                   ),
-                  const SizedBox(width: 24),
+                  SizedBox(width: 24),
                   Column(
-                    children: const [
+                    children: [
                       Icon(Icons.star, color: AppColors.yellow),
                       SizedBox(height: 4),
                       Text('Signo Zodiacal', style: TextStyle(fontSize: 12)),
@@ -103,7 +103,7 @@ class ProfileScreen extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 6),
                   ),
                   child: const Text(
                     'Editar Perfil',
@@ -124,7 +124,7 @@ class ProfileScreen extends StatelessWidget {
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.black),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 6),
                   ),
                   child: const Text(
                     'Cerrar Sesión',
