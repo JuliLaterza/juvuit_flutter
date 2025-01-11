@@ -5,6 +5,7 @@ import 'package:juvuit_flutter/features/auth/presentation/widgets/image_picker_g
 import 'package:juvuit_flutter/features/auth/presentation/widgets/complete_profile_form.dart';
 import 'dart:io';
 
+
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
 
@@ -39,7 +40,9 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     // Lógica para guardar el perfil
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Guardando datos...')),
-    );
+    ).closed.then((_) {
+      Navigator.pushNamed(context, '/events'); // Reemplaza '/events' con la ruta correcta hacia la pantalla de eventos
+    });
   }
 
   @override
