@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/features/events/domain/models/event.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 import 'package:juvuit_flutter/features/events/data/events_data.dart';
@@ -11,27 +12,13 @@ class MatchingScreen extends StatefulWidget {
 }
 
 class _MatchingScreenState extends State<MatchingScreen> {
-  late List<Event> attendingEvents;
+  String filterType = 'date'; // Tipo de filtro por defecto
 
-  @override
-  void initState() {
-    super.initState();
-    _loadEvents();
-  }
-
-  void _loadEvents() {
-    // Inicializar eventos ordenados por fecha por defecto
-    attendingEvents = events
-        .where((event) => event.attendeesCount > 0) // Ajusta esta lógica según tu necesidad
-        .toList()
-      ..sort((a, b) => a.date.compareTo(b.date));
-  }
-
-  void _sortEventsBy(String criteria) {
+  void _sortEvents() {
     setState(() {
-      if (criteria == 'date') {
+      if (filterType == 'date') {
         attendingEvents.sort((a, b) => a.date.compareTo(b.date));
-      } else if (criteria == 'attendees') {
+      } else if (filterType == 'attendees') {
         attendingEvents.sort((a, b) => b.attendeesCount.compareTo(a.attendeesCount));
       }
     });
@@ -46,18 +33,15 @@ class _MatchingScreenState extends State<MatchingScreen> {
       ),
       body: Column(
         children: [
-          // Botón de Filtro
+          // Botón de filtro
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Align(
               alignment: Alignment.centerRight,
               child: PopupMenuButton<String>(
                 onSelected: (value) {
-                  if (value == 'date') {
-                    _sortEventsBy('date');
-                  } else if (value == 'attendees') {
-                    _sortEventsBy('attendees');
-                  }
+                  filterType = value;
+                  _sortEvents(); // Ordenar los eventos según el filtro seleccionado
                 },
                 itemBuilder: (context) => [
                   const PopupMenuItem(
@@ -73,24 +57,21 @@ class _MatchingScreenState extends State<MatchingScreen> {
                   onPressed: null, // El PopupMenuButton maneja el clic
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    backgroundColor: AppColors.white
                   ),
                   child: const Text('Filtro'),
                 ),
               ),
             ),
           ),
-          // Listado de eventos
+          // Lista de eventos asistidos
           Expanded(
             child: attendingEvents.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.event_busy,
-                          size: 80,
-                          color: Colors.grey,
-                        ),
+                        Icon(Icons.event_busy, size: 80, color: Colors.grey),
                         const SizedBox(height: 16),
                         const Text(
                           'No tienes eventos asistidos aún',
@@ -99,7 +80,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, '/events'); // Ruta a la pantalla de eventos
+                            Navigator.pushNamed(context, '/events'); // Navegar a la pantalla de eventos
                           },
                           child: const Text('Explorar eventos'),
                         ),
@@ -109,7 +90,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
                 : ListView.builder(
                     itemCount: attendingEvents.length,
                     itemBuilder: (context, index) {
-                      final event = attendingEvents[index];
+                      final Event event = attendingEvents[index];
                       return Card(
                         margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                         child: ListTile(
@@ -124,8 +105,8 @@ class _MatchingScreenState extends State<MatchingScreen> {
                           ),
                           title: Text(
                             event.title,
-                            maxLines: 1, // Limitar a 1 línea
-                            overflow: TextOverflow.ellipsis, // Agregar "..."
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: Column(
@@ -151,10 +132,6 @@ class _MatchingScreenState extends State<MatchingScreen> {
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             ),
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 8.0,
-                            horizontal: 12.0,
                           ),
                         ),
                       );
