@@ -32,3 +32,6 @@ final List<Event> events = [
     type: 'Festival',
   ),
 ];
+
+
+final List<Event> attendingEvents = [];
