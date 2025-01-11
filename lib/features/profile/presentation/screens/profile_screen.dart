@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
 
+import '../../../settings/presentation/screens/settings_screen.dart';
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final double widthScreen = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mi Perfil'),
@@ -93,7 +96,7 @@ class ProfileScreen extends StatelessWidget {
               const Spacer(),
               // Botón Editar Perfil
               SizedBox(
-                width: double.infinity,
+                width: widthScreen*0.4,
                 child: ElevatedButton(
                   onPressed: () {
                     // Lógica para editar perfil
@@ -117,7 +120,7 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 16),
               // Botón Cerrar Sesión
               SizedBox(
-                width: double.infinity,
+                width: widthScreen*0.4,
                 child: OutlinedButton(
                   onPressed: () {
                     // Lógica para cerrar sesión
@@ -140,23 +143,6 @@ class ProfileScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 3),
-    );
-  }
-}
-
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Configuraciones'),
-        backgroundColor: AppColors.black,
-      ),
-      body: const Center(
-        child: Text('Pantalla de configuraciones'),
-      ),
     );
   }
 }
