@@ -16,6 +16,22 @@ class EventsScreen extends StatefulWidget {
 class _EventsScreenState extends State<EventsScreen> {
   String selectedType = 'Todos'; // Estado para el filtro seleccionado
 
+  // Función para agregar eventos al listado de "eventos a asistir"
+  void addToAttending(Event event) {
+    if (!attendingEvents.contains(event)) {
+      setState(() {
+        attendingEvents.add(event);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Agregado: ${event.title}')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ya estás asistiendo a ${event.title}')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Lista filtrada según el tipo seleccionado
@@ -52,7 +68,10 @@ class _EventsScreenState extends State<EventsScreen> {
                   final event = filteredEvents[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    child: EventCard(event: event),
+                    child: EventCard(
+                      event: event,
+                      onAttend: () => addToAttending(event), // Pasa la función de asistencia
+                    ),
                   );
                 },
               ),
