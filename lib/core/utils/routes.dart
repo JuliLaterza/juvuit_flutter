@@ -6,6 +6,7 @@ import 'package:juvuit_flutter/features/chats/presentation/screens/chat_screen.d
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/profile_screen.dart';
+import 'package:juvuit_flutter/features/profiles/presentation/screens/profiles_screen.dart'; // Nueva importación
 
 class AppRoutes {
   // Nombres de las rutas
@@ -14,8 +15,9 @@ class AppRoutes {
   static const String events = '/events';
   static const String matching = '/matching';
   static const String chats = '/chats';
-  static const String chat = '/chat'; // Nueva ruta
+  static const String chat = '/chat'; // Ruta existente
   static const String profile = '/profile';
+  static const String profiles = '/profiles'; // Nueva ruta
 
   // Generador de rutas
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -40,6 +42,8 @@ class AppRoutes {
         );
       case profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
+      case profiles:
+        return MaterialPageRoute(builder: (_) => const ProfilesScreen()); // Agregado
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
