@@ -1,9 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
+import 'package:juvuit_flutter/core/utils/routes.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  void _showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmar'),
+          content: const Text('¿Estás seguro que deseas cerrar la sesión?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el modal sin acción
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop(); // Cerrar el modal antes de cerrar sesión
+                try {
+                  await FirebaseAuth.instance.signOut();
+                  if (context.mounted) {
+                    Navigator.pushNamedAndRemoveUntil(
+                      context,
+                      AppRoutes.login,
+                      (route) => false,
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error al cerrar sesión: $e')),
+                  );
+                }
+              },
+              child: const Text('Sí'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +64,7 @@ class ProfileScreen extends StatelessWidget {
               child: CircleAvatar(
                 radius: 80,
                 backgroundImage: NetworkImage(
-                  'https://media.licdn.com/dms/image/v2/D4D22AQEkdTUhyF1X_w/feedshare-shrink_1280/feedshare-shrink_1280/0/1685664343346?e=1739404800&v=beta&t=J3gEDOh-24-DPMSv-L1UZYssjrMGruQjn5kdHPXG8Co', // Cambiar por la URL real de la foto
+                  'https://media.licdn.com/dms/image/v2/D4D22AQEkdTUhyF1X_w/feedshare-shrink_1280/feedshare-shrink_1280/0/1685664343346?e=1739404800&v=beta&t=J3gEDOh-24-DPMSv-L1UZYssjrMGruQjn5kdHPXG8Co',
                 ),
               ),
             ),
@@ -30,7 +72,7 @@ class ProfileScreen extends StatelessWidget {
             // Nombre y edad
             const Center(
               child: Text(
-                'Juli, 26', // Sustituir por datos reales
+                'Juli, 26',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -108,7 +150,6 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
             const Divider(),
-
             // Sección de notificaciones
             const Text(
               'Notificaciones',
@@ -129,7 +170,6 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
             const Divider(),
-
             // Sección de ayuda
             const Text(
               'Ayuda',
@@ -157,7 +197,6 @@ class ProfileScreen extends StatelessWidget {
               },
             ),
             const Divider(),
-
             // Sección de cuenta avanzada
             const Text(
               'Cuenta avanzada',
@@ -172,7 +211,7 @@ class ProfileScreen extends StatelessWidget {
               leading: const Icon(Icons.logout, color: AppColors.gray),
               title: const Text('Cerrar sesión'),
               onTap: () {
-                // Lógica para cerrar sesión
+                _showLogoutConfirmationDialog(context); // Llamar al modal
               },
             ),
             ListTile(
