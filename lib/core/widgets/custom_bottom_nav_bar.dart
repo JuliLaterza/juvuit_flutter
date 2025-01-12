@@ -3,7 +3,7 @@ import 'package:juvuit_flutter/features/events/presentation/screens/events_scree
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_screen.dart';
 import 'package:juvuit_flutter/features/chats/presentation/screens/chats_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/profile_screen.dart';
-import '../utils/colors.dart';
+//import '../utils/colors.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -51,9 +51,9 @@ class CustomBottomNavBar extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: (index) => _onItemTapped(context, index),
-      backgroundColor: AppColors.darkmedium,
-      selectedItemColor: Colors.yellow,
-      unselectedItemColor: Colors.white,
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      selectedItemColor: const Color(0xFFFFD600),
+      unselectedItemColor: const Color(0xFF292929),
       selectedIconTheme: const IconThemeData(size: 30),
       unselectedIconTheme: const IconThemeData(size: 30),
       showSelectedLabels: false,
