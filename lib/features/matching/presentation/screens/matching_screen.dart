@@ -37,7 +37,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Align(
-              alignment: Alignment.centerRight,
+              alignment: Alignment.center,
               child: PopupMenuButton<String>(
                 onSelected: (value) {
                   filterType = value;
