@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/features/events/domain/models/event.dart';
+import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
 import 'package:juvuit_flutter/features/events/data/events_data.dart';
 
@@ -80,7 +81,13 @@ class _MatchingScreenState extends State<MatchingScreen> {
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: () {
-                            Navigator.pushNamed(context, '/events'); // Navegar a la pantalla de eventos
+                            Navigator.pushReplacement(
+                              context,
+                              PageRouteBuilder(
+                                transitionDuration: Duration.zero,
+                                pageBuilder: (_, __, ___) => EventsScreen(),
+                              ),
+                            );
                           },
                           child: const Text('Explorar eventos'),
                         ),
