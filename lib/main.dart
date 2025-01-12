@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       title: 'J U V U I T',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.chats, // Ruta inicial
+      initialRoute: AppRoutes.login, // Ruta inicial
       onGenerateRoute: AppRoutes.generateRoute,
     );
   }
