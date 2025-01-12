@@ -22,7 +22,7 @@ class ProfileScreen extends StatelessWidget {
               child: CircleAvatar(
                 radius: 80,
                 backgroundImage: NetworkImage(
-                  'https://instagram.fepa4-1.fna.fbcdn.net/v/t51.29350-15/459681884_880058476890597_7386454259925480083_n.jpg?stp=dst-jpg_e35_p1080x1080_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6ImltYWdlX3VybGdlbi4xNDQweDE1Nzguc2RyLmYyOTM1MC5kZWZhdWx0X2ltYWdlIn0&_nc_ht=instagram.fepa4-1.fna.fbcdn.net&_nc_cat=109&_nc_oc=Q6cZ2AEqFKt497Jx-0TWhQtJ6iOG8ZQhnRaxhdS7Jm5mN6vP7010C3sFHNBMSsgdBHEHzrgZ-eQVuVWGhzwijIPOKqMv&_nc_ohc=M46KxhXZNWIQ7kNvgFn5xzq&_nc_gid=e78e1de8dd984f378d232f6aa5a8dca9&edm=AP4sbd4BAAAA&ccb=7-5&ig_cache_key=MzQ1Nzk5MDA0MDE2MjIxNTY0OQ%3D%3D.3-ccb7-5&oh=00_AYBU9xI1tA_WXMclYkiR497lz0GhguJh4wAqJXsFBamFhw&oe=6787CB3F&_nc_sid=7a9f4b', // Cambiar por la URL real de la foto
+                  'https://media.licdn.com/dms/image/v2/D4D22AQEkdTUhyF1X_w/feedshare-shrink_1280/feedshare-shrink_1280/0/1685664343346?e=1739404800&v=beta&t=J3gEDOh-24-DPMSv-L1UZYssjrMGruQjn5kdHPXG8Co', // Cambiar por la URL real de la foto
                 ),
               ),
             ),
@@ -30,7 +30,7 @@ class ProfileScreen extends StatelessWidget {
             // Nombre y edad
             const Center(
               child: Text(
-                'Agus, 23', // Sustituir por datos reales
+                'Juli, 26', // Sustituir por datos reales
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
