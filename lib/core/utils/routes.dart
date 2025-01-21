@@ -4,6 +4,7 @@ import 'package:juvuit_flutter/features/auth/presentation/screens/register_scree
 import 'package:juvuit_flutter/features/chats/presentation/screens/chats_screen.dart';
 import 'package:juvuit_flutter/features/chats/presentation/screens/chat_screen.dart'; // Importación necesaria
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
+import 'package:juvuit_flutter/features/matching/presentation/screens/matching_ig_screen.dart';
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/profile_screen.dart';
 import 'package:juvuit_flutter/features/profiles/presentation/screens/profiles_screen.dart'; // Nueva importación
@@ -29,7 +30,7 @@ class AppRoutes {
       case events:
         return MaterialPageRoute(builder: (_) => const EventsScreen());
       case matching:
-        return MaterialPageRoute(builder: (_) => const MatchingScreen());
+        return MaterialPageRoute(builder: (_) => const MatchingIgScreen());
       case chats:
         return MaterialPageRoute(builder: (_) => const ChatsScreen());
       case chat:
