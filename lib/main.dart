@@ -14,9 +14,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'J U V U I T',
+      title: 'WIT Ü',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login, // Ruta inicial
+      initialRoute: AppRoutes.matching, // Ruta inicial
       onGenerateRoute: AppRoutes.generateRoute,
     );
   }
