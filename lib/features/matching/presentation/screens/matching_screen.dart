@@ -138,7 +138,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
                             style: ElevatedButton.styleFrom(
                               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             ),
-                            child: const Text('Matchear'),
+                            child: const Text('Conectar'),
                           ),
                         ),
                       );

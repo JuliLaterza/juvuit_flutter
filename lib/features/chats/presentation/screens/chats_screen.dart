@@ -11,7 +11,7 @@ class ChatsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chats'),
+        //title: const Text('Chats'),
         centerTitle: true,
       ),
       body: Column(
