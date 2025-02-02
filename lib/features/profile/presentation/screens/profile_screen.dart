@@ -34,12 +34,41 @@ class ProfileScreen extends StatelessWidget {
                     );
                   }
                 } catch (e) {
+                  // ignore: use_build_context_synchronously
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Error al cerrar sesión: $e')),
                   );
                 }
               },
               child: const Text('Sí'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showSongsModal(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Top Canciones'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('1. Tití Me Preguntó'),
+              Text('2. Me Porto Bonito'),
+              Text('3. Ojitos Lindos'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cerrar'),
             ),
           ],
         );
@@ -94,26 +123,29 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             // Iconos de preferencias
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Column(
-                  children: [
-                    Icon(Icons.music_note, color: AppColors.yellow),
-                    SizedBox(height: 4),
-                    Text('Top Canciones', style: TextStyle(fontSize: 12)),
-                  ],
+                GestureDetector(
+                  onTap: () => _showSongsModal(context),
+                  child: Column(
+                    children: const [
+                      Icon(Icons.music_note, color: AppColors.yellow),
+                      SizedBox(height: 4),
+                      Text('Top Canciones', style: TextStyle(fontSize: 12)),
+                    ],
+                  ),
                 ),
-                SizedBox(width: 24),
-                Column(
+                const SizedBox(width: 24),
+                const Column(
                   children: [
                     Icon(Icons.local_bar, color: AppColors.yellow),
                     SizedBox(height: 4),
                     Text('Trago Favorito', style: TextStyle(fontSize: 12)),
                   ],
                 ),
-                SizedBox(width: 24),
-                Column(
+                const SizedBox(width: 24),
+                const Column(
                   children: [
                     Icon(Icons.star, color: AppColors.yellow),
                     SizedBox(height: 4),
