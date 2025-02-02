@@ -44,7 +44,7 @@ class AppRoutes {
       case profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case profiles:
-        return MaterialPageRoute(builder: (_) => const ProfilesScreen()); // Agregado
+        return MaterialPageRoute(builder: (_) => const MatchingIgScreen()); // Agregado
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

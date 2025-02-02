@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       title: 'WIT Ü',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.matching, // Ruta inicial
+      initialRoute: AppRoutes.login, // Ruta inicial
       onGenerateRoute: AppRoutes.generateRoute,
     );
   }
