@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../domain/models/event.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 
+import '../screens/event_info.dart';
+
 class EventCard extends StatelessWidget {
   final Event event;
   final VoidCallback onAttend;
@@ -12,8 +14,34 @@ class EventCard extends StatelessWidget {
     required this.onAttend,
   });
 
+
+  
+
   @override
   Widget build(BuildContext context) {
+
+    // ignore: unused_element
+    void _showModalInfo() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Información'),
+          content: const Text('¡Bienvenido a la sección de eventos! Aquí podrás encontrar los eventos más importantes de la comunidad. Puedes filtrarlos por tipo y agregarlos a tu lista de eventos a los que asistirás.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el modal
+              },
+              child: const Text('Entendido'),
+            ),
+          ],
+        );
+      },
+      );
+    }
+
+
     return Card(
       color: AppColors.white,
       elevation: 3,
@@ -81,10 +109,15 @@ class EventCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 OutlinedButton(
+                  //onPressed: _showModalInfo,
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Más información del evento ${event.title}')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => EventInfoScreen(event: event),
+                      ),
                     );
+                    
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.black,
