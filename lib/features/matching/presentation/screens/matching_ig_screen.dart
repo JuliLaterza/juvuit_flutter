@@ -5,7 +5,6 @@ class Profile {
   final String name;
   final int age;
   final String description;
-  //final String imageUrl; // URL de la imagen
   final String imagePath; // Ruta de la imagen
 
   Profile({
@@ -31,24 +30,21 @@ class _MatchingIgScreenState extends State<MatchingIgScreen> {
       name: 'Julian',
       age: 26,
       description: 'Amante de los viajes y el café. 🎒☕',
-      imagePath: '/Users/jlaterza/Documents/workspace/juvuit_flutter/assets/images/juli_barcelona.jpg',
-     //imageUrl: 'https://instagram.fmvd4-1.fna.fbcdn.net/v/t51.29350-15/470932340_571889198946724_8988554830569468324_n.heic?stp=dst-jpg_e35_p480x480_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6ImltYWdlX3VybGdlbi4xNDQweDE4MDAuc2RyLmYyOTM1MC5kZWZhdWx0X2ltYWdlIn0&_nc_ht=instagram.fmvd4-1.fna.fbcdn.net&_nc_cat=104&_nc_ohc=GRgA9zpJc-gQ7kNvgH_e0ek&_nc_gid=945af54615fc4f07bac7ddd6ae9704c9&edm=AP4sbd4BAAAA&ccb=7-5&ig_cache_key=MzUzNDEwNDY5MTA3NzI3MzI5Nw%3D%3D.3-ccb7-5&oh=00_AYCVHOuIXa5b-E5-e6QE2aI28mKy7tIVWzye_u8xqc5cxA&oe=67949833&_nc_sid=7a9f4b',
+      imagePath: 'assets/images/juli_barcelona.jpg',
     ),
     Profile(
       id: '2',
-      name: 'Sofia',
-      age: 28,
-      description: 'Diseñadora gráfica con pasión por la fotografía. 📸',
-      imagePath: '/Users/jlaterza/Documents/workspace/juvuit_flutter/assets/images/sofi_salinas.jpg',
-      //imageUrl: 'https://instagram.fmvd4-1.fna.fbcdn.net/v/t51.29350-15/432918301_886119216605350_6059139758044931314_n.jpg?stp=dst-jpg_e35_p480x480_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6ImltYWdlX3VybGdlbi4xNDQweDE4MDAuc2RyLmYyOTM1MC5kZWZhdWx0X2ltYWdlIn0&_nc_ht=instagram.fmvd4-1.fna.fbcdn.net&_nc_cat=110&_nc_ohc=nJGrEzijknoQ7kNvgFg7gOe&_nc_gid=fd68554e1f554cc4af12c07e2ed8b193&edm=AP4sbd4BAAAA&ccb=7-5&ig_cache_key=MzMyNTAzMjcxNjY3MTEyMjkxMg%3D%3D.3-ccb7-5&oh=00_AYBEOgZX0_CCJ6G_3t440V5vvNQ05tUnkF-IGVhcuhA_6A&oe=6794B1C2&_nc_sid=7a9f4b',
+      name: 'Pia',
+      age: 25,
+      description: 'Una gurisa piola 😎, que se está argentinizando de a poco',
+      imagePath: 'assets/images/pia.jpg',
     ),
     Profile(
       id: '3',
       name: 'Leo',
       age: 36,
       description: 'Cocinero profesional y fanático de los deportes. 🍳⚽',
-      imagePath: '/Users/jlaterza/Documents/workspace/juvuit_flutter/assets/images/messi_mate.jpg'
-      //imageUrl: 'https://instagram.fmvd4-1.fna.fbcdn.net/v/t51.29350-15/470941724_436859726147097_3017111880619106958_n.jpg?stp=dst-jpg_e35_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6ImltYWdlX3VybGdlbi45MDB4ODk5LnNkci5mMjkzNTAuZGVmYXVsdF9pbWFnZSJ9&_nc_ht=instagram.fmvd4-1.fna.fbcdn.net&_nc_cat=1&_nc_ohc=8whcDaqk5yAQ7kNvgGPZnZ1&_nc_gid=e1f8876920034a34bc60d7554e5ba82a&edm=APoiHPcBAAAA&ccb=7-5&ig_cache_key=MzUyNTgwOTcxNjQzNDc0MDE0Ng%3D%3D.3-ccb7-5&oh=00_AYDUZCFK7uezfdJamz_BNLNq6UIfF7s4dVjxEOpiOFOshg&oe=679497A6&_nc_sid=22de04',
+      imagePath: 'assets/images/messi_mate.jpg',
     ),
   ];
 
@@ -95,58 +91,68 @@ class _MatchingIgScreenState extends State<MatchingIgScreen> {
         itemCount: profiles.length,
         itemBuilder: (context, index) {
           final profile = profiles[index];
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Imagen principal
-              Image.asset(
-                profile.imagePath,
-                height: 300,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.error, size: 100, color: Colors.red);
-                },
-              ),
-              const SizedBox(height: 16),
-              // Botones de interacción
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  IconButton(
-                    onPressed: _onDislike,
-                    icon: const Icon(Icons.close, color: Colors.red, size: 40),
+
+          return SingleChildScrollView( // Permite desplazarse si el contenido es muy largo
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Imagen principal
+                SizedBox(
+                  height: 300,
+                  width: double.infinity,
+                  child: Image.asset(
+                    profile.imagePath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(Icons.error, size: 100, color: Colors.red);
+                    },
                   ),
-                  IconButton(
-                    onPressed: _onLike,
-                    icon: const Icon(Icons.favorite, color: Colors.green, size: 40),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Nombre y edad
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('${profile.name}, ${profile.age}',style: const TextStyle(fontSize: 24,fontWeight: FontWeight.bold,),),
-                        const SizedBox(height: 8),
-                        Text(profile.description,textAlign: TextAlign.center,style: const TextStyle(fontSize: 16)),
-                      ],
+                ),
+                const SizedBox(height: 16),
+
+                // Botones de interacción
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      onPressed: _onDislike,
+                      icon: const Icon(Icons.close, color: Colors.red, size: 40),
                     ),
+                    const SizedBox(width: 16),
+                    IconButton(
+                      onPressed: _onLike,
+                      icon: const Icon(Icons.favorite, color: Colors.green, size: 40),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Información del perfil
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start, // Asegura alineación a la izquierda
+                    children: [
+                      Text(
+                        '${profile.name}, ${profile.age}',
+                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Align( 
+                        alignment: Alignment.centerLeft, // Asegura que la descripción esté alineada a la izquierda
+                        child: Text(
+                          profile.description,
+                          textAlign: TextAlign.left, // También lo refuerza en el texto
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
                   ),
-              
-              // Descripción
-              
-                ],
-              ),
-              
-              const Spacer(),
-            ],
+                ),
+
+                const SizedBox(height: 20),
+              ],
+            ),
           );
         },
       ),
