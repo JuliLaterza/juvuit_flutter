@@ -47,45 +47,52 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Completa tu Perfil'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: SafeArea(
-          child: Column(
-            children: [
-              const Text(
-                'Agrega tus fotos más fachas :)',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Completa tu Perfil'),
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  const Text(
+                    'Agrega tus fotos más fachas :)',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ImagePickerGrid(
+                    images: _images,
+                    onPickImage: _pickImage,
+                  ),
+                  const SizedBox(height: 16),
+                  CompleteProfileForm(
+                    nameController: _nameController,
+                    ageController: _ageController,
+                    descriptionController: _descriptionController,
+                    songControllers: _songControllers,
+                    drinkController: _drinkController,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+              
+                      onPressed: _saveProfile,
+                      child: const Text('Guardar Perfil'),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              ImagePickerGrid(
-                images: _images,
-                onPickImage: _pickImage,
-              ),
-              const SizedBox(height: 16),
-              CompleteProfileForm(
-                nameController: _nameController,
-                ageController: _ageController,
-                descriptionController: _descriptionController,
-                songControllers: _songControllers,
-                drinkController: _drinkController,
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-          
-                  onPressed: _saveProfile,
-                  child: const Text('Guardar Perfil'),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

@@ -24,6 +24,7 @@ class CompleteProfileForm extends StatefulWidget {
 
 class _CompleteProfileFormState extends State<CompleteProfileForm> {
   String? _selectedSign;
+  String? _selectedDrink;
 
   final List<Map<String, dynamic>> signosZodiacales = [
     {'signo': 'Aries', 'icono': Icons.whatshot},
@@ -38,6 +39,21 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
     {'signo': 'Capricornio', 'icono': Icons.terrain},
     {'signo': 'Acuario', 'icono': Icons.bubble_chart},
     {'signo': 'Piscis', 'icono': Icons.alarm},
+  ];
+
+  final List<String> _drinks = [
+    'Cerveza',
+    'Fernet',
+    'WhisCola',
+    'Vino',
+    'Whisky',
+    'Ron',
+    'Vodka',
+    'Tequila',
+    'Gin',
+    'Champagne',
+    'Gaseosas',
+    'Agua',
   ];
 
   @override
@@ -60,7 +76,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           controller: widget.ageController,
           keyboardType: TextInputType.number,
           decoration: const InputDecoration(
-            labelText: 'Edad',
+            labelText: 'Edad', //pedir fecha de nacimiento
             border: OutlineInputBorder(
               
             ),
@@ -136,7 +152,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           ),
         ],
         const SizedBox(height: 16),
-        TextField(
+        /* TextField(
           controller: widget.drinkController,
           decoration: const InputDecoration(
             labelText: 'Trago Favorito',
@@ -147,6 +163,29 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
               borderSide: BorderSide(color: AppColors.yellow)
             )
           ),
+        ), */
+        DropdownButtonFormField<String>(
+          value: _selectedDrink,
+          decoration: const InputDecoration(
+            labelText: 'Trago Favorito',
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.yellow),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.yellow)
+            )
+          ),
+          items: _drinks.map((drink) {
+            return DropdownMenuItem<String>(
+              value: drink,
+              child: Text(drink),
+            );
+          }).toList(),
+          onChanged: (value) {
+            setState(() {
+              _selectedDrink = value;
+            });
+          },
         ),
       ],
     );
