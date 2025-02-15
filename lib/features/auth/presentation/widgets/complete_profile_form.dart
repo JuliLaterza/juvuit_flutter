@@ -71,7 +71,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
             )
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         TextField(
           controller: widget.ageController,
           keyboardType: TextInputType.number,
@@ -85,7 +85,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
             )
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         TextField(
           controller: widget.descriptionController,
           maxLines: 3,
@@ -99,7 +99,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
             )
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 24),
         DropdownButtonFormField<String>(
           value: _selectedSign,
           decoration: const InputDecoration(
@@ -131,13 +131,15 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
             });
           },
         ),
-        const SizedBox(height: 16),
-        const Text(
-          'Top 3 Canciones',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        const SizedBox(height: 24),
+        Center(
+          child: const Text(
+            'AGREGA TUS CANCIONES FAVORITAS',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
         ),
         for (int i = 0; i < widget.songControllers.length; i++) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
           TextField(
             controller: widget.songControllers[i],
             decoration: InputDecoration(
@@ -151,6 +153,13 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
             ),
           ),
         ],
+        const SizedBox(height: 24),
+        Center(
+          child: const Text(
+            'AGREGA TU TRAGO FAVORITO',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
         const SizedBox(height: 16),
         /* TextField(
           controller: widget.drinkController,

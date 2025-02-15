@@ -73,7 +73,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     images: _images,
                     onPickImage: _pickImage,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
                   CompleteProfileForm(
                     nameController: _nameController,
                     ageController: _ageController,
@@ -82,12 +82,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     drinkController: _drinkController,
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-              
-                      onPressed: _saveProfile,
-                      child: const Text('Guardar Perfil'),
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                                  
+                        onPressed: _saveProfile,
+                        child: const Text('Guardar Perfil'),
+                      ),
                     ),
                   ),
                 ],
