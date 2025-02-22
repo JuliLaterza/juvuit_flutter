@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-//import 'package:juvuit_flutter/core/utils/colors.dart';
+import 'package:juvuit_flutter/core/utils/colors.dart';
+import 'dart:io';
 import 'package:juvuit_flutter/features/auth/presentation/widgets/image_picker_grid.dart';
 import 'package:juvuit_flutter/features/auth/presentation/widgets/complete_profile_form.dart';
-import 'dart:io';
-
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -37,64 +36,83 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   }
 
   void _saveProfile() {
-    // Lógica para guardar el perfil
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Guardando datos...')),
     ).closed.then((_) {
-      Navigator.pushNamed(context, '/events'); // Reemplaza '/events' con la ruta correcta hacia la pantalla de eventos
+      Navigator.pushNamed(context, '/events');
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
+      onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Completa tu Perfil'),
+          title: const Text(
+            'Completa tu Perfil',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          centerTitle: true,
         ),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
-            child: SafeArea(
-              child: Column(
-                children: [
-                  const Text(
-                    'Agrega tus fotos más fachas :)',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Sube tus mejores fotos',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 12),
+                        ImagePickerGrid(
+                          images: _images,
+                          onPickImage: _pickImage,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  ImagePickerGrid(
-                    images: _images,
-                    onPickImage: _pickImage,
-                  ),
-                  const SizedBox(height: 24),
-                  CompleteProfileForm(
-                    nameController: _nameController,
-                    ageController: _ageController,
-                    descriptionController: _descriptionController,
-                    songControllers: _songControllers,
-                    drinkController: _drinkController,
-                  ),
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                                  
-                        onPressed: _saveProfile,
-                        child: const Text('Guardar Perfil'),
+                ),
+                const SizedBox(height: 24),
+                CompleteProfileForm(
+                  nameController: _nameController,
+                  //ageController: _ageController,
+                  descriptionController: _descriptionController,
+                  songControllers: _songControllers,
+                  drinkController: _drinkController,
+                ),
+                const SizedBox(height: 24),
+                Center(
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.9,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: AppColors.yellow,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: _saveProfile,
+                      child: const Text(
+                        'Guardar Perfil',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
                       ),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

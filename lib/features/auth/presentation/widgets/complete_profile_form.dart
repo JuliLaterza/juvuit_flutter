@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
+import 'package:intl/intl.dart'; // Para formatear la fecha
 
 class CompleteProfileForm extends StatefulWidget {
   final TextEditingController nameController;
-  final TextEditingController ageController;
   final TextEditingController descriptionController;
   final List<TextEditingController> songControllers;
   final TextEditingController drinkController;
@@ -11,11 +11,9 @@ class CompleteProfileForm extends StatefulWidget {
   const CompleteProfileForm({
     super.key,
     required this.nameController,
-    required this.ageController,
     required this.descriptionController,
     required this.songControllers,
     required this.drinkController,
-    
   });
 
   @override
@@ -25,6 +23,7 @@ class CompleteProfileForm extends StatefulWidget {
 class _CompleteProfileFormState extends State<CompleteProfileForm> {
   String? _selectedSign;
   String? _selectedDrink;
+  DateTime? _selectedDate; // Fecha de nacimiento seleccionada
 
   final List<Map<String, dynamic>> signosZodiacales = [
     {'signo': 'Aries', 'icono': Icons.whatshot},
@@ -42,161 +41,190 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
   ];
 
   final List<String> _drinks = [
-    'Cerveza',
-    'Fernet',
-    'WhisCola',
-    'Vino',
-    'Whisky',
-    'Ron',
-    'Vodka',
-    'Tequila',
-    'Gin',
-    'Champagne',
-    'Gaseosas',
-    'Agua',
+    'Cerveza', 'Fernet', 'WhisCola', 'Vino', 'Whisky', 'Ron',
+    'Vodka', 'Tequila', 'Gin', 'Champagne', 'Gaseosas', 'Agua',
   ];
+
+  // Método para seleccionar la fecha
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 6570)), // 18 años atrás
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+
+      // Validar mayoría de edad
+      if (_calculateAge(picked) < 18) {
+        _showUnderageDialog();
+      }
+    }
+  }
+
+  // Método para calcular la edad
+  int _calculateAge(DateTime birthDate) {
+    DateTime today = DateTime.now();
+    int age = today.year - birthDate.year;
+    if (today.month < birthDate.month ||
+        (today.month == birthDate.month && today.day < birthDate.day)) {
+      age--;
+    }
+    return age;
+  }
+
+  // Mostrar modal si el usuario es menor de edad
+  void _showUnderageDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Acceso restringido'),
+        content: const Text('Debes ser mayor de 18 años para registrarte.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TextField(
-          controller: widget.nameController,
-          decoration: const InputDecoration(
-            labelText: 'Nombre',
-            border: OutlineInputBorder(),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.yellow)
-            )
-          ),
-        ),
-        const SizedBox(height: 24),
-        TextField(
-          controller: widget.ageController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'Edad', //pedir fecha de nacimiento
-            border: OutlineInputBorder(
-              
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.yellow)
-            )
-          ),
-        ),
-        const SizedBox(height: 24),
-        TextField(
-          controller: widget.descriptionController,
-          maxLines: 3,
-          decoration: const InputDecoration(
-            labelText: 'Descripción',
-            border: OutlineInputBorder(
-              
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.yellow)
-            )
-          ),
-        ),
-        const SizedBox(height: 24),
-        DropdownButtonFormField<String>(
-          value: _selectedSign,
-          decoration: const InputDecoration(
-            labelText: 'Signo Zodiacal',
-            border: OutlineInputBorder(
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.yellow)
-            )
-          ),
-          items: signosZodiacales.map((signoData) {
-            return DropdownMenuItem<String>(
-              value: signoData['signo'],
-              child: Row(
-                children: [
-                  Icon(
-                    signoData['icono'],
-                    size: 24,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(signoData['signo']),
-                ],
-              ),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedSign = value;
-            });
-          },
-        ),
-        const SizedBox(height: 24),
-        Center(
-          child: const Text(
+        _buildInputField(widget.nameController, 'Nombre', Icons.person),
+        const SizedBox(height: 16),
+        _buildDatePicker(context),
+        const SizedBox(height: 16),
+        _buildTextArea(widget.descriptionController, 'Descripción', Icons.edit),
+        const SizedBox(height: 16),
+        _buildDropdownField('Signo Zodiacal', signosZodiacales, _selectedSign, (value) {
+          setState(() => _selectedSign = value);
+        }),
+        const SizedBox(height: 16),
+        const Center(
+          child: Text(
             'AGREGA TUS CANCIONES FAVORITAS',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
-        for (int i = 0; i < widget.songControllers.length; i++) ...[
-          const SizedBox(height: 16),
-          TextField(
-            controller: widget.songControllers[i],
-            decoration: InputDecoration(
-              labelText: 'Canción ${i + 1}',
-              border: const OutlineInputBorder(
-                borderSide: BorderSide(color: AppColors.yellow),
-              ),
-              focusedBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.yellow)
-            )
-            ),
-          ),
-        ],
-        const SizedBox(height: 24),
-        Center(
-          child: const Text(
+        ...List.generate(widget.songControllers.length, (i) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: _buildInputField(widget.songControllers[i], 'Canción ${i + 1}', Icons.music_note),
+          );
+        }),
+        const SizedBox(height: 16),
+        const Center(
+          child: Text(
             'AGREGA TU TRAGO FAVORITO',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
         ),
         const SizedBox(height: 16),
-        /* TextField(
-          controller: widget.drinkController,
-          decoration: const InputDecoration(
-            labelText: 'Trago Favorito',
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.yellow),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.yellow)
-            )
-          ),
-        ), */
-        DropdownButtonFormField<String>(
-          value: _selectedDrink,
-          decoration: const InputDecoration(
-            labelText: 'Trago Favorito',
-            border: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.yellow),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.yellow)
-            )
-          ),
-          items: _drinks.map((drink) {
-            return DropdownMenuItem<String>(
-              value: drink,
-              child: Text(drink),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedDrink = value;
-            });
-          },
-        ),
+        _buildDropdownList('Trago Favorito', _drinks, _selectedDrink, (value) {
+          setState(() => _selectedDrink = value);
+        }),
       ],
+    );
+  }
+
+  // Selector de fecha de nacimiento
+  Widget _buildDatePicker(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _selectDate(context),
+      child: AbsorbPointer(
+        child: TextField(
+          decoration: InputDecoration(
+            labelText: 'Fecha de nacimiento',
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            prefixIcon: const Icon(Icons.calendar_today, color: AppColors.yellow),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: AppColors.yellow),
+            ),
+          ),
+          controller: TextEditingController(
+            text: _selectedDate == null ? '' : DateFormat('dd/MM/yyyy').format(_selectedDate!),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInputField(TextEditingController controller, String label, IconData icon) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: Icon(icon, color: AppColors.yellow),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppColors.yellow),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextArea(TextEditingController controller, String label, IconData icon) {
+    return TextField(
+      controller: controller,
+      maxLines: 3,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        prefixIcon: Icon(icon, color: AppColors.yellow),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppColors.yellow),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdownField(String label, List<Map<String, dynamic>> items, String? selectedValue, Function(String?) onChanged) {
+    return DropdownButtonFormField<String>(
+      value: selectedValue,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppColors.yellow),
+        ),
+      ),
+      items: items.map((item) {
+        return DropdownMenuItem<String>(
+          value: item['signo'],
+          child: Row(
+            children: [
+              Icon(item['icono'], color: AppColors.yellow),
+              const SizedBox(width: 8),
+              Text(item['signo']),
+            ],
+          ),
+        );
+      }).toList(),
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildDropdownList(String label, List<String> items, String? selectedValue, Function(String?) onChanged) {
+    return DropdownButtonFormField<String>(
+      value: selectedValue,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppColors.yellow),
+        ),
+      ),
+      items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
+      onChanged: onChanged,
     );
   }
 }

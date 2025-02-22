@@ -82,7 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Wit Ü',
+                      'WIT Ü',
                       style: TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
