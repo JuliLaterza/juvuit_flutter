@@ -5,8 +5,10 @@ import 'package:juvuit_flutter/features/chats/presentation/screens/chats_screen.
 import 'package:juvuit_flutter/features/chats/presentation/screens/chat_screen.dart'; // Importación necesaria
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_ig_screen.dart';
+// ignore: unused_import
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/profile_screen.dart';
+// ignore: unused_import
 import 'package:juvuit_flutter/features/profiles/presentation/screens/profiles_screen.dart'; // Nueva importación
 
 class AppRoutes {

@@ -14,6 +14,7 @@ class CompleteProfileScreen extends StatefulWidget {
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
+  // ignore: unused_field
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final List<TextEditingController> _songControllers = [
@@ -39,6 +40,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Guardando datos...')),
     ).closed.then((_) {
+      // ignore: use_build_context_synchronously
       Navigator.pushNamed(context, '/events');
     });
   }
