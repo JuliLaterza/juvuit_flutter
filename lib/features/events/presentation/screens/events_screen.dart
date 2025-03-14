@@ -40,7 +40,7 @@ class _EventsScreenState extends State<EventsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Momentos que Importan',
+          'Momentos que importan 🎉',
           style: TextStyle(fontStyle: FontStyle.normal),
         ),
         centerTitle: true,

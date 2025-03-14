@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'dart:io';
-import 'package:juvuit_flutter/features/auth/presentation/widgets/image_picker_grid.dart';
 import 'package:juvuit_flutter/features/auth/presentation/widgets/complete_profile_form.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
@@ -14,8 +13,6 @@ class CompleteProfileScreen extends StatefulWidget {
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
-  // ignore: unused_field
-  final TextEditingController _ageController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final List<TextEditingController> _songControllers = [
     TextEditingController(),
@@ -28,7 +25,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage(int index, ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
+    final pickedFile = await _picker.pickImage(
+      source: source,
+      maxWidth: 800, // Mejora la carga en Android
+      maxHeight: 800,
+      imageQuality: 85, // Reduce el tamaño del archivo
+    );
+
     if (pickedFile != null) {
       setState(() {
         _images[index] = File(pickedFile.path);
@@ -40,7 +43,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Guardando datos...')),
     ).closed.then((_) {
-      // ignore: use_build_context_synchronously
       Navigator.pushNamed(context, '/events');
     });
   }
@@ -59,7 +61,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         ),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -69,7 +71,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(12.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -78,10 +80,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 12),
-                        ImagePickerGrid(
-                          images: _images,
-                          onPickImage: _pickImage,
-                        ),
+                        _buildImagePickerGrid(), // Selector de imágenes optimizado
                       ],
                     ),
                   ),
@@ -89,7 +88,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 const SizedBox(height: 24),
                 CompleteProfileForm(
                   nameController: _nameController,
-                  //ageController: _ageController,
                   descriptionController: _descriptionController,
                   songControllers: _songControllers,
                   drinkController: _drinkController,
@@ -119,6 +117,73 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImagePickerGrid() {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width,
+      child: GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 3, // Se adapta mejor a pantallas pequeñas
+          crossAxisSpacing: 8,
+          mainAxisSpacing: 8,
+          childAspectRatio: 1, // Mantiene las imágenes cuadradas
+        ),
+        itemCount: _images.length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () => _showImageSourceDialog(index),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey),
+              ),
+              child: _images[index] != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.file(
+                        _images[index]!,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : const Icon(Icons.add_a_photo, size: 40),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showImageSourceDialog(int index) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Tomar foto'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(index, ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Seleccionar de la galería'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(index, ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
