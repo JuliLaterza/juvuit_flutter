@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:juvuit_flutter/features/matching/presentation/screens/match_animation_screen.dart';
 
 class Profile {
   final String id;
@@ -58,6 +59,7 @@ class _MatchingIgScreenState extends State<MatchingIgScreen> {
 
   final PageController _pageController = PageController();
 
+  /*
   void _onLike() {
     if (_pageController.page!.toInt() < profiles.length - 1) {
       _pageController.nextPage(
@@ -66,6 +68,35 @@ class _MatchingIgScreenState extends State<MatchingIgScreen> {
       );
     } else {
       _showEndMessage();
+    }
+  }
+  */
+
+  void _onLike() {
+  final currentPage = _pageController.page!.toInt();
+  final profile = profiles[currentPage];
+
+  if (profile.id == '2') {
+    // Simulamos que hay match con Pia
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MatchAnimationScreen(
+          userImage: 'assets/images/juli_barcelona.jpg',
+          matchImage: profile.imagePath.first,
+        ),
+      ),
+    );
+  } else {
+    // Avanzar normalmente
+    if (currentPage < profiles.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      _showEndMessage();
+      }
     }
   }
 
