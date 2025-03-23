@@ -92,8 +92,11 @@ class ProfileScreen extends StatelessWidget {
             const Center(
               child: CircleAvatar(
                 radius: 80,
-                backgroundImage: NetworkImage(
+                /*backgroundImage: NetworkImage(
                   'https://media.licdn.com/dms/image/v2/D4D22AQEkdTUhyF1X_w/feedshare-shrink_1280/feedshare-shrink_1280/0/1685664343346?e=1739404800&v=beta&t=J3gEDOh-24-DPMSv-L1UZYssjrMGruQjn5kdHPXG8Co',
+                )*/
+                backgroundImage: AssetImage(
+                  'assets/images/juli_barcelona.jpg'
                 ),
               ),
             ),
