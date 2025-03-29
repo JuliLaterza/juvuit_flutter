@@ -34,15 +34,15 @@ class _MatchingIgScreenState extends State<MatchingIgScreen> {
       description: 'Amante de los viajes y el café. 🎒☕',
       imagePath: ['assets/images/juli_barcelona.jpg', 'assets/images/juli_casita.jpg'],
     ),
-    Profile(
+    /*Profile(
       id: '2',
       name: 'Vicky',
       age: 25,
       description: 'la mejor del mundo <333',
       imagePath: ['assets/images/vicky.jpeg','assets/images/vicky2.jpeg'],
-    ),
+    ),*/
     Profile(
-      id: '3',
+      id: '2',
       name: 'Male',
       age: 26,
       description: 'la mejor del mundo <333',
