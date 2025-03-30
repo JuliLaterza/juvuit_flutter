@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
-import 'dart:io';
 import 'package:juvuit_flutter/features/auth/presentation/widgets/complete_profile_form.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
+import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -14,22 +17,25 @@ class CompleteProfileScreen extends StatefulWidget {
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _drinkController = TextEditingController();
   final List<TextEditingController> _songControllers = [
     TextEditingController(),
     TextEditingController(),
     TextEditingController(),
   ];
-  final TextEditingController _drinkController = TextEditingController();
 
   final List<File?> _images = List.generate(6, (_) => null);
   final ImagePicker _picker = ImagePicker();
 
+  String? _selectedSign;
+  String? _selectedDrink;
+
   Future<void> _pickImage(int index, ImageSource source) async {
     final pickedFile = await _picker.pickImage(
       source: source,
-      maxWidth: 800, // Mejora la carga en Android
+      maxWidth: 800,
       maxHeight: 800,
-      imageQuality: 85, // Reduce el tamaño del archivo
+      imageQuality: 85,
     );
 
     if (pickedFile != null) {
@@ -39,12 +45,46 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     }
   }
 
-  void _saveProfile() {
+  bool _validateForm() {
+    if (_nameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('El nombre es obligatorio')),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _saveProfile() async {
+    if (!_validateForm()) return;
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Usuario no autenticado')),
+      );
+      return;
+    }
+
+    final profile = UserProfile(
+      userId: currentUser.uid,
+      name: _nameController.text.trim(),
+      description: _descriptionController.text.trim(),
+      topSongs: _songControllers.map((c) => c.text.trim()).toList(),
+      favoriteDrink: _selectedDrink ?? '',
+      sign: _selectedSign,
+      photoUrls: [],
+      attendedEvents: [],
+    );
+
+    final service = UserProfileService();
+    await service.saveUserProfile(profile);
+
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Guardando datos...')),
-    ).closed.then((_) {
-      Navigator.pushNamed(context, '/events');
-    });
+      const SnackBar(content: Text('Perfil guardado')),
+    );
+
+    Navigator.pushNamedAndRemoveUntil(context, '/events', (route) => false);
   }
 
   @override
@@ -80,7 +120,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 12),
-                        _buildImagePickerGrid(), // Selector de imágenes optimizado
+                        _buildImagePickerGrid(),
                       ],
                     ),
                   ),
@@ -91,6 +131,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   descriptionController: _descriptionController,
                   songControllers: _songControllers,
                   drinkController: _drinkController,
+                  onSignChanged: (value) => _selectedSign = value,
+                  onDrinkChanged: (value) => _selectedDrink = value,
                 ),
                 const SizedBox(height: 24),
                 Center(
@@ -127,10 +169,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3, // Se adapta mejor a pantallas pequeñas
+          crossAxisCount: 3,
           crossAxisSpacing: 8,
           mainAxisSpacing: 8,
-          childAspectRatio: 1, // Mantiene las imágenes cuadradas
+          childAspectRatio: 1,
         ),
         itemCount: _images.length,
         itemBuilder: (context, index) {

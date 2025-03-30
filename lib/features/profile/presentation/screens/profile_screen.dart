@@ -3,84 +3,106 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
 import 'package:juvuit_flutter/core/utils/routes.dart';
+import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
+import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  UserProfile? _userProfile;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    final service = UserProfileService();
+    final profile = await service.getUserProfile(currentUser.uid);
+
+    setState(() {
+      _userProfile = profile;
+      _isLoading = false;
+    });
+  }
 
   void _showLogoutConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirmar'),
-          content: const Text('¿Estás seguro que deseas cerrar la sesión?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cerrar el modal sin acción
-              },
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop(); // Cerrar el modal antes de cerrar sesión
-                try {
-                  await FirebaseAuth.instance.signOut();
-                  if (context.mounted) {
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      AppRoutes.login,
-                      (route) => false,
-                    );
-                  }
-                } catch (e) {
-                  // ignore: use_build_context_synchronously
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error al cerrar sesión: $e')),
-                  );
-                }
-              },
-              child: const Text('Sí'),
-            ),
-          ],
-        );
-      },
+      builder: (_) => AlertDialog(
+        title: const Text('Confirmar'),
+        content: const Text('¿Estás seguro que deseas cerrar la sesión?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await FirebaseAuth.instance.signOut();
+              if (mounted) {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.login,
+                  (_) => false,
+                );
+              }
+            },
+            child: const Text('Sí'),
+          ),
+        ],
+      ),
     );
   }
 
   void _showSongsModal(BuildContext context) {
+    if (_userProfile == null) return;
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Top Canciones'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('1. Tití Me Preguntó'),
-              Text('2. Me Porto Bonito'),
-              Text('3. Ojitos Lindos'),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text('Top Canciones'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: _userProfile!.topSongs.map((s) => Text('• $s')).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Cerrar'),
-            ),
-          ],
-        );
-      },
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_userProfile == null) {
+      return const Scaffold(
+        body: Center(child: Text('Perfil no encontrado')),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        //title: const Text('Mi Perfil'),
         centerTitle: true,
         backgroundColor: AppColors.white,
       ),
@@ -88,24 +110,19 @@ class ProfileScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            // Foto de perfil principal
-            const Center(
+            Center(
               child: CircleAvatar(
                 radius: 80,
-                /*backgroundImage: NetworkImage(
-                  'https://media.licdn.com/dms/image/v2/D4D22AQEkdTUhyF1X_w/feedshare-shrink_1280/feedshare-shrink_1280/0/1685664343346?e=1739404800&v=beta&t=J3gEDOh-24-DPMSv-L1UZYssjrMGruQjn5kdHPXG8Co',
-                )*/
-                backgroundImage: AssetImage(
-                  'assets/images/juli_barcelona.jpg'
-                ),
+                backgroundImage: _userProfile!.photoUrls.isNotEmpty
+                    ? NetworkImage(_userProfile!.photoUrls.first)
+                    : const AssetImage('assets/images/juli_barcelona.jpg') as ImageProvider,
               ),
             ),
             const SizedBox(height: 16),
-            // Nombre y edad
-            const Center(
+            Center(
               child: Text(
-                'Juli, 26',
-                style: TextStyle(
+                _userProfile!.name,
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: AppColors.black,
@@ -113,26 +130,21 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            // Descripción
-            const Center(
+            Center(
               child: Text(
-                'Aquí va una descripción breve sobre el usuario. Máximo 3 líneas.',
+                _userProfile!.description,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppColors.gray,
-                ),
+                style: const TextStyle(fontSize: 14, color: AppColors.gray),
               ),
             ),
             const SizedBox(height: 16),
-            // Iconos de preferencias
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 GestureDetector(
                   onTap: () => _showSongsModal(context),
-                  child: Column(
-                    children: const [
+                  child: const Column(
+                    children: [
                       Icon(Icons.music_note, color: AppColors.yellow),
                       SizedBox(height: 4),
                       Text('Top Canciones', style: TextStyle(fontSize: 12)),
@@ -140,33 +152,31 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 24),
-                const Column(
+                Column(
                   children: [
-                    Icon(Icons.local_bar, color: AppColors.yellow),
-                    SizedBox(height: 4),
-                    Text('Trago Favorito', style: TextStyle(fontSize: 12)),
+                    const Icon(Icons.local_bar, color: AppColors.yellow),
+                    const SizedBox(height: 4),
+                    Text(
+                      _userProfile!.favoriteDrink,
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ],
                 ),
                 const SizedBox(width: 24),
-                const Column(
+                Column(
                   children: [
-                    Icon(Icons.star, color: AppColors.yellow),
-                    SizedBox(height: 4),
-                    Text('Signo Zodiacal', style: TextStyle(fontSize: 12)),
+                    const Icon(Icons.star, color: AppColors.yellow),
+                    const SizedBox(height: 4),
+                    Text(
+                      _userProfile!.sign ?? '—',
+                      style: const TextStyle(fontSize: 12),
+                    ),
                   ],
                 ),
               ],
             ),
             const Divider(),
-            // Sección de cuenta
-            const Text(
-              'Cuenta',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.black,
-              ),
-            ),
+            const Text('Cuenta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.person, color: AppColors.gray),
@@ -180,74 +190,40 @@ class ProfileScreen extends StatelessWidget {
               leading: const Icon(Icons.lock, color: AppColors.gray),
               title: const Text('Privacidad'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                // Navegar a ajustes de privacidad
-              },
+              onTap: () {},
             ),
             const Divider(),
-            // Sección de notificaciones
-            const Text(
-              'Notificaciones',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.black,
-              ),
-            ),
+            const Text('Notificaciones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             SwitchListTile(
               activeColor: AppColors.yellow,
               contentPadding: EdgeInsets.zero,
               title: const Text('Recibir notificaciones'),
-              value: true, // Cambiar según el estado actual
-              onChanged: (value) {
-                // Cambiar configuración de notificaciones
-              },
+              value: true,
+              onChanged: (value) {},
             ),
             const Divider(),
-            // Sección de ayuda
-            const Text(
-              'Ayuda',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.black,
-              ),
-            ),
+            const Text('Ayuda', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.help_outline, color: AppColors.gray),
               title: const Text('Centro de ayuda'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                // Navegar al centro de ayuda
-              },
+              onTap: () {},
             ),
             ListTile(
               leading: const Icon(Icons.feedback_outlined, color: AppColors.gray),
               title: const Text('Enviar feedback'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                // Navegar a feedback
-              },
+              onTap: () {},
             ),
             const Divider(),
-            // Sección de cuenta avanzada
-            const Text(
-              'Cuenta avanzada',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: AppColors.black,
-              ),
-            ),
+            const Text('Cuenta avanzada', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             ListTile(
               leading: const Icon(Icons.logout, color: AppColors.gray),
               title: const Text('Cerrar sesión'),
-              onTap: () {
-                _showLogoutConfirmationDialog(context); // Llamar al modal
-              },
+              onTap: () => _showLogoutConfirmationDialog(context),
             ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),

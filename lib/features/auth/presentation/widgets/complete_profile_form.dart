@@ -7,6 +7,8 @@ class CompleteProfileForm extends StatefulWidget {
   final TextEditingController descriptionController;
   final List<TextEditingController> songControllers;
   final TextEditingController drinkController;
+  final void Function(String?) onSignChanged;
+  final void Function(String?) onDrinkChanged;
 
   const CompleteProfileForm({
     super.key,
@@ -14,6 +16,8 @@ class CompleteProfileForm extends StatefulWidget {
     required this.descriptionController,
     required this.songControllers,
     required this.drinkController,
+    required this.onDrinkChanged,
+    required this.onSignChanged
   });
 
   @override
@@ -209,7 +213,10 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           ),
         );
       }).toList(),
-      onChanged: onChanged,
+      onChanged: (value) {
+        setState(() => _selectedSign = value);
+        widget.onSignChanged(value);
+      },
     );
   }
 
@@ -224,7 +231,10 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
         ),
       ),
       items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
-      onChanged: onChanged,
+      onChanged: (value) {
+        setState(() => _selectedDrink = value);
+        widget.onDrinkChanged(value);
+    },
     );
   }
 }
