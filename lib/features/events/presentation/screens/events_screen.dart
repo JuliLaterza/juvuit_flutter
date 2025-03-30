@@ -23,11 +23,11 @@ class _EventsScreenState extends State<EventsScreen> {
   if (!attendingEvents.contains(event)) {
     attendingEvents.add(event); // sin setState
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Agregado: ${event.title}'), duration: Duration(seconds: 2),),
+      SnackBar(content: Text('Agregado: ${event.title}'), duration: Duration(seconds: 1),),
     );
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Ya estás asistiendo a ${event.title}'), duration: Duration(seconds: 2)),
+      SnackBar(content: Text('Ya estás asistiendo a ${event.title}'), duration: Duration(seconds: 1)),
     );
   }
 }
