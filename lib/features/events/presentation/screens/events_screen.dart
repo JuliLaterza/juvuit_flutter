@@ -42,11 +42,12 @@ class _EventsScreenState extends State<EventsScreen> {
       final firestore = FirebaseFirestore.instance;
 
       // 1. Agregar el usuario a la lista de asistentes del evento
-      final eventRef = firestore.collection('events').doc(eventId);
-      final eventDoc = await eventRef.get();
-      print(eventId);
-      if (eventDoc.exists) {
-        await eventRef.update({
+      final eventRef = firestore.collection('events');
+      final eventQuery = await eventRef.where('id', isEqualTo: eventId).get();
+
+      if (eventQuery.docs.isNotEmpty) {
+        final eventDoc = eventQuery.docs.first; // Obtén el primer (y único) documento
+        await eventRef.doc(eventDoc.id).update({
           'attendees': FieldValue.arrayUnion([userId]), // Agrega el userId a la lista de asistentes
         });
       } else {
