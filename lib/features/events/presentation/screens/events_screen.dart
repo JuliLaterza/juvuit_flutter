@@ -4,7 +4,7 @@ import 'package:juvuit_flutter/features/events/domain/utils/events_filter.dart';
 import '../../domain/models/event.dart';
 import '../../data/events_data.dart';
 import '../widgets/EventCard.dart';
-import '../widgets/EventFilterButtons.dart'; // Importa el nuevo widget
+import '../widgets/EventFilterButtons.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -14,29 +14,26 @@ class EventsScreen extends StatefulWidget {
 }
 
 class _EventsScreenState extends State<EventsScreen> {
-  String selectedType = 'Todos'; // Estado para el filtro seleccionado
+  String selectedType = 'Todos'; // Estado del filtro
 
-  // Función para agregar eventos al listado de "eventos a asistir"
+  // Función para agregar eventos al listado de asistencia
+  final List<Event> attendingEvents = [];
+
   void addToAttending(Event event) {
-    if (!attendingEvents.contains(event)) {
-      setState(() {
-        attendingEvents.add(event);
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Agregado: ${event.title}')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ya estás asistiendo a ${event.title}')),
-      );
-    }
+  if (!attendingEvents.contains(event)) {
+    attendingEvents.add(event); // sin setState
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Agregado: ${event.title}'), duration: Duration(seconds: 2),),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Ya estás asistiendo a ${event.title}'), duration: Duration(seconds: 2)),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
-    // Lista filtrada según el tipo seleccionado
-    List<Event> filteredEvents = filterEventsByType(events, selectedType);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -60,18 +57,33 @@ class _EventsScreenState extends State<EventsScreen> {
                 },
               ),
             ),
-            // Lista de eventos
+            // Lista de eventos desde Firebase
             Expanded(
-              child: ListView.builder(
-                itemCount: filteredEvents.length,
-                itemBuilder: (context, index) {
-                  final event = filteredEvents[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                    child: EventCard(
-                      event: event,
-                      onAttend: () => addToAttending(event), // Pasa la función de asistencia
-                    ),
+              child: FutureBuilder<List<Event>>(
+                future: fetchEventsFromFirebase(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error al cargar eventos'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return Center(child: Text('No hay eventos disponibles'));
+                  }
+
+                  final filteredEvents = filterEventsByType(snapshot.data!, selectedType);
+
+                  return ListView.builder(
+                    itemCount: filteredEvents.length,
+                    itemBuilder: (context, index) {
+                      final event = filteredEvents[index];
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                        child: EventCard(
+                          event: event,
+                          onAttend: () => addToAttending(event),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

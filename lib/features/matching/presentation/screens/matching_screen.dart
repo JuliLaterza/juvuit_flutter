@@ -3,24 +3,25 @@ import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/features/events/domain/models/event.dart';
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
 import '../../../../core/widgets/custom_bottom_nav_bar.dart';
-import 'package:juvuit_flutter/features/events/data/events_data.dart';
 
 class MatchingScreen extends StatefulWidget {
-  const MatchingScreen({super.key});
+  final List<Event> attendingEvents;
+
+  const MatchingScreen({super.key, required this.attendingEvents});
 
   @override
   _MatchingScreenState createState() => _MatchingScreenState();
 }
 
 class _MatchingScreenState extends State<MatchingScreen> {
-  String filterType = 'date'; // Tipo de filtro por defecto
+  String filterType = 'date';
 
   void _sortEvents() {
     setState(() {
-      if (filterType == 'date') {
-        attendingEvents.sort((a, b) => a.date.compareTo(b.date));
+      if (filterType == 'date') { 
+        widget.attendingEvents.sort((a, b) => a.date.compareTo(b.date));
       } else if (filterType == 'attendees') {
-        attendingEvents.sort((a, b) => b.attendeesCount.compareTo(a.attendeesCount));
+        widget.attendingEvents.sort((a, b) => b.attendeesCount.compareTo(a.attendeesCount));
       }
     });
   }
@@ -34,7 +35,6 @@ class _MatchingScreenState extends State<MatchingScreen> {
       ),
       body: Column(
         children: [
-          // Botón de filtro
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Align(
@@ -42,7 +42,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
               child: PopupMenuButton<String>(
                 onSelected: (value) {
                   filterType = value;
-                  _sortEvents(); // Ordenar los eventos según el filtro seleccionado
+                  _sortEvents();
                 },
                 itemBuilder: (context) => [
                   const PopupMenuItem(
@@ -55,19 +55,18 @@ class _MatchingScreenState extends State<MatchingScreen> {
                   ),
                 ],
                 child: ElevatedButton(
-                  onPressed: null, // El PopupMenuButton maneja el clic
+                  onPressed: null,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    backgroundColor: AppColors.white
+                    backgroundColor: AppColors.white,
                   ),
                   child: const Text('Filtro'),
                 ),
               ),
             ),
           ),
-          // Lista de eventos asistidos
           Expanded(
-            child: attendingEvents.isEmpty
+            child: widget.attendingEvents.isEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -85,7 +84,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
                               context,
                               PageRouteBuilder(
                                 transitionDuration: Duration.zero,
-                                pageBuilder: (_, __, ___) => EventsScreen(),
+                                pageBuilder: (_, __, ___) => const EventsScreen(),
                               ),
                             );
                           },
@@ -95,9 +94,9 @@ class _MatchingScreenState extends State<MatchingScreen> {
                     ),
                   )
                 : ListView.builder(
-                    itemCount: attendingEvents.length,
+                    itemCount: widget.attendingEvents.length,
                     itemBuilder: (context, index) {
-                      final Event event = attendingEvents[index];
+                      final event = widget.attendingEvents[index];
                       return Card(
                         margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                         child: ListTile(

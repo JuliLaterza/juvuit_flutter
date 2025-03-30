@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Event {
   final String id;
   final String title;
@@ -19,26 +21,29 @@ class Event {
     required this.type,
   });
 
-  // Si en el futuro necesitas convertir a/from JSON:
-  // factory Event.fromJson(Map<String, dynamic> json) {
-  //   return Event(
-  //     id: json['id'] as String,
-  //     title: json['title'] as String,
-  //     subtitle: json['subtitle'] as String,
-  //     date: DateTime.parse(json['date'] as String),
-  //     imageUrl: json['imageUrl'] as String,
-  //     attendeesCount: json['attendeesCount'] as int,
-  //   );
-  // }
+  factory Event.fromJson(Map<String, dynamic> json) {
+    return Event(
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
+      subtitle: json['subtitle'] ?? '',
+      date: (json['date'] as Timestamp).toDate(),
+      imageUrl: json['imageUrl'] ?? '',
+      attendeesCount: json['attendeesCount'] ?? 0,
+      description: json['description'] ?? '',
+      type: json['type'] ?? '',
+    );
+  }
 
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'id': id,
-  //     'title': title,
-  //     'subtitle': subtitle,
-  //     'date': date.toIso8601String(),
-  //     'imageUrl': imageUrl,
-  //     'attendeesCount': attendeesCount,
-  //   };
-  // }
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'subtitle': subtitle,
+      'date': Timestamp.fromDate(date),
+      'imageUrl': imageUrl,
+      'attendeesCount': attendeesCount,
+      'description': description,
+      'type': type,
+    };
+  }
 }

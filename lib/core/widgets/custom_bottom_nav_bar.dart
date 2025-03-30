@@ -23,7 +23,7 @@ class CustomBottomNavBar extends StatelessWidget {
         nextScreen = const EventsScreen();
         break;
       case 1:
-        nextScreen = const MatchingScreen();
+        nextScreen = MatchingScreen(attendingEvents: const []); // temporal, si no tenés acceso a la lista real acá
         break;
       case 2:
         nextScreen = const ChatsScreen();
