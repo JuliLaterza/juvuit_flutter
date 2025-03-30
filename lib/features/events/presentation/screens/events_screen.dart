@@ -5,6 +5,8 @@ import '../../domain/models/event.dart';
 import '../../data/events_data.dart';
 import '../widgets/EventCard.dart';
 import '../widgets/EventFilterButtons.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class EventsScreen extends StatefulWidget {
   const EventsScreen({super.key});
@@ -31,6 +33,41 @@ class _EventsScreenState extends State<EventsScreen> {
     );
   }
 }
+
+
+    Future<void> _asistirAlEvento(String eventId) async {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) return;
+
+      final firestore = FirebaseFirestore.instance;
+
+      // 1. Agregar el usuario a la lista de asistentes del evento
+      final eventRef = firestore.collection('events').doc(eventId);
+      final eventDoc = await eventRef.get();
+      print(eventId);
+      if (eventDoc.exists) {
+        await eventRef.update({
+          'attendees': FieldValue.arrayUnion([userId]), // Agrega el userId a la lista de asistentes
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Este evento no existe')),
+        );
+        return;
+      }
+
+      // 2. Agregar el evento a la lista de eventos asistidos del usuario
+      final userRef = firestore.collection('users').doc(userId);
+      await userRef.set({
+        'attendedEvents': FieldValue.arrayUnion([eventId]), // Agrega el eventId al array attendedEvents
+      }, SetOptions(merge: true));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Estás asistiendo a este evento!')),
+      );
+    }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +117,7 @@ class _EventsScreenState extends State<EventsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                         child: EventCard(
                           event: event,
-                          onAttend: () => addToAttending(event),
+                          onAttend: () => _asistirAlEvento(event.id),
                         ),
                       );
                     },

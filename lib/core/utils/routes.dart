@@ -10,6 +10,9 @@ import 'package:juvuit_flutter/features/matching/presentation/screens/matching_s
 import 'package:juvuit_flutter/features/profile/presentation/screens/profile_screen.dart';
 // ignore: unused_import
 import 'package:juvuit_flutter/features/profiles/presentation/screens/profiles_screen.dart'; // Nueva importación
+import 'package:juvuit_flutter/features/matching/presentation/screens/matching_loader.dart';
+
+
 
 class AppRoutes {
   // Nombres de las rutas
@@ -32,7 +35,8 @@ class AppRoutes {
       case events:
         return MaterialPageRoute(builder: (_) => const EventsScreen());
       case matching:
-        return MaterialPageRoute(builder: (_) => const MatchingIgScreen());
+        return MaterialPageRoute(builder: (_) => const MatchingLoader());
+
       case chats:
         return MaterialPageRoute(builder: (_) => const ChatsScreen());
       case chat:
