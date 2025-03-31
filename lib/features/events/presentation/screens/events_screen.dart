@@ -35,38 +35,57 @@ class _EventsScreenState extends State<EventsScreen> {
 }
 
 
-    Future<void> _asistirAlEvento(String eventId) async {
-      final userId = FirebaseAuth.instance.currentUser?.uid;
-      if (userId == null) return;
+  Future<void> _asistirODejarDeAsistir(String eventId) async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
 
-      final firestore = FirebaseFirestore.instance;
+    final firestore = FirebaseFirestore.instance;
 
-      // 1. Agregar el usuario a la lista de asistentes del evento
-      final eventRef = firestore.collection('events');
-      final eventQuery = await eventRef.where('id', isEqualTo: eventId).get();
+    // 1. Buscar el evento usando el campo 'id' dentro del documento
+    final eventRef = firestore.collection('events');
+    final eventQuery = await eventRef.where('id', isEqualTo: eventId).get();
 
-      if (eventQuery.docs.isNotEmpty) {
-        final eventDoc = eventQuery.docs.first; // Obtén el primer (y único) documento
+    if (eventQuery.docs.isNotEmpty) {
+      final eventDoc = eventQuery.docs.first; // Obtenemos el primer evento que coincide con el 'id'
+
+      final attendees = eventDoc.data()?['attendees'] ?? [];
+
+      // 2. Si el usuario ya está asistiendo, "dejar de asistir"
+      if (attendees.contains(userId)) {
+        await eventRef.doc(eventDoc.id).update({
+          'attendees': FieldValue.arrayRemove([userId]), // Elimina el userId de la lista de asistentes
+        });
+
+        final userRef = firestore.collection('users').doc(userId);
+        await userRef.update({
+          'attendedEvents': FieldValue.arrayRemove([eventId]), // Elimina el eventId de attendedEvents
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('¡Has dejado de asistir a este evento!')),
+        );
+      } else {
+        // 3. Si el usuario no está asistiendo, "asistir"
         await eventRef.doc(eventDoc.id).update({
           'attendees': FieldValue.arrayUnion([userId]), // Agrega el userId a la lista de asistentes
         });
-      } else {
+
+        final userRef = firestore.collection('users').doc(userId);
+        await userRef.update({
+          'attendedEvents': FieldValue.arrayUnion([eventId]), // Agrega el eventId al array attendedEvents
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Este evento no existe')),
+          const SnackBar(content: Text('¡Estás asistiendo a este evento!')),
         );
-        return;
       }
-
-      // 2. Agregar el evento a la lista de eventos asistidos del usuario
-      final userRef = firestore.collection('users').doc(userId);
-      await userRef.set({
-        'attendedEvents': FieldValue.arrayUnion([eventId]), // Agrega el eventId al array attendedEvents
-      }, SetOptions(merge: true));
-
+    } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Estás asistiendo a este evento!')),
+        const SnackBar(content: Text('Este evento no existe')),
       );
     }
+  }
+
 
 
 
@@ -118,7 +137,7 @@ class _EventsScreenState extends State<EventsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                         child: EventCard(
                           event: event,
-                          onAttend: () => _asistirAlEvento(event.id),
+                          onAttend: () => _asistirODejarDeAsistir(event.id),
                         ),
                       );
                     },

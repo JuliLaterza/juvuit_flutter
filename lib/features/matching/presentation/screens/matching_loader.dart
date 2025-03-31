@@ -28,7 +28,7 @@ class _MatchingLoaderState extends State<MatchingLoader> {
     // Obtener el documento del usuario
     final userDoc = await _firestore.collection('users').doc(userId).get();
     final List attendedEventIds = userDoc.data()?['attendedEvents'] ?? [];
-
+    print('IDs en attendedEvents: $attendedEventIds');
     if (attendedEventIds.isEmpty) {
       Navigator.pushReplacement(
         context,
@@ -42,9 +42,10 @@ class _MatchingLoaderState extends State<MatchingLoader> {
     // Consultamos los eventos por los IDs almacenados en attendedEvents
     final eventsSnapshot = await _firestore
         .collection('events')
-        .where(FieldPath.documentId, whereIn: attendedEventIds)
+        .where('id', whereIn: attendedEventIds)
         .get();
-
+        //.where(FieldPath.documentId, whereIn: attendedEventIds) cuando queramos hacerlo por doc.id
+    print('Eventos encontrados: ${eventsSnapshot.docs.length}');
     // Convertir los documentos a una lista de objetos Event
     final events = eventsSnapshot.docs.map((doc) {
       final data = doc.data();
