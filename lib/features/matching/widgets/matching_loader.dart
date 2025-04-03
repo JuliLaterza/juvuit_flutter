@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/features/events/domain/models/event.dart';
-import 'package:juvuit_flutter/features/events/presentation/widgets/EventCard.dart';
 
 class MatchingLoader extends StatelessWidget {
   const MatchingLoader({super.key});
@@ -42,11 +41,46 @@ class MatchingLoader extends StatelessWidget {
           itemCount: events.length,
           itemBuilder: (context, index) {
             final event = events[index];
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: EventCard(
-                event: event,
-                onAttend: () {}, // Callback vacío ya que el manejo está en EventCard
+            return Card(
+              margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              child: ListTile(
+                leading: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    event.imageUrl,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                title: Text(
+                  event.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Fecha: ${event.date.day}/${event.date.month}/${event.date.year}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                    Text(
+                      'Asistentes: ${event.attendeesCount}',
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+                trailing: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/profiles'); // futuro
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                  child: const Text('Conectar'),
+                ),
               ),
             );
           },
