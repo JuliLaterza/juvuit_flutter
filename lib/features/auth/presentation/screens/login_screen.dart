@@ -7,6 +7,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
 
+import '../../../testing/screens/debug_screen.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -39,12 +41,23 @@ class _LoginScreenState extends State<LoginScreen> {
       _showMessage('Inicio de sesión exitoso');
 
       // Navegar a HomeScreen
+     
       Navigator.pushAndRemoveUntil(
       // ignore: use_build_context_synchronously
       context,
       MaterialPageRoute(builder: (context) => const EventsScreen()),
       (route) => false, // Esto elimina todas las rutas anteriores
     );
+    
+    /*
+    //Para TESTING
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const DebugScreen()),
+      (route) => false,
+    );
+    */    
+
     } on FirebaseAuthException catch (e) {
       // Manejo de errores comunes de Firebase
       if (e.code == 'user-not-found') {
