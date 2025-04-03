@@ -10,7 +10,7 @@ import 'package:juvuit_flutter/features/matching/presentation/screens/matching_s
 import 'package:juvuit_flutter/features/profile/presentation/screens/profile_screen.dart';
 // ignore: unused_import
 import 'package:juvuit_flutter/features/profiles/presentation/screens/profiles_screen.dart'; // Nueva importación
-import 'package:juvuit_flutter/features/matching/presentation/screens/matching_loader.dart';
+import 'package:juvuit_flutter/features/matching/widgets/matching_loader.dart';
 
 
 
