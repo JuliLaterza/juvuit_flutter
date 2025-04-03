@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Event {
-  final String id;
+  final String docId;
   final String title;
   final String subtitle;
   final DateTime date;
@@ -11,7 +11,7 @@ class Event {
   final String type;
 
   const Event({
-    required this.id,
+    required this.docId,
     required this.title,
     required this.subtitle,
     required this.date,
@@ -21,22 +21,22 @@ class Event {
     required this.type,
   });
 
-  factory Event.fromJson(Map<String, dynamic> json) {
+  factory Event.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
     return Event(
-      id: json['id'] ?? '',
-      title: json['title'] ?? '',
-      subtitle: json['subtitle'] ?? '',
-      date: (json['date'] as Timestamp).toDate(),
-      imageUrl: json['imageUrl'] ?? '',
-      attendeesCount: json['attendeesCount'] ?? 0,
-      description: json['description'] ?? '',
-      type: json['type'] ?? '',
+      docId: doc.id,
+      title: data['title'] ?? '',
+      subtitle: data['subtitle'] ?? '',
+      date: (data['date'] as Timestamp).toDate(),
+      imageUrl: data['imageUrl'] ?? '',
+      attendeesCount: (data['attendees'] as List?)?.length ?? 0,
+      description: data['description'] ?? '',
+      type: data['type'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'title': title,
       'subtitle': subtitle,
       'date': Timestamp.fromDate(date),
@@ -47,3 +47,4 @@ class Event {
     };
   }
 }
+

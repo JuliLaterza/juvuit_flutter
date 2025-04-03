@@ -1,16 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:juvuit_flutter/features/events/domain/models/event.dart';
+import '../domain/models/event.dart';
 
 Future<List<Event>> fetchEventsFromFirebase() async {
-  try {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('events')
-        .orderBy('date')
-        .get();
+  final snapshot = await FirebaseFirestore.instance.collection('events').get();
 
-    return snapshot.docs.map((doc) => Event.fromJson(doc.data())).toList();
-  } catch (e) {
-    print('Error al obtener eventos: $e');
-    return [];
-  }
+  return snapshot.docs.map((doc) {
+    final data = doc.data();
+    return Event(
+      docId: doc.id,
+      title: data['title'] ?? '',
+      subtitle: data['subtitle'] ?? '',
+      date: (data['date'] as Timestamp).toDate(),
+      imageUrl: data['imageUrl'] ?? '',
+      attendeesCount: (data['attendees'] as List?)?.length ?? 0,
+      description: data['description'] ?? '',
+      type: data['type'] ?? '',
+    );
+  }).toList();
 }

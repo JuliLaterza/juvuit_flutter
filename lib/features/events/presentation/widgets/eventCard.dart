@@ -20,20 +20,17 @@ class EventCard extends StatefulWidget {
 }
 
 class _EventCardState extends State<EventCard> {
-  bool isAttending = false; // Mantener el estado localmente
+  bool isAttending = false;
 
-  // Verificar si el usuario ya está asistiendo al evento
   Future<void> _checkIfAttending() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
 
-    final firestore = FirebaseFirestore.instance;
-    final userDoc = await firestore.collection('users').doc(userId).get();
-
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
     if (userDoc.exists) {
       final attendedEvents = List<String>.from(userDoc.data()?['attendedEvents'] ?? []);
       setState(() {
-        isAttending = attendedEvents.contains(widget.event.id); // Actualiza el estado
+        isAttending = attendedEvents.contains(widget.event.docId);
       });
     }
   }
@@ -41,62 +38,54 @@ class _EventCardState extends State<EventCard> {
   @override
   void initState() {
     super.initState();
-    _checkIfAttending(); // Verificar al inicio si el usuario está asistiendo
+    _checkIfAttending();
   }
 
-  Future<void> _asistirODejarDeAsistir(String eventId) async {
+  Future<void> _asistirODejarDeAsistir(String eventDocId) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
 
     final firestore = FirebaseFirestore.instance;
+    final eventRef = firestore.collection('events').doc(eventDocId);
+    final userRef = firestore.collection('users').doc(userId);
 
-    // 1. Verificar si el evento existe usando el campo 'id' dentro del documento
-    final eventRef = firestore.collection('events');
-    final eventQuery = await eventRef.where('id', isEqualTo: eventId).get();
-
-    if (eventQuery.docs.isNotEmpty) {
-      final eventDoc = eventQuery.docs.first; // Obtén el primer (y único) documento
-      final attendees = eventDoc.data()?['attendees'] ?? [];
-
-      // 2. Si el usuario ya está asistiendo, "dejar de asistir"
-      if (attendees.contains(userId)) {
-        await eventRef.doc(eventDoc.id).update({
-          'attendees': FieldValue.arrayRemove([userId]), // Elimina el userId de la lista de asistentes
-        });
-
-        final userRef = firestore.collection('users').doc(userId);
-        await userRef.update({
-          'attendedEvents': FieldValue.arrayRemove([eventId]), // Elimina el eventId de attendedEvents
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Has dejado de asistir a este evento!'), duration: Duration(seconds: 1),),
-        );
-      } else {
-        // 3. Si el usuario no está asistiendo, "asistir"
-        await eventRef.doc(eventDoc.id).update({
-          'attendees': FieldValue.arrayUnion([userId]), // Agrega el userId a la lista de asistentes
-        });
-
-        final userRef = firestore.collection('users').doc(userId);
-        await userRef.update({
-          'attendedEvents': FieldValue.arrayUnion([eventId]), // Agrega el eventId al array attendedEvents
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Estás asistiendo a este evento!'), duration: Duration(seconds: 1)),
-        );
-      }
-
-      // Actualizamos el estado para reflejar el cambio de forma inmediata
-      setState(() {
-        isAttending = !isAttending; // Cambia el estado local
-      });
-    } else {
+    final eventSnapshot = await eventRef.get();
+    if (!eventSnapshot.exists) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Este evento no existe')),
       );
+      return;
     }
+
+    final attendees = eventSnapshot.data()?['attendees'] ?? [];
+
+    if (attendees.contains(userId)) {
+      await eventRef.update({
+        'attendees': FieldValue.arrayRemove([userId]),
+      });
+      await userRef.update({
+        'attendedEvents': FieldValue.arrayRemove([eventDocId]),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Has dejado de asistir a este evento!'), duration: Duration(seconds: 1)),
+      );
+    } else {
+      await eventRef.update({
+        'attendees': FieldValue.arrayUnion([userId]),
+      });
+      await userRef.update({
+        'attendedEvents': FieldValue.arrayUnion([eventDocId]),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Estás asistiendo a este evento!'), duration: Duration(seconds: 1)),
+      );
+    }
+
+    setState(() {
+      isAttending = !isAttending;
+    });
   }
 
   @override
@@ -108,7 +97,6 @@ class _EventCardState extends State<EventCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Imagen del evento
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
             child: Image.network(
@@ -125,43 +113,29 @@ class _EventCardState extends State<EventCard> {
               children: [
                 Text(
                   widget.event.title,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.black,
-                  ),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.black),
                 ),
                 Text(
                   widget.event.subtitle,
-                  style: const TextStyle(
-                    fontSize: 10,
-                    color: AppColors.gray,
-                  ),
+                  style: const TextStyle(fontSize: 10, color: AppColors.gray),
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Text(
                       'Fecha: ${widget.event.date.day}/${widget.event.date.month}/${widget.event.date.year}',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.darkGray,
-                      ),
+                      style: const TextStyle(fontSize: 10, color: AppColors.darkGray),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Asistentes: ${widget.event.attendeesCount}',
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: AppColors.darkGray,
-                      ),
+                      style: const TextStyle(fontSize: 10, color: AppColors.darkGray),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          // Botones dentro de la tarjeta
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: Row(
@@ -171,9 +145,7 @@ class _EventCardState extends State<EventCard> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => EventInfoScreen(event: widget.event),
-                      ),
+                      MaterialPageRoute(builder: (context) => EventInfoScreen(event: widget.event)),
                     );
                   },
                   style: OutlinedButton.styleFrom(
@@ -186,9 +158,9 @@ class _EventCardState extends State<EventCard> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: () => _asistirODejarDeAsistir(widget.event.id),
+                  onPressed: () => _asistirODejarDeAsistir(widget.event.docId),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isAttending ? Colors.redAccent : AppColors.yellow, // Rojo para "Dejar de asistir"
+                    backgroundColor: isAttending ? Colors.redAccent : AppColors.yellow,
                     foregroundColor: AppColors.black,
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
