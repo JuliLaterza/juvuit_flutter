@@ -35,56 +35,69 @@ class _EventsScreenState extends State<EventsScreen> {
 }
 
 
-  Future<void> _asistirODejarDeAsistir(String eventId) async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) return;
+  Future<void> _asistirODejarDeAsistir(String eventDocId) async {
+  final firestore = FirebaseFirestore.instance;
+  final auth = FirebaseAuth.instance;
+  final user = auth.currentUser;
 
-    final firestore = FirebaseFirestore.instance;
+  if (user == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Usuario no autenticado')),
+    );
+    return;
+  }
 
-    // 1. Buscar el evento usando el campo 'id' dentro del documento
-    final eventRef = firestore.collection('events');
-    final eventQuery = await eventRef.where('id', isEqualTo: eventId).get();
+  final userId = user.uid;
+  final userRef = firestore.collection('users').doc(userId);
+  final eventRef = firestore.collection('events').doc(eventDocId);
 
-    if (eventQuery.docs.isNotEmpty) {
-      final eventDoc = eventQuery.docs.first; // Obtenemos el primer evento que coincide con el 'id'
-
-      final attendees = eventDoc.data()?['attendees'] ?? [];
-
-      // 2. Si el usuario ya está asistiendo, "dejar de asistir"
-      if (attendees.contains(userId)) {
-        await eventRef.doc(eventDoc.id).update({
-          'attendees': FieldValue.arrayRemove([userId]), // Elimina el userId de la lista de asistentes
-        });
-
-        final userRef = firestore.collection('users').doc(userId);
-        await userRef.update({
-          'attendedEvents': FieldValue.arrayRemove([eventId]), // Elimina el eventId de attendedEvents
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Has dejado de asistir a este evento!')),
-        );
-      } else {
-        // 3. Si el usuario no está asistiendo, "asistir"
-        await eventRef.doc(eventDoc.id).update({
-          'attendees': FieldValue.arrayUnion([userId]), // Agrega el userId a la lista de asistentes
-        });
-
-        final userRef = firestore.collection('users').doc(userId);
-        await userRef.update({
-          'attendedEvents': FieldValue.arrayUnion([eventId]), // Agrega el eventId al array attendedEvents
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Estás asistiendo a este evento!')),
-        );
-      }
-    } else {
+  try {
+    final eventSnapshot = await eventRef.get();
+    if (!eventSnapshot.exists) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Este evento no existe')),
       );
+      return;
     }
+
+    final attendees = eventSnapshot.data()?['attendees'] ?? [];
+
+    final yaAsiste = attendees.contains(userId);
+
+    if (yaAsiste) {
+      // Remover asistencia
+      await eventRef.update({
+        'attendees': FieldValue.arrayRemove([userId]),
+      });
+      await userRef.update({
+        'attendedEvents': FieldValue.arrayRemove([eventDocId]),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Has dejado de asistir a este evento!')),
+      );
+    } else {
+      // Agregar asistencia
+      await eventRef.update({
+        'attendees': FieldValue.arrayUnion([userId]),
+      });
+      await userRef.update({
+        'attendedEvents': FieldValue.arrayUnion([eventDocId]),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Estás asistiendo a este evento!')),
+      );
+    }
+  } catch (e) {
+    print('❌ Error al actualizar asistencia: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error al actualizar asistencia')),
+    );
   }
+}
+
+
 
 
 
@@ -137,7 +150,7 @@ class _EventsScreenState extends State<EventsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                         child: EventCard(
                           event: event,
-                          onAttend: () => _asistirODejarDeAsistir(event.id),
+                          onAttend: () => _asistirODejarDeAsistir(event.docId),
                         ),
                       );
                     },
