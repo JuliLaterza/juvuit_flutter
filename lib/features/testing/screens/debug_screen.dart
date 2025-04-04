@@ -53,6 +53,10 @@ class DebugScreen extends StatelessWidget {
                               fit: BoxFit.cover,
                             )
                           : const Text('No hay foto de perfil'),
+                      const SizedBox(height: 10),
+                      Text('photoUrls:'),
+                      //for (var url in photos) Text(url, textAlign: TextAlign.center),
+                      Text('Cantidad de fotos: ${photos.length}'),
                       const SizedBox(height: 30),
                       ElevatedButton(
                         onPressed: () async {
@@ -66,7 +70,7 @@ class DebugScreen extends StatelessWidget {
                     ],
                   ),
                 );
-              },
+              }
             )
           : const Center(child: Text('No hay usuario logueado')),
     );
