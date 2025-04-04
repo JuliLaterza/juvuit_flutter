@@ -30,7 +30,7 @@ class _EventCardState extends State<EventCard> {
     if (userDoc.exists) {
       final attendedEvents = List<String>.from(userDoc.data()?['attendedEvents'] ?? []);
       setState(() {
-        isAttending = attendedEvents.contains(widget.event.docId);
+        isAttending = attendedEvents.contains(widget.event.id); // 👈 actualizado
       });
     }
   }
@@ -41,12 +41,12 @@ class _EventCardState extends State<EventCard> {
     _checkIfAttending();
   }
 
-  Future<void> _asistirODejarDeAsistir(String eventDocId) async {
+  Future<void> _asistirODejarDeAsistir(String eventId) async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
 
     final firestore = FirebaseFirestore.instance;
-    final eventRef = firestore.collection('events').doc(eventDocId);
+    final eventRef = firestore.collection('events').doc(eventId);
     final userRef = firestore.collection('users').doc(userId);
 
     final eventSnapshot = await eventRef.get();
@@ -64,7 +64,7 @@ class _EventCardState extends State<EventCard> {
         'attendees': FieldValue.arrayRemove([userId]),
       });
       await userRef.update({
-        'attendedEvents': FieldValue.arrayRemove([eventDocId]),
+        'attendedEvents': FieldValue.arrayRemove([eventId]),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -75,7 +75,7 @@ class _EventCardState extends State<EventCard> {
         'attendees': FieldValue.arrayUnion([userId]),
       });
       await userRef.update({
-        'attendedEvents': FieldValue.arrayUnion([eventDocId]),
+        'attendedEvents': FieldValue.arrayUnion([eventId]),
       });
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -158,7 +158,7 @@ class _EventCardState extends State<EventCard> {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton(
-                  onPressed: () => _asistirODejarDeAsistir(widget.event.docId),
+                  onPressed: () => _asistirODejarDeAsistir(widget.event.id), // 👈 actualizado
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isAttending ? Colors.redAccent : AppColors.yellow,
                     foregroundColor: AppColors.black,

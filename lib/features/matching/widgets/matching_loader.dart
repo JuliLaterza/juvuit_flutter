@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/features/events/domain/models/event.dart';
+import 'package:juvuit_flutter/features/matching/presentation/screens/matchingprofilescreen.dart';
 
 class MatchingLoader extends StatelessWidget {
   const MatchingLoader({super.key});
@@ -67,14 +68,19 @@ class MatchingLoader extends StatelessWidget {
                       style: const TextStyle(fontSize: 12),
                     ),
                     Text(
-                      'Asistentes: ${event.attendeesCount}',
+                      'Asistentes: ${event.attendees.length}',
                       style: const TextStyle(fontSize: 12),
                     ),
                   ],
                 ),
                 trailing: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/profiles'); // futuro
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => MatchingProfilesScreen(event: event),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

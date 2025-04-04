@@ -7,7 +7,7 @@ Future<List<Event>> fetchEventsFromFirebase() async {
   return snapshot.docs.map((doc) {
     final data = doc.data();
     return Event(
-      docId: doc.id,
+      id: doc.id,
       title: data['title'] ?? '',
       subtitle: data['subtitle'] ?? '',
       date: (data['date'] as Timestamp).toDate(),
@@ -15,6 +15,7 @@ Future<List<Event>> fetchEventsFromFirebase() async {
       attendeesCount: (data['attendees'] as List?)?.length ?? 0,
       description: data['description'] ?? '',
       type: data['type'] ?? '',
+      attendees: List<String>.from(data['attendees'] ?? []), // ✅ añadido
     );
   }).toList();
 }

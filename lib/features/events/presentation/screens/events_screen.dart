@@ -150,7 +150,7 @@ class _EventsScreenState extends State<EventsScreen> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                         child: EventCard(
                           event: event,
-                          onAttend: () => _asistirODejarDeAsistir(event.docId),
+                          onAttend: () => _asistirODejarDeAsistir(event.id),
                         ),
                       );
                     },
