@@ -49,8 +49,9 @@ class _LoginScreenState extends State<LoginScreen> {
       (route) => false, // Esto elimina todas las rutas anteriores
     );
     
-    /*
+    
     //Para TESTING
+    /*
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const DebugScreen()),
