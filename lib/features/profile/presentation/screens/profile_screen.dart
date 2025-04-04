@@ -39,7 +39,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int calculateAge(DateTime birthDate) {
     final today = DateTime.now();
     int age = today.year - birthDate.year;
-    if (today.month < birthDate.month || (today.month == birthDate.month && today.day < birthDate.day)) {
+    if (today.month < birthDate.month ||
+        (today.month == birthDate.month && today.day < birthDate.day)) {
       age--;
     }
     return age;
@@ -120,11 +121,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.all(16.0),
           children: [
             Center(
-              child: CircleAvatar(
-                radius: 80,
-                backgroundImage: _userProfile!.photoUrls.isNotEmpty
-                    ? NetworkImage(_userProfile!.photoUrls.first)
-                    : const AssetImage('assets/images/juli_barcelona.jpg') as ImageProvider,
+              child: Builder(
+                builder: (context) {
+                  final photos = _userProfile!.photoUrls;
+                  //print('photoUrls: $photos'); // Depuración
+
+                  if (photos.isEmpty) {
+                    return const CircleAvatar(
+                      radius: 80,
+                      backgroundImage: NetworkImage(
+                        'https://tse2.mm.bing.net/th?id=OIP.9UPbYqPai-PXbgNHqMUxigHaHa&pid=Api',
+                      ),
+                    );
+                  }
+
+
+
+                  return CircleAvatar(
+                    radius: 80,
+                    backgroundImage: NetworkImage(photos[0]),
+                  );
+                },
               ),
             ),
             const SizedBox(height: 16),
