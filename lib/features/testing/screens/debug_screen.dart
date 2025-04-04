@@ -1,139 +1,74 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class DebugScreen extends StatefulWidget {
+class DebugScreen extends StatelessWidget {
   const DebugScreen({super.key});
 
-  @override
-  State<DebugScreen> createState() => _DebugScreenState();
-}
-
-class _DebugScreenState extends State<DebugScreen> {
-  final String eventDocId = 'pSRHMOVp4zKikw7l1Afd';
-
-  String message = 'Cargando...';
-  String eventTitle = '';
-  List<dynamic> attendees = [];
-  String userId = '';
-  String userEmail = '';
-  List<dynamic> attendedEvents = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadDebugData();
+  Future<List<String>> _fetchPhotoUrls(String uid) async {
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    if (!doc.exists || !doc.data()!.containsKey('photoUrls')) return [];
+    return List<String>.from(doc['photoUrls']);
   }
 
-  Future<void> _loadDebugData() async {
-    final auth = FirebaseAuth.instance;
-    final user = auth.currentUser;
+  Future<void> _fixUserPhotoUrls(String uid) async {
+    await FirebaseFirestore.instance.collection('users').doc(uid).set({
+      'photoUrls': [
+        'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Lionel-Messi-Argentina-2022-FIFA-World-Cup_%28cropped%29.jpg/250px-Lionel-Messi-Argentina-2022-FIFA-World-Cup_%28cropped%29.jpg'
+      ],
+    }, SetOptions(merge: true));
 
-    if (user == null) {
-      setState(() {
-        message = 'Usuario no autenticado';
-      });
-      return;
-    }
-
-    userId = user.uid;
-    userEmail = user.email ?? '';
-
-    final firestore = FirebaseFirestore.instance;
-
-    final eventSnap = await firestore.collection('events').doc(eventDocId).get();
-    if (eventSnap.exists) {
-      final data = eventSnap.data()!;
-      eventTitle = data['title'] ?? '';
-      attendees = data['attendees'] ?? [];
-    }
-
-    final userSnap = await firestore.collection('users').doc(userId).get();
-    if (userSnap.exists) {
-      final data = userSnap.data()!;
-      attendedEvents = data['attendedEvents'] ?? [];
-    }
-
-    setState(() {
-      message = 'Datos cargados correctamente';
-    });
+    debugPrint('photoUrls actualizado correctamente');
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('DebugScreen')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(message, style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 16),
-
-            const Text('🎉 Evento', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text('ID: $eventDocId'),
-            Text('Título: $eventTitle'),
-            Text('Cantidad de asistentes: ${attendees.length}'),
-            Text('Incluye al usuario: ${attendees.contains(userId) ? '✅ Sí' : '❌ No'}'),
-            const SizedBox(height: 8),
-            const Text('👥 Attendees:'),
-            ...attendees.map((uid) => Text('• $uid')).toList(),
-
-            const Divider(height: 32),
-
-            const Text('🙋 Usuario', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text('ID: $userId'),
-            Text('Email: $userEmail'),
-            Text('Eventos asistidos: ${attendedEvents.length}'),
-            const SizedBox(height: 8),
-            const Text('📌 Attended Events:'),
-            ...attendedEvents.map((eid) => Text('• $eid')).toList(),
-
-            const Divider(height: 32),
-
-            // 👇 Botón para verificación en consola
-            ComprobarAsistenciaButton(eventDocId: eventDocId),
-          ],
-        ),
+      appBar: AppBar(
+        title: const Text('Debug: Foto de perfil'),
       ),
-    );
-  }
-}
+      body: user != null
+          ? FutureBuilder<List<String>>(
+              future: _fetchPhotoUrls(user.uid),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-class ComprobarAsistenciaButton extends StatelessWidget {
-  final String eventDocId;
+                final photos = snapshot.data ?? [];
 
-  const ComprobarAsistenciaButton({super.key, required this.eventDocId});
-
-  @override
-  Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () async {
-        final userId = FirebaseAuth.instance.currentUser?.uid;
-        if (userId == null) {
-          print('⚠️ Usuario no autenticado');
-          return;
-        }
-
-        final firestore = FirebaseFirestore.instance;
-
-        final userDoc = await firestore.collection('users').doc(userId).get();
-        final attendedEvents = userDoc.data()?['attendedEvents'] ?? [];
-
-        final eventDoc = await firestore.collection('events').doc(eventDocId).get();
-        final attendees = eventDoc.data()?['attendees'] ?? [];
-
-        print('============================');
-        print('🧑‍💻 Usuario actual: $userId');
-        print('✅ Eventos asistidos: $attendedEvents');
-        print('🎉 Evento actual: $eventDocId');
-        print('👥 Attendees: $attendees');
-        print('¿Usuario está en attendees? ${attendees.contains(userId)}');
-        print('¿Evento está en attendedEvents? ${attendedEvents.contains(eventDocId)}');
-        print('============================');
-      },
-      child: const Text('Verificar asistencia'),
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('UID: ${user.uid}'),
+                      const SizedBox(height: 20),
+                      photos.isNotEmpty
+                          ? Image.network(
+                              photos[0],
+                              height: 150,
+                              width: 150,
+                              fit: BoxFit.cover,
+                            )
+                          : const Text('No hay foto de perfil'),
+                      const SizedBox(height: 30),
+                      ElevatedButton(
+                        onPressed: () async {
+                          await _fixUserPhotoUrls(user.uid);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('photoUrls corregido')),
+                          );
+                        },
+                        child: const Text('Corregir photoUrls'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            )
+          : const Center(child: Text('No hay usuario logueado')),
     );
   }
 }
