@@ -56,7 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
       MaterialPageRoute(builder: (context) => const DebugScreen()),
       (route) => false,
     );
-    */    
+    */
 
     } on FirebaseAuthException catch (e) {
       // Manejo de errores comunes de Firebase
