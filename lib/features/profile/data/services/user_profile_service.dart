@@ -1,22 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../domain/models/user_profile.dart';
+import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 
 class UserProfileService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final _usersRef = FirebaseFirestore.instance.collection('users');
 
-  /// Guarda el perfil del usuario en Firestore
   Future<void> saveUserProfile(UserProfile profile) async {
-    await _firestore.collection('users').doc(profile.userId).set(profile.toMap());
+    await _usersRef.doc(profile.userId).set(profile.toMap(), SetOptions(merge: true));
   }
 
-  /// Obtener perfil del usuario desde Firestore
   Future<UserProfile?> getUserProfile(String userId) async {
-    final doc = await _firestore.collection('users').doc(userId).get();
-    if (!doc.exists) return null;
+    final doc = await _usersRef.doc(userId).get();
 
-    return UserProfile.fromMap(doc.data()!);
+    if (!doc.exists || doc.data() == null) return null;
+
+    return UserProfile.fromMap(doc.id, doc.data()!); // 👈 pasás el ID manualmente
   }
 }
-
-
-// Para largo plazo, crear una función que cargue las imagenes.

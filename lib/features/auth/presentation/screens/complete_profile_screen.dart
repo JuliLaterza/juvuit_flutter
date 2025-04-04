@@ -4,8 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/features/auth/presentation/widgets/complete_profile_form.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
-import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
+import 'package:juvuit_flutter/features/profile/data/services/save_user_profile.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -15,6 +14,8 @@ class CompleteProfileScreen extends StatefulWidget {
 }
 
 class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
+  final GlobalKey<CompleteProfileFormState> _formKey = GlobalKey<CompleteProfileFormState>();
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _drinkController = TextEditingController();
@@ -66,19 +67,22 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       return;
     }
 
-    final profile = UserProfile(
-      userId: currentUser.uid,
+    final birthDate = _formKey.currentState?.selectedBirthDate;
+
+    final photoUrls = _images
+        .where((img) => img != null)
+        .map((_) => 'https://via.placeholder.com/300.png?text=Foto')
+        .toList();
+
+    await saveUserProfile(
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
       topSongs: _songControllers.map((c) => c.text.trim()).toList(),
-      favoriteDrink: _selectedDrink ?? '',
+      drink: _selectedDrink ?? '',
       sign: _selectedSign,
-      photoUrls: [],
-      attendedEvents: [],
+      birthDate: birthDate,
+      photoUrls: photoUrls,
     );
-
-    final service = UserProfileService();
-    await service.saveUserProfile(profile);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Perfil guardado')),
@@ -127,6 +131,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                 ),
                 const SizedBox(height: 24),
                 CompleteProfileForm(
+                  key: _formKey,
                   nameController: _nameController,
                   descriptionController: _descriptionController,
                   songControllers: _songControllers,

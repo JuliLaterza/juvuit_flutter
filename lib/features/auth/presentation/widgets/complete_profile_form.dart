@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
-import 'package:intl/intl.dart'; // Para formatear la fecha
+import 'package:intl/intl.dart';
 
 class CompleteProfileForm extends StatefulWidget {
   final TextEditingController nameController;
@@ -16,18 +16,20 @@ class CompleteProfileForm extends StatefulWidget {
     required this.descriptionController,
     required this.songControllers,
     required this.drinkController,
+    required this.onSignChanged,
     required this.onDrinkChanged,
-    required this.onSignChanged
   });
 
   @override
-  State<CompleteProfileForm> createState() => _CompleteProfileFormState();
+  State<CompleteProfileForm> createState() => CompleteProfileFormState();
 }
 
-class _CompleteProfileFormState extends State<CompleteProfileForm> {
+class CompleteProfileFormState extends State<CompleteProfileForm> {
   String? _selectedSign;
   String? _selectedDrink;
-  DateTime? _selectedDate; // Fecha de nacimiento seleccionada
+  DateTime? _selectedDate;
+
+  DateTime? get selectedBirthDate => _selectedDate;
 
   final List<Map<String, dynamic>> signosZodiacales = [
     {'signo': 'Aries', 'icono': Icons.whatshot},
@@ -49,11 +51,10 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
     'Vodka', 'Tequila', 'Gin', 'Champagne', 'Gaseosas', 'Agua',
   ];
 
-  // Método para seleccionar la fecha
   Future<void> _selectDate(BuildContext context) async {
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 6570)), // 18 años atrás
+      initialDate: DateTime.now().subtract(const Duration(days: 6570)),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
@@ -63,14 +64,12 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
         _selectedDate = picked;
       });
 
-      // Validar mayoría de edad
       if (_calculateAge(picked) < 18) {
         _showUnderageDialog();
       }
     }
   }
 
-  // Método para calcular la edad
   int _calculateAge(DateTime birthDate) {
     DateTime today = DateTime.now();
     int age = today.year - birthDate.year;
@@ -81,7 +80,6 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
     return age;
   }
 
-  // Mostrar modal si el usuario es menor de edad
   void _showUnderageDialog() {
     showDialog(
       context: context,
@@ -111,14 +109,10 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
         const SizedBox(height: 16),
         _buildDropdownField('Signo Zodiacal', signosZodiacales, _selectedSign, (value) {
           setState(() => _selectedSign = value);
+          widget.onSignChanged(value);
         }),
         const SizedBox(height: 16),
-        const Center(
-          child: Text(
-            'AGREGA TUS CANCIONES FAVORITAS',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
+        const Center(child: Text('AGREGA TUS CANCIONES FAVORITAS', style: TextStyle(fontWeight: FontWeight.bold))),
         ...List.generate(widget.songControllers.length, (i) {
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -126,21 +120,16 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           );
         }),
         const SizedBox(height: 16),
-        const Center(
-          child: Text(
-            'AGREGA TU TRAGO FAVORITO',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
+        const Center(child: Text('AGREGA TU TRAGO FAVORITO', style: TextStyle(fontWeight: FontWeight.bold))),
         const SizedBox(height: 16),
         _buildDropdownList('Trago Favorito', _drinks, _selectedDrink, (value) {
           setState(() => _selectedDrink = value);
+          widget.onDrinkChanged(value);
         }),
       ],
     );
   }
 
-  // Selector de fecha de nacimiento
   Widget _buildDatePicker(BuildContext context) {
     return GestureDetector(
       onTap: () => _selectDate(context),
@@ -213,10 +202,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
           ),
         );
       }).toList(),
-      onChanged: (value) {
-        setState(() => _selectedSign = value);
-        widget.onSignChanged(value);
-      },
+      onChanged: onChanged,
     );
   }
 
@@ -231,10 +217,7 @@ class _CompleteProfileFormState extends State<CompleteProfileForm> {
         ),
       ),
       items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
-      onChanged: (value) {
-        setState(() => _selectedDrink = value);
-        widget.onDrinkChanged(value);
-    },
+      onChanged: onChanged,
     );
   }
 }

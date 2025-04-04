@@ -36,6 +36,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  int calculateAge(DateTime birthDate) {
+    final today = DateTime.now();
+    int age = today.year - birthDate.year;
+    if (today.month < birthDate.month || (today.month == birthDate.month && today.day < birthDate.day)) {
+      age--;
+    }
+    return age;
+  }
+
   void _showLogoutConfirmationDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -120,13 +129,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
             Center(
-              child: Text(
-                _userProfile!.name,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.black,
-                ),
+              child: Column(
+                children: [
+                  Text(
+                    _userProfile!.name,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.black,
+                    ),
+                  ),
+                  if (_userProfile!.birthDate != null)
+                    Text(
+                      '${calculateAge(_userProfile!.birthDate!)} años',
+                      style: const TextStyle(fontSize: 14, color: AppColors.gray),
+                    ),
+                ],
               ),
             ),
             const SizedBox(height: 8),
