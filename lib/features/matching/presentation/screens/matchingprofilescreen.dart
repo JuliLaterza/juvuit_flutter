@@ -2,6 +2,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:juvuit_flutter/features/matching/domain/match_helper.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 import 'package:juvuit_flutter/features/events/domain/models/event.dart';
 
@@ -17,11 +18,23 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
   final PageController _pageController = PageController();
   List<UserProfile> _profiles = [];
   bool _isLoading = true;
+  late UserProfile _currentUserProfile;
 
   @override
   void initState() {
     super.initState();
-    _loadProfiles();
+    _loadCurrentUserProfile().then((_) => _loadProfiles());
+  }
+
+  Future<void> _loadCurrentUserProfile() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+
+    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    if (doc.exists) {
+      final data = doc.data()!;
+      _currentUserProfile = UserProfile.fromMap(uid, data);
+    }
   }
 
   Future<void> _loadProfiles() async {
@@ -29,7 +42,7 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
     for (final uid in widget.event.attendees) {
-      if (uid == currentUserId) continue; // No incluir al usuario actual
+      if (uid == currentUserId) continue;
 
       final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists) {
@@ -45,17 +58,44 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
     });
   }
 
-  void _onLike() {
+  void _onLike() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
     final currentPage = _pageController.page!.toInt();
+
+    if (currentUser == null || currentPage >= _profiles.length) return;
+
+    final likedUser = _profiles[currentPage];
+
+    await handleLikeAndMatch(
+      currentUserId: currentUser.uid,
+      likedUserId: likedUser.userId,
+      eventId: widget.event.id,
+      context: context,
+      currentUserPhoto: _currentUserProfile.photoUrls.first,
+      matchedUserPhoto: likedUser.photoUrls.first,
+      matchedUserName: likedUser.name,
+    );
+
     if (currentPage < _profiles.length - 1) {
-      _pageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
     } else {
       _showEndMessage();
     }
   }
 
   void _onDislike() {
-    _onLike();
+    final currentPage = _pageController.page!.toInt();
+    if (currentPage < _profiles.length - 1) {
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      _showEndMessage();
+    }
   }
 
   void _showEndMessage() {
@@ -79,23 +119,21 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
         itemBuilder: (context, index) {
           final profile = _profiles[index];
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(vertical: 80),
+          return Container(
+            color: Colors.white,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Carrusel de fotos
                 CarouselSlider(
                   options: CarouselOptions(
-                    height: 350,
-                    autoPlay: true,
+                    height: 400,
+                    autoPlay: false,
                     enlargeCenterPage: true,
-                    aspectRatio: 16 / 9,
-                    enableInfiniteScroll: true,
+                    viewportFraction: 0.9,
                   ),
                   items: profile.photoUrls.map((imageUrl) {
                     return ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(20),
                       child: Image.network(
                         imageUrl,
                         fit: BoxFit.cover,
@@ -107,38 +145,56 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    IconButton(
-                      onPressed: _onDislike,
-                      icon: const Icon(Icons.close, color: Colors.red, size: 40),
+                    CircleAvatar(
+                      backgroundColor: Colors.redAccent,
+                      radius: 30,
+                      child: IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        iconSize: 30,
+                        onPressed: _onDislike,
+                      ),
                     ),
-                    const SizedBox(width: 50),
-                    IconButton(
-                      onPressed: _onLike,
-                      icon: const Icon(Icons.favorite, color: Colors.green, size: 40),
+                    const SizedBox(width: 60),
+                    CircleAvatar(
+                      backgroundColor: Colors.green,
+                      radius: 30,
+                      child: IconButton(
+                        icon: const Icon(Icons.favorite, color: Colors.white),
+                        iconSize: 30,
+                        onPressed: _onLike,
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 30),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${profile.name}${profile.birthDate != null ? ", ${DateTime.now().year - profile.birthDate!.year}" : ''}',
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${profile.name}${profile.birthDate != null ? ", ${DateTime.now().year - profile.birthDate!.year}" : ''}',
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        profile.description,
-                        textAlign: TextAlign.left,
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      profile.description,
+                      textAlign: TextAlign.left,
+                      style: const TextStyle(fontSize: 16, color: Colors.black87),
+                    ),
                   ),
                 ),
               ],
