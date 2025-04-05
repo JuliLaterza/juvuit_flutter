@@ -30,7 +30,7 @@ class _EventCardState extends State<EventCard> {
     if (userDoc.exists) {
       final attendedEvents = List<String>.from(userDoc.data()?['attendedEvents'] ?? []);
       setState(() {
-        isAttending = attendedEvents.contains(widget.event.id); // 👈 actualizado
+        isAttending = attendedEvents.contains(widget.event.id);
       });
     }
   }
