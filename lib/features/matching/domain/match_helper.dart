@@ -1,8 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:juvuit_flutter/features/matching/widgets/match_popup.dart';
 
-Future<void> handleLikeAndMatch({
+import '../widgets/match_popup.dart';
+
+Future<bool> handleLikeAndMatch({
   required String currentUserId,
   required String likedUserId,
   required String eventId,
@@ -39,17 +40,21 @@ Future<void> handleLikeAndMatch({
       'createdAt': FieldValue.serverTimestamp(),
     });
 
-    showDialog(
+    final result = await showDialog(
       context: context,
+      barrierDismissible: true,
       builder: (_) => MatchPopup(
         currentUserPhoto: currentUserPhoto,
         matchedUserPhoto: matchedUserPhoto,
         matchedUserName: matchedUserName,
         onMessagePressed: () {
-          Navigator.pop(context);
-          // TODO: redirigir al chat
+          Navigator.pop(context, 'ok'); // Se cierra con botón
         },
       ),
     );
+
+    return result != null; // true si se cerró con botón, false si tocó fuera
   }
+
+  return false;
 }

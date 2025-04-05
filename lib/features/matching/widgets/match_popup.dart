@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class MatchPopup extends StatelessWidget {
+class MatchPopup extends StatefulWidget {
   final String currentUserPhoto;
   final String matchedUserPhoto;
   final String matchedUserName;
@@ -15,56 +15,99 @@ class MatchPopup extends StatelessWidget {
   });
 
   @override
+  State<MatchPopup> createState() => _MatchPopupState();
+}
+
+class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _scaleAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeOutBack);
+    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Dialog(
-      backgroundColor: Colors.yellow[100],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              '¡Conexión lograda! 🎉',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+    return Center(
+      child: ScaleTransition(
+        scale: _scaleAnimation,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Dialog(
+            backgroundColor: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD600),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    '¡Conexión lograda!',
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildImage(widget.currentUserPhoto),
+                      const SizedBox(width: 16),
+                      _buildImage(widget.matchedUserPhoto),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Conectaste con ${widget.matchedUserName}',
+                    style: const TextStyle(fontSize: 18, color: Colors.black87),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: widget.onMessagePressed,
+                    icon: const Icon(Icons.message),
+                    label: const Text('Enviar un mensaje'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildProfileImage(currentUserPhoto),
-                const SizedBox(width: 16),
-                _buildProfileImage(matchedUserPhoto),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Conectaste con $matchedUserName',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: onMessagePressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: const Text('Enviar un mensaje'),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileImage(String url) {
+  Widget _buildImage(String url) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(50),
       child: Image.network(
@@ -72,7 +115,8 @@ class MatchPopup extends StatelessWidget {
         width: 80,
         height: 80,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const Icon(Icons.error, size: 60),
+        errorBuilder: (context, error, stackTrace) =>
+            const Icon(Icons.person, size: 80, color: Colors.grey),
       ),
     );
   }

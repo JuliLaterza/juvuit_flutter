@@ -2,9 +2,11 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:juvuit_flutter/features/matching/domain/match_helper.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 import 'package:juvuit_flutter/features/events/domain/models/event.dart';
+
+import '../../domain/match_helper.dart';
+import '../../widgets/NoMoreProfilesCard.dart';
 
 class MatchingProfilesScreen extends StatefulWidget {
   final Event event;
@@ -19,6 +21,7 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
   List<UserProfile> _profiles = [];
   bool _isLoading = true;
   late UserProfile _currentUserProfile;
+  final Map<int, int> _currentCarouselIndex = {};
 
   @override
   void initState() {
@@ -76,32 +79,23 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
       matchedUserName: likedUser.name,
     );
 
-    if (currentPage < _profiles.length - 1) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      _showEndMessage();
+    if (context.mounted) {
+      _avanzarPagina(currentPage);
     }
   }
 
   void _onDislike() {
     final currentPage = _pageController.page!.toInt();
-    if (currentPage < _profiles.length - 1) {
+    _avanzarPagina(currentPage);
+  }
+
+  void _avanzarPagina(int currentPage) {
+    if (currentPage < _profiles.length) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
-    } else {
-      _showEndMessage();
     }
-  }
-
-  void _showEndMessage() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('No hay más perfiles disponibles.')),
-    );
   }
 
   @override
@@ -115,9 +109,19 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
       body: PageView.builder(
         scrollDirection: Axis.vertical,
         controller: _pageController,
-        itemCount: _profiles.length,
+        itemCount: _profiles.length + 1,
         itemBuilder: (context, index) {
+          if (index == _profiles.length) {
+            return NoMoreProfilesCard(
+              onSeeEvents: () {
+                Navigator.pop(context);
+              },
+            );
+          }
+
           final profile = _profiles[index];
+          final photoCount = profile.photoUrls.length;
+          final currentImageIndex = _currentCarouselIndex[index] ?? 0;
 
           return Container(
             color: Colors.white,
@@ -130,6 +134,11 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
                     autoPlay: false,
                     enlargeCenterPage: true,
                     viewportFraction: 0.9,
+                    onPageChanged: (imgIndex, reason) {
+                      setState(() {
+                        _currentCarouselIndex[index] = imgIndex;
+                      });
+                    },
                   ),
                   items: profile.photoUrls.map((imageUrl) {
                     return ClipRRect(
@@ -144,6 +153,21 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
                       ),
                     );
                   }).toList(),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(photoCount, (i) {
+                    return Container(
+                      width: 8,
+                      height: 8,
+                      margin: const EdgeInsets.symmetric(horizontal: 3),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: currentImageIndex == i ? Colors.black : Colors.grey,
+                      ),
+                    );
+                  }),
                 ),
                 const SizedBox(height: 20),
                 Row(
