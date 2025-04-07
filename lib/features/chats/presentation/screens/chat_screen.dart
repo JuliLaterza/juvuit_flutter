@@ -47,6 +47,7 @@ class _ChatScreenState extends State<ChatScreen> {
           .collection('matches')
           .doc(widget.matchId)
           .update({
+        'senderId': currentUserId,
         'lastMessage': text,
         'lastTimestamp': FieldValue.serverTimestamp(),
       });
@@ -113,7 +114,6 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             ),
           ),
-          const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 24.0),
             child: Row(
