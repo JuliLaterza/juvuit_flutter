@@ -32,56 +32,45 @@ class _ChatsScreenState extends State<ChatsScreen> {
         .where('users', arrayContains: currentUserId)
         .get();
 
-    final List<String> otherUserIds = [];
-    final Map<String, String> matchToUserMap = {};
+    final List<Map<String, dynamic>> tempNewMatches = [];
+    final List<Map<String, dynamic>> tempActiveChats = [];
+    final List<String> userIds = [];
 
     for (final doc in matchesSnapshot.docs) {
-      final users = List<String>.from(doc['users']);
+      final match = doc.data();
+      final users = List<String>.from(match['users']);
       final otherUserId = users.firstWhere((uid) => uid != currentUserId);
-      otherUserIds.add(otherUserId);
-      matchToUserMap[otherUserId] = doc.id;
+      userIds.add(otherUserId);
     }
 
-    if (otherUserIds.isEmpty) return;
+    if (userIds.isEmpty) return;
 
     final usersSnapshot = await FirebaseFirestore.instance
         .collection('users')
-        .where(FieldPath.documentId, whereIn: otherUserIds)
+        .where(FieldPath.documentId, whereIn: userIds)
         .get();
 
-    final List<Map<String, dynamic>> tempNewMatches = [];
-    final List<Map<String, dynamic>> tempActiveChats = [];
+    final userDataMap = {for (var doc in usersSnapshot.docs) doc.id: doc.data()};
 
-    for (final doc in usersSnapshot.docs) {
-      final data = doc.data();
-      final matchId = matchToUserMap[doc.id];
-      if (matchId == null) continue;
-
-      final photoUrl = (data['photoUrls'] as List).isNotEmpty ? data['photoUrls'][0] : null;
-
-      final chatSnapshot = await FirebaseFirestore.instance
-          .collection('messages')
-          .doc(matchId)
-          .collection('chats')
-          .orderBy('timestamp', descending: true)
-          .limit(1)
-          .get();
+    for (final doc in matchesSnapshot.docs) {
+      final match = doc.data();
+      final users = List<String>.from(match['users']);
+      final otherUserId = users.firstWhere((uid) => uid != currentUserId);
+      final userData = userDataMap[otherUserId];
+      if (userData == null) continue;
 
       final matchData = {
-        'userId': doc.id,
-        'name': data['name'] ?? 'Usuario',
-        'photoUrl': photoUrl,
-        'matchId': matchId,
+        'userId': otherUserId,
+        'name': userData['name'] ?? 'Usuario',
+        'photoUrl': (userData['photoUrls'] as List).isNotEmpty ? userData['photoUrls'][0] : null,
+        'matchId': doc.id,
+        'lastMessage': match['lastMessage'],
+        'lastTimestamp': match['lastTimestamp'] != null ? (match['lastTimestamp'] as Timestamp).toDate() : null,
       };
 
-      if (chatSnapshot.docs.isEmpty) {
+      if (match['lastMessage'] == null) {
         tempNewMatches.add(matchData);
       } else {
-        final lastMessage = chatSnapshot.docs.first.data();
-        matchData['lastMessage'] = lastMessage['text'] ?? '';
-        matchData['lastTimestamp'] = lastMessage['timestamp'] != null
-            ? (lastMessage['timestamp'] as Timestamp).toDate()
-            : null;
         tempActiveChats.add(matchData);
       }
     }
@@ -125,7 +114,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                               'personName': match['name'],
                               'personPhotoUrl': match['photoUrl'],
                             },
-                          );
+                          ).then((_) => fetchMatches());
                         },
                         child: CircleAvatar(
                           radius: 35,
@@ -192,7 +181,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                         'personName': chat['name'],
                         'personPhotoUrl': chat['photoUrl'],
                       },
-                    );
+                    ).then((_) => fetchMatches());
                   },
                 );
               },

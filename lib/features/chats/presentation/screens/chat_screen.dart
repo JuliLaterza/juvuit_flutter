@@ -26,18 +26,40 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _controller.text.trim();
     if (text.isEmpty || currentUserId == null) return;
 
-    await FirebaseFirestore.instance
-        .collection('messages')
-        .doc(widget.matchId)
-        .collection('chats')
-        .add({
+    final messageData = {
       'text': text,
       'senderId': currentUserId,
       'timestamp': FieldValue.serverTimestamp(),
       'seenBy': [currentUserId],
-    });
+    };
 
-    _controller.clear();
+    try {
+      await FirebaseFirestore.instance
+          .collection('messages')
+          .doc(widget.matchId)
+          .collection('chats')
+          .add(messageData);
+
+      await FirebaseFirestore.instance
+          .collection('matches')
+          .doc(widget.matchId)
+          .update({
+        'lastMessage': text,
+        'lastTimestamp': FieldValue.serverTimestamp(),
+      });
+
+      _controller.clear();
+
+      if (context.mounted) {
+        //Navigator.pop(context); // Volver al chat list
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
   }
 
   @override
