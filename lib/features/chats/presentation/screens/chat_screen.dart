@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String personName; // Nombre de la persona
-  final String personPhotoUrl; // URL de la foto de la persona
+  final String matchId;
+  final String personName;
+  final String personPhotoUrl;
 
   const ChatScreen({
     super.key,
+    required this.matchId,
     required this.personName,
     required this.personPhotoUrl,
   });
@@ -15,97 +19,70 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final List<String> _messages = ['Hola!', '¿Cómo estás?', '¡Qué bueno verte!'];
-  final TextEditingController _messageController = TextEditingController();
+  final TextEditingController _controller = TextEditingController();
+  final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
-  void _sendMessage() {
-    if (_messageController.text.trim().isEmpty) return;
-    setState(() {
-      _messages.add(_messageController.text.trim());
+  void _sendMessage() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty || currentUserId == null) return;
+
+    await FirebaseFirestore.instance
+        .collection('messages')
+        .doc(widget.matchId)
+        .collection('chats')
+        .add({
+      'text': text,
+      'senderId': currentUserId,
+      'timestamp': FieldValue.serverTimestamp(),
+      'seenBy': [currentUserId],
     });
-    _messageController.clear();
+
+    _controller.clear();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
         title: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Text(widget.personName),
-            const SizedBox(width: 8),
             CircleAvatar(
-              radius: 20,
               backgroundImage: NetworkImage(widget.personPhotoUrl),
-              backgroundColor: Colors.grey.shade300,
             ),
+            const SizedBox(width: 10),
+            Text(widget.personName),
           ],
         ),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final message = _messages[index];
-                  final isMine = index % 2 == 1;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    child: Align(
-                      alignment:
-                          isMine ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: isMine ? Colors.blue : Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          message,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
+      body: Column(
+        children: [
+          const Expanded(
+            child: Center(
+              child: Text('Mensajes irán aquí (próximamente)'),
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _messageController,
-                      decoration: InputDecoration(
-                        hintText: 'Escribe un mensaje...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: const BorderSide(color: Colors.blue),
-                        ),
-                      ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: const InputDecoration(
+                      hintText: 'Escribe un mensaje...',
+                      border: OutlineInputBorder(),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: _sendMessage,
-                  ),
-                ],
-              ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.send),
+                  onPressed: _sendMessage,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

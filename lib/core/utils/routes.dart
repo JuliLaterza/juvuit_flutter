@@ -40,13 +40,14 @@ class AppRoutes {
       case chats:
         return MaterialPageRoute(builder: (_) => const ChatsScreen());
       case chat:
-        final args = settings.arguments as Map<String, dynamic>;
-        return MaterialPageRoute(
-          builder: (_) => ChatScreen(
-            personName: args['personName'], // Parámetro requerido
-            personPhotoUrl: args['personPhotoUrl'], // Parámetro requerido
-          ),
-        );
+      final args = settings.arguments as Map<String, dynamic>;
+      return MaterialPageRoute(
+        builder: (_) => ChatScreen(
+          matchId: args['matchId'], // <- agregamos esto
+          personName: args['personName'],
+          personPhotoUrl: args['personPhotoUrl'],
+        ),
+      );
       case profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case profiles:
