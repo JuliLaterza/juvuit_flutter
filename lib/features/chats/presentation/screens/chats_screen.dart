@@ -27,7 +27,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
   Future<void> fetchMatches() async {
     if (currentUserId == null) return;
 
-    final matchesSnapshot = await FirebaseFirestore.instance
+    final allMatchesSnapshot = await FirebaseFirestore.instance
         .collection('matches')
         .where('users', arrayContains: currentUserId)
         .get();
@@ -36,7 +36,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
     final List<Map<String, dynamic>> tempActiveChats = [];
     final List<String> userIds = [];
 
-    for (final doc in matchesSnapshot.docs) {
+    for (final doc in allMatchesSnapshot.docs) {
       final match = doc.data();
       final users = List<String>.from(match['users']);
       final otherUserId = users.firstWhere((uid) => uid != currentUserId);
@@ -52,7 +52,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
     final userDataMap = {for (var doc in usersSnapshot.docs) doc.id: doc.data()};
 
-    for (final doc in matchesSnapshot.docs) {
+    for (final doc in allMatchesSnapshot.docs) {
       final match = doc.data();
       final users = List<String>.from(match['users']);
       final otherUserId = users.firstWhere((uid) => uid != currentUserId);
@@ -66,14 +66,34 @@ class _ChatsScreenState extends State<ChatsScreen> {
         'matchId': doc.id,
         'lastMessage': match['lastMessage'],
         'lastTimestamp': match['lastTimestamp'] != null ? (match['lastTimestamp'] as Timestamp).toDate() : null,
+        'createdAt': match['createdAt'] != null ? (match['createdAt'] as Timestamp).toDate() : null,
       };
 
-      if (match['lastMessage'] == null) {
+      if (match['lastMessage'] == null || match['lastMessage'].toString().trim().isEmpty) {
         tempNewMatches.add(matchData);
       } else {
         tempActiveChats.add(matchData);
       }
     }
+
+    // Ordenar manualmente
+    tempNewMatches.sort((a, b) {
+      final aTime = a['createdAt'] as DateTime?;
+      final bTime = b['createdAt'] as DateTime?;
+      if (aTime == null && bTime == null) return 0;
+      if (aTime == null) return 1;
+      if (bTime == null) return -1;
+      return aTime.compareTo(bTime); // más antiguos primero
+    });
+
+    tempActiveChats.sort((a, b) {
+      final aTime = a['lastTimestamp'] as DateTime?;
+      final bTime = b['lastTimestamp'] as DateTime?;
+      if (aTime == null && bTime == null) return 0;
+      if (aTime == null) return 1;
+      if (bTime == null) return -1;
+      return bTime.compareTo(aTime); // más recientes primero
+    });
 
     setState(() {
       newMatches = tempNewMatches;
