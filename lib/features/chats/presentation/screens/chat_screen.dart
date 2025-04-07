@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 
 class ChatScreen extends StatefulWidget {
   final String matchId;
@@ -26,6 +27,8 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _controller.text.trim();
     if (text.isEmpty || currentUserId == null) return;
 
+    await Future.delayed(const Duration(milliseconds: 500));
+
     final messageData = {
       'text': text,
       'senderId': currentUserId,
@@ -49,10 +52,6 @@ class _ChatScreenState extends State<ChatScreen> {
       });
 
       _controller.clear();
-
-      if (context.mounted) {
-        //Navigator.pop(context); // Volver al chat list
-      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -78,28 +77,72 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: [
-          const Expanded(
-            child: Center(
-              child: Text('Mensajes irán aquí (próximamente)'),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('messages')
+                  .doc(widget.matchId)
+                  .collection('chats')
+                  .orderBy('timestamp')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                final messages = snapshot.data!.docs;
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final msg = messages[index];
+                    final isMe = msg['senderId'] == currentUserId;
+                    return Align(
+                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: isMe ? Colors.amber : Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(msg['text'] ?? ''),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
           ),
+          const SizedBox(height: 10),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 10),
+            padding: const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 24.0),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: const InputDecoration(
-                      hintText: 'Escribe un mensaje...',
-                      border: OutlineInputBorder(),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.grey.shade300),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        hintText: 'Escribí tu mensaje...',
+                        border: InputBorder.none,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.send),
-                  onPressed: _sendMessage,
+                const SizedBox(width: 10),
+                GestureDetector(
+                  onTap: _sendMessage,
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Color(0xFFFFD600),
+                    child: const Icon(Icons.send, color: Colors.black),
+                  ),
                 ),
               ],
             ),
