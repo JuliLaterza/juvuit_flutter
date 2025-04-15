@@ -107,7 +107,7 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
     return Scaffold(
       appBar: AppBar(title: 
             //Text('Conectá en ${widget.event.title}')
-            Text('ni idea que poner :)')
+            Text('WIT Ü')
             ),
       body: PageView.builder(
         scrollDirection: Axis.vertical,

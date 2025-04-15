@@ -75,7 +75,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
         tempActiveChats.add(matchData);
       }
     }
-
+    //Ordenamos la lista de matches nuevos por cuestión de tiempo.
     tempNewMatches.sort((a, b) {
       final aTime = a['lastTimestamp'] as DateTime?;
       final bTime = b['lastTimestamp'] as DateTime?;
@@ -85,6 +85,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
       return aTime.compareTo(bTime);
     });
 
+    //Ordenamos los chats activos en función del tiempo.
     tempActiveChats.sort((a, b) {
       final aTime = a['lastTimestamp'] as DateTime?;
       final bTime = b['lastTimestamp'] as DateTime?;
@@ -94,7 +95,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
       return bTime.compareTo(aTime);
     });
 
-    setState(() {
+    setState(() { //obtenemos los matches ordenados, ya sea los nuevos o los chats.
       newMatches = tempNewMatches;
       activeChats = tempActiveChats;
     });
@@ -189,7 +190,9 @@ class _ChatsScreenState extends State<ChatsScreen> {
                   subtitle: Text(
                     chat['lastMessage'] ?? '',
                     style: TextStyle(
-                      fontWeight: chat['senderId'] != currentUserId ? FontWeight.bold : FontWeight.normal,
+                      //fontWeight: chat['senderId'] != currentUserId ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: FontWeight.normal,
+
                     ),
                   ),
                   trailing: Text(
