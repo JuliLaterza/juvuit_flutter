@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
 import 'package:juvuit_flutter/core/utils/routes.dart';
+import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:intl/intl.dart';
 
 class ChatsScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
   List<Map<String, dynamic>> newMatches = [];
   List<Map<String, dynamic>> activeChats = [];
   final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -43,7 +45,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
       userIds.add(otherUserId);
     }
 
-    if (userIds.isEmpty) return;
+    if (userIds.isEmpty) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
 
     final usersSnapshot = await FirebaseFirestore.instance
         .collection('users')
@@ -75,30 +82,22 @@ class _ChatsScreenState extends State<ChatsScreen> {
         tempActiveChats.add(matchData);
       }
     }
-    //Ordenamos la lista de matches nuevos por cuestión de tiempo.
-    tempNewMatches.sort((a, b) {
-      final aTime = a['lastTimestamp'] as DateTime?;
-      final bTime = b['lastTimestamp'] as DateTime?;
-      if (aTime == null && bTime == null) return 0;
-      if (aTime == null) return 1;
-      if (bTime == null) return -1;
-      return aTime.compareTo(bTime);
-    });
 
-    //Ordenamos los chats activos en función del tiempo.
-    tempActiveChats.sort((a, b) {
-      final aTime = a['lastTimestamp'] as DateTime?;
-      final bTime = b['lastTimestamp'] as DateTime?;
-      if (aTime == null && bTime == null) return 0;
-      if (aTime == null) return 1;
-      if (bTime == null) return -1;
-      return bTime.compareTo(aTime);
-    });
+    tempNewMatches.sort((a, b) => _compareTimes(a['lastTimestamp'], b['lastTimestamp']));
+    tempActiveChats.sort((a, b) => _compareTimes(b['lastTimestamp'], a['lastTimestamp']));
 
-    setState(() { //obtenemos los matches ordenados, ya sea los nuevos o los chats.
+    setState(() {
       newMatches = tempNewMatches;
       activeChats = tempActiveChats;
+      isLoading = false;
     });
+  }
+
+  int _compareTimes(DateTime? a, DateTime? b) {
+    if (a == null && b == null) return 0;
+    if (a == null) return 1;
+    if (b == null) return -1;
+    return a.compareTo(b);
   }
 
   String formatTime(DateTime? dateTime) {
@@ -109,113 +108,134 @@ class _ChatsScreenState extends State<ChatsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(centerTitle: true),
-      body: Column(
-        children: [
-          Container(
-            height: 120,
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: newMatches.length,
-              itemBuilder: (context, index) {
-                final match = newMatches[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.pushNamed(
-                            context,
-                            AppRoutes.chat,
-                            arguments: {
-                              'matchId': match['matchId'],
-                              'personName': match['name'],
-                              'personPhotoUrl': match['photoUrl'],
-                            },
-                          ).then((_) => fetchMatches());
-                        },
-                        child: CircleAvatar(
-                          radius: 35,
-                          backgroundColor: Colors.grey.shade300,
-                          child: match['photoUrl'] != null
-                              ? ClipOval(
-                                  child: CachedNetworkImage(
-                                    imageUrl: match['photoUrl'],
-                                    width: 70,
-                                    height: 70,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
-                                    errorWidget: (context, url, error) => const Icon(Icons.person, color: Colors.white, size: 35),
-                                  ),
-                                )
-                              : const Icon(Icons.person, size: 35, color: Colors.white),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      SizedBox(
-                        width: 70,
-                        child: Text(
-                          match['name'],
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          const Divider(height: 1),
-          Expanded(
-            child: ListView.builder(
-              itemCount: activeChats.length,
-              itemBuilder: (context, index) {
-                final chat = activeChats[index];
-                return ListTile(
-                  leading: CircleAvatar(
-                    radius: 25,
-                    backgroundImage: chat['photoUrl'] != null
-                        ? CachedNetworkImageProvider(chat['photoUrl'])
-                        : null,
-                    backgroundColor: Colors.grey.shade300,
-                    child: chat['photoUrl'] == null
-                        ? const Icon(Icons.person, color: Colors.white)
-                        : null,
-                  ),
-                  title: Text(chat['name']),
-                  subtitle: Text(
-                    chat['lastMessage'] ?? '',
-                    style: TextStyle(
-                      //fontWeight: chat['senderId'] != currentUserId ? FontWeight.bold : FontWeight.normal,
-                      fontWeight: FontWeight.normal,
-
-                    ),
-                  ),
-                  trailing: Text(
-                    formatTime(chat['lastTimestamp']),
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                  ),
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRoutes.chat,
-                      arguments: {
-                        'matchId': chat['matchId'],
-                        'personName': chat['name'],
-                        'personPhotoUrl': chat['photoUrl'],
-                      },
-                    ).then((_) => fetchMatches());
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+      appBar: AppBar(
+        title: const Text('Wit Ü'),
+        centerTitle: true,
+        backgroundColor: AppColors.white,
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Container(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: const Text(
+                    'Nuevos matches',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(
+                  height: 110,
+                  child: newMatches.isEmpty
+                      ? const Center(child: Text('Aún no tenés nuevos matches'))
+                      : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: newMatches.length,
+                          itemBuilder: (context, index) {
+                            final match = newMatches[index];
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.chat,
+                                  arguments: {
+                                    'matchId': match['matchId'],
+                                    'personName': match['name'],
+                                    'personPhotoUrl': match['photoUrl'],
+                                  },
+                                ).then((_) => fetchMatches());
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                child: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 35,
+                                      backgroundColor: Colors.grey.shade300,
+                                      backgroundImage: match['photoUrl'] != null
+                                          ? CachedNetworkImageProvider(match['photoUrl'])
+                                          : null,
+                                      child: match['photoUrl'] == null
+                                          ? const Icon(Icons.person, color: Colors.white, size: 35)
+                                          : null,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    SizedBox(
+                                      width: 70,
+                                      child: Text(
+                                        match['name'],
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+                const Divider(),
+                Container(
+                  alignment: Alignment.centerLeft,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: const Text(
+                    'Chats',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                  child: activeChats.isEmpty
+                      ? const Center(child: Text('Aún no tenés chats activos'))
+                      : ListView.builder(
+                          itemCount: activeChats.length,
+                          itemBuilder: (context, index) {
+                            final chat = activeChats[index];
+                            return ListTile(
+                              leading: CircleAvatar(
+                                radius: 25,
+                                backgroundImage: chat['photoUrl'] != null
+                                    ? CachedNetworkImageProvider(chat['photoUrl'])
+                                    : null,
+                                backgroundColor: Colors.grey.shade300,
+                                child: chat['photoUrl'] == null
+                                    ? const Icon(Icons.person, color: Colors.white)
+                                    : null,
+                              ),
+                              title: Text(
+                                chat['name'],
+                                style: const TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              subtitle: Text(
+                                chat['lastMessage'] ?? '',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: chat['lastTimestamp'] != null
+                                  ? Text(
+                                      formatTime(chat['lastTimestamp']),
+                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                    )
+                                  : null,
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  AppRoutes.chat,
+                                  arguments: {
+                                    'matchId': chat['matchId'],
+                                    'personName': chat['name'],
+                                    'personPhotoUrl': chat['photoUrl'],
+                                  },
+                                ).then((_) => fetchMatches());
+                              },
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
     );
   }
