@@ -2,14 +2,61 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import '../../domain/models/event.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:juvuit_flutter/features/events/application/attend_event_service.dart';
 
-class EventInfoScreen extends StatelessWidget {
+class EventInfoScreen extends StatefulWidget {
   const EventInfoScreen({super.key, required this.event});
 
   final Event event;
 
   @override
+  State<EventInfoScreen> createState() => _EventInfoScreenState();
+}
+
+class _EventInfoScreenState extends State<EventInfoScreen> {
+  bool isAttending = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfUserIsAttending();
+  }
+
+  Future<void> _checkIfUserIsAttending() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    final attendedEvents = List<String>.from(doc.data()?['attendedEvents'] ?? []);
+
+    if (mounted) {
+      setState(() {
+        isAttending = attendedEvents.contains(widget.event.id);
+      });
+    }
+  }
+
+  void _handleAttend() {
+    setState(() {
+      isAttending = true;
+    });
+
+    attendEvent(widget.event.id).catchError((e) {
+      setState(() {
+        isAttending = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al asistir: $e')),
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final event = widget.event;
+
     return Scaffold(
       backgroundColor: AppColors.white,
       appBar: AppBar(
@@ -27,7 +74,6 @@ class EventInfoScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Imagen a pantalla completa
               ClipRRect(
                 borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(16),
@@ -41,8 +87,6 @@ class EventInfoScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
-        
-              // Contenido principal con ancho limitado y alineado a la izquierda
               Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 500),
@@ -51,17 +95,13 @@ class EventInfoScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          event.title,
-                          style: const TextStyle(
-                              fontSize: 22, fontWeight: FontWeight.bold),
-                        ),
+                        Text(event.title,
+                            style: const TextStyle(
+                                fontSize: 22, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        Text(
-                          event.subtitle,
-                          style: const TextStyle(
-                              fontSize: 16, color: AppColors.gray),
-                        ),
+                        Text(event.subtitle,
+                            style: const TextStyle(
+                                fontSize: 16, color: AppColors.gray)),
                         const SizedBox(height: 12),
                         Text(
                           '📅 ${DateFormat('dd/MM/yyyy').format(event.date)}',
@@ -77,15 +117,9 @@ class EventInfoScreen extends StatelessWidget {
                         const SizedBox(height: 4),
                         const Text('💰 Costo: 170000 - 250000'),
                         const SizedBox(height: 16),
-        
-                        // Descripción
-                        Text(
-                          event.description,
-                          style: const TextStyle(fontSize: 16),
-                        ),
+                        Text(event.description,
+                            style: const TextStyle(fontSize: 16)),
                         const SizedBox(height: 16),
-        
-                        // Mapa
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -102,22 +136,24 @@ class EventInfoScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 16),
-        
-                        // Botones
                         Row(
                           children: [
                             Expanded(
                               child: ElevatedButton(
-                                onPressed: () {},
+                                onPressed: isAttending ? null : _handleAttend,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.yellow,
+                                  backgroundColor: isAttending
+                                      ? Colors.grey
+                                      : AppColors.yellow,
                                   foregroundColor: AppColors.black,
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 14),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                child: const Text('Asistir'),
+                                child: Text(
+                                    isAttending ? 'Ya estás unido' : 'Asistir'),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -126,8 +162,10 @@ class EventInfoScreen extends StatelessWidget {
                                 onPressed: () {},
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppColors.black,
-                                  side: const BorderSide(color: AppColors.darkYellow),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  side: const BorderSide(
+                                      color: AppColors.darkYellow),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -139,12 +177,14 @@ class EventInfoScreen extends StatelessWidget {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () {
-                                  print('Ventra de entradas.');
+                                  print('Venta de entradas.');
                                 },
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: AppColors.black,
-                                  side: const BorderSide(color: AppColors.darkYellow),
-                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  side: const BorderSide(
+                                      color: AppColors.darkYellow),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
