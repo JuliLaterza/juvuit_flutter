@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
 import 'package:juvuit_flutter/features/events/domain/utils/events_filter.dart';
 import '../../domain/models/event.dart';
@@ -110,6 +111,9 @@ class _EventsScreenState extends State<EventsScreen> {
           'Momentos que importan 🎉',
           style: TextStyle(fontStyle: FontStyle.normal),
         ),
+        backgroundColor: AppColors.white,
+        foregroundColor: AppColors.black,
+        scrolledUnderElevation: 0,
         centerTitle: true,
       ),
       body: SafeArea(
