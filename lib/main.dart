@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'WIT Ü',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.debug,// Ruta inicial
+      initialRoute: AppRoutes.login,// Ruta inicial
       onGenerateRoute: AppRoutes.generateRoute,
       theme: ThemeData(
         useMaterial3: true,
