@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
 import 'core/utils/routes.dart';
 
 void main() async {
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'WIT Ü',
       debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.login, // Ruta inicial
+      initialRoute: AppRoutes.debug,// Ruta inicial
       onGenerateRoute: AppRoutes.generateRoute,
       theme: ThemeData(
         useMaterial3: true,

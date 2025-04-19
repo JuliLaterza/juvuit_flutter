@@ -11,6 +11,7 @@ import 'package:juvuit_flutter/features/profile/presentation/screens/profile_scr
 // ignore: unused_import
 import 'package:juvuit_flutter/features/profiles/presentation/screens/profiles_screen.dart'; // Nueva importación
 import 'package:juvuit_flutter/features/matching/widgets/matching_loader.dart';
+import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
 
 
 
@@ -23,7 +24,8 @@ class AppRoutes {
   static const String chats = '/chats';
   static const String chat = '/chat'; // Ruta existente
   static const String profile = '/profile';
-  static const String profiles = '/profiles'; // Nueva ruta
+  static const String profiles = '/profiles';
+  static const String debug = '/debug'; // Nueva ruta
 
   // Generador de rutas
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -52,6 +54,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case profiles:
         return MaterialPageRoute(builder: (_) => const MatchingIgScreen()); // Agregado
+      case debug:
+        return MaterialPageRoute(builder: (_) => const DebugSpotifyScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
