@@ -75,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-
+  /*
   void _showSongsModal(BuildContext context) {
     if (_userProfile == null) return;
     showDialog(
@@ -85,7 +85,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: _userProfile!.topSongs.map((s) => Text('• $s')).toList(),
+          children: _userProfile!.topSongs.map((s) {
+            final title = s['title'] ?? '';
+            final artist = s['artist'] ?? '';
+            return Text('• $title - $artist');
+          }).toList(),
         ),
         actions: [
           TextButton(
@@ -96,6 +100,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+  */
+
+  void _showSongsModal(BuildContext context) {
+    if (_userProfile == null) return;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Top Canciones'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: _userProfile!.topSongs.map((song) {
+            final title = song['title'] ?? '';
+            final artist = song['artist'] ?? '';
+            final imageUrl = song['imageUrl'] ?? '';
+            return ListTile(
+              leading: imageUrl.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageUrl,
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : const Icon(Icons.music_note),
+              title: Text(title),
+              subtitle: Text(artist),
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cerrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -124,8 +169,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Builder(
                 builder: (context) {
                   final photos = _userProfile!.photoUrls;
-                  //print('photoUrls: $photos'); // Depuración
-
                   if (photos.isEmpty) {
                     return const CircleAvatar(
                       radius: 80,
@@ -134,9 +177,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     );
                   }
-
-
-
                   return CircleAvatar(
                     radius: 80,
                     backgroundImage: NetworkImage(photos[0]),

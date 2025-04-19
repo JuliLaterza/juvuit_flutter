@@ -4,7 +4,7 @@ class UserProfile {
   final String userId;
   final String name;
   final String description;
-  final List<String> topSongs;
+  final List<Map<String, dynamic>> topSongs;
   final String favoriteDrink;
   final String? sign;
   final List<String> photoUrls;
@@ -28,7 +28,7 @@ class UserProfile {
       'userId': userId,
       'name': name,
       'description': description,
-      'topSongs': topSongs,
+      'top_3canciones': topSongs,
       'favoriteDrink': favoriteDrink,
       'sign': sign,
       'photoUrls': photoUrls,
@@ -36,20 +36,36 @@ class UserProfile {
       if (birthDate != null) 'birthDate': Timestamp.fromDate(birthDate!),
     };
   }
-
   factory UserProfile.fromMap(String userId, Map<String, dynamic> map) {
-  return UserProfile(
-    userId: userId, // <- lo recibís desde afuera
-    name: map['name'] ?? '',
-    description: map['description'] ?? '',
-    topSongs: List<String>.from(map['topSongs'] ?? []),
-    favoriteDrink: map['favoriteDrink'] ?? '',
-    sign: map['sign'],
-    photoUrls: List<String>.from(map['photoUrls'] ?? []),
-    attendedEvents: List<String>.from(map['attendedEvents'] ?? []),
-    birthDate: map['birthDate'] != null
-        ? (map['birthDate'] as Timestamp).toDate()
-        : null,
-  );
-}
+    final rawSongs = map['top_3canciones'];
+
+    final List<Map<String, dynamic>> parsedSongs = [];
+
+    if (rawSongs is List) {
+      for (var item in rawSongs) {
+        if (item is Map) {
+          parsedSongs.add({
+            'title': item['title'] ?? '',
+            'artist': item['artist'] ?? '',
+            'imageUrl': item['imageUrl'] ?? ''
+          });
+        }
+      }
+    }
+
+    return UserProfile(
+      userId: userId,
+      name: map['name'] ?? '',
+      description: map['description'] ?? '',
+      topSongs: parsedSongs,
+      favoriteDrink: map['favoriteDrink'] ?? '',
+      sign: map['sign'],
+      photoUrls: List<String>.from(map['photoUrls'] ?? []),
+      attendedEvents: List<String>.from(map['attendedEvents'] ?? []),
+      birthDate: map['birthDate'] != null
+          ? (map['birthDate'] as Timestamp).toDate()
+          : null,
+    );
+  }
+
 }

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:intl/intl.dart';
+import 'package:juvuit_flutter/core/services/spotify_service.dart';
 
 class CompleteProfileForm extends StatefulWidget {
   final TextEditingController nameController;
   final TextEditingController descriptionController;
-  final List<TextEditingController> songControllers;
   final TextEditingController drinkController;
   final void Function(String?) onSignChanged;
   final void Function(String?) onDrinkChanged;
@@ -14,7 +14,6 @@ class CompleteProfileForm extends StatefulWidget {
     super.key,
     required this.nameController,
     required this.descriptionController,
-    required this.songControllers,
     required this.drinkController,
     required this.onSignChanged,
     required this.onDrinkChanged,
@@ -30,6 +29,12 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
   DateTime? _selectedDate;
 
   DateTime? get selectedBirthDate => _selectedDate;
+  List<Map<String, String>> get selectedSongs => _selectedSongs;
+
+  final TextEditingController _songSearchController = TextEditingController();
+  List<Map<String, String>> _suggestions = [];
+  List<Map<String, String>> _selectedSongs = [];
+  bool _isSearching = false;
 
   final List<Map<String, dynamic>> signosZodiacales = [
     {'signo': 'Aries', 'icono': Icons.whatshot},
@@ -96,6 +101,31 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
     );
   }
 
+  void _onSearchChanged(String query) async {
+    if (query.length < 2) {
+      setState(() => _suggestions = []);
+      return;
+    }
+    setState(() => _isSearching = true);
+    try {
+      final results = await SpotifyService.searchSongs(query);
+      setState(() => _suggestions = results);
+    } catch (e) {
+      print('Error buscando canciones: $e');
+    }
+    setState(() => _isSearching = false);
+  }
+
+  void _addSong(Map<String, String> song) {
+    if (_selectedSongs.any((s) => s['title'] == song['title'] && s['artist'] == song['artist'])) return;
+    setState(() {
+      if (_selectedSongs.length == 3) _selectedSongs.removeAt(0);
+      _selectedSongs.add(song);
+      _songSearchController.clear();
+      _suggestions = [];
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -113,12 +143,48 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
         }),
         const SizedBox(height: 16),
         const Center(child: Text('AGREGA TUS CANCIONES FAVORITAS', style: TextStyle(fontWeight: FontWeight.bold))),
-        ...List.generate(widget.songControllers.length, (i) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: _buildInputField(widget.songControllers[i], 'Canción ${i + 1}', Icons.music_note),
-          );
-        }),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _songSearchController,
+          onChanged: _onSearchChanged,
+          decoration: const InputDecoration(
+            hintText: 'Buscar canción...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        if (_isSearching) const CircularProgressIndicator(),
+        if (_suggestions.isNotEmpty)
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _suggestions.length,
+            itemBuilder: (context, index) {
+              final song = _suggestions[index];
+              return ListTile(
+                leading: Image.network(song['imageUrl']!, width: 50, height: 50, fit: BoxFit.cover),
+                title: Text(song['title']!),
+                subtitle: Text(song['artist']!),
+                onTap: () => _addSong(song),
+              );
+            },
+          ),
+        if (_selectedSongs.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _selectedSongs.length,
+            itemBuilder: (context, index) {
+              final song = _selectedSongs[index];
+              return ListTile(
+                leading: Image.network(song['imageUrl']!, width: 50, height: 50, fit: BoxFit.cover),
+                title: Text(song['title']!),
+                subtitle: Text(song['artist']!),
+              );
+            },
+          ),
+        ],
         const SizedBox(height: 16),
         const Center(child: Text('AGREGA TU TRAGO FAVORITO', style: TextStyle(fontWeight: FontWeight.bold))),
         const SizedBox(height: 16),

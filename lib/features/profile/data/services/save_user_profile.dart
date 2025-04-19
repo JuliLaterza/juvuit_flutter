@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 Future<void> saveUserProfile({
   required String name,
   required String description,
-  required List<String> topSongs,
+  required List<Map<String, String>> topSongs,
   required String drink,
   required String? sign,
   required DateTime? birthDate,
@@ -16,7 +16,7 @@ Future<void> saveUserProfile({
   final userData = {
     'name': name,
     'description': description,
-    'topSongs': topSongs,
+    'top_3canciones': topSongs,
     'drink': drink,
     'sign': sign,
     'photoUrls': photoUrls,

@@ -19,11 +19,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _drinkController = TextEditingController();
-  final List<TextEditingController> _songControllers = [
-    TextEditingController(),
-    TextEditingController(),
-    TextEditingController(),
-  ];
 
   final List<File?> _images = List.generate(6, (_) => null);
   final ImagePicker _picker = ImagePicker();
@@ -68,6 +63,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     }
 
     final birthDate = _formKey.currentState?.selectedBirthDate;
+    final topSongs = _formKey.currentState?.selectedSongs ?? [];
 
     final photoUrls = _images
         .where((img) => img != null)
@@ -77,7 +73,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     await saveUserProfile(
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
-      topSongs: _songControllers.map((c) => c.text.trim()).toList(),
+      topSongs: topSongs,
       drink: _selectedDrink ?? '',
       sign: _selectedSign,
       birthDate: birthDate,
@@ -134,7 +130,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   key: _formKey,
                   nameController: _nameController,
                   descriptionController: _descriptionController,
-                  songControllers: _songControllers,
                   drinkController: _drinkController,
                   onSignChanged: (value) => _selectedSign = value,
                   onDrinkChanged: (value) => _selectedDrink = value,
