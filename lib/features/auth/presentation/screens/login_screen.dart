@@ -7,7 +7,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
 
-import '../../../testing/screens/debug_screen.dart';
+import '../../../testing/screens/debug_screen_v3.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
