@@ -11,7 +11,8 @@ import 'package:juvuit_flutter/features/profile/presentation/screens/profile_scr
 // ignore: unused_import
 import 'package:juvuit_flutter/features/profiles/presentation/screens/profiles_screen.dart'; // Nueva importación
 import 'package:juvuit_flutter/features/matching/widgets/matching_loader.dart';
-import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
+import 'package:juvuit_flutter/features/testing/screens/debug_screen_delete.dart';
+//import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
 
 
 
@@ -55,7 +56,7 @@ class AppRoutes {
       case profiles:
         return MaterialPageRoute(builder: (_) => const MatchingIgScreen()); // Agregado
       case debug:
-        return MaterialPageRoute(builder: (_) => const DebugSpotifyScreen());
+        return MaterialPageRoute(builder: (_) => const DebugScreenDelete());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
