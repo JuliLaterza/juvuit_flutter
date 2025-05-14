@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
+//import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
 import 'core/utils/routes.dart';
 
 void main() async {
