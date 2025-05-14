@@ -90,16 +90,15 @@ class MatchingProfilesController {
 
   void onDislike(List<UserProfile> profiles) {
     final currentPage = pageController.page!.toInt();
+    print('[CONTROLLER] onDislike llamado - página actual: $currentPage');
     avanzarPagina(currentPage);
   }
 
   void avanzarPagina(int currentPage) {
-    if (currentPage < likedProfiles.length) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    }
+    pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.linear,
+    );
   }
 
   int calculateAge(DateTime? birthDate) {

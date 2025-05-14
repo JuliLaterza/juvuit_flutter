@@ -1,11 +1,9 @@
-// Archivo: features/matching/widgets/profile_card.dart
-
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 
-class ProfileCard extends StatelessWidget {
+class ProfileCard extends StatefulWidget {
   final UserProfile profile;
   final int index;
   final int currentImageIndex;
@@ -23,6 +21,31 @@ class ProfileCard extends StatelessWidget {
     required this.onCarouselChange,
   });
 
+  @override
+  State<ProfileCard> createState() => _ProfileCardState();
+}
+
+class _ProfileCardState extends State<ProfileCard> {
+  final ScrollController _scrollController = ScrollController();
+  bool hasReachedEnd = false;
+  bool dislikeTriggered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      final isAtBottom = _scrollController.offset >= _scrollController.position.maxScrollExtent;
+      if (isAtBottom && !hasReachedEnd) {
+        hasReachedEnd = true;
+        dislikeTriggered = false;
+      }
+      if (!isAtBottom) {
+        hasReachedEnd = false;
+        dislikeTriggered = false;
+      }
+    });
+  }
+
   int _calculateAge(DateTime? birthDate) {
     if (birthDate == null) return 0;
     final today = DateTime.now();
@@ -36,12 +59,37 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final photoCount = profile.photoUrls.length;
+    final photoCount = widget.profile.photoUrls.length;
 
     return SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20.0),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification is ScrollUpdateNotification) {
+            final isAtEnd = notification.metrics.pixels >= notification.metrics.maxScrollExtent;
+            final isScrollingDown = notification.scrollDelta != null && notification.scrollDelta! > 10;
+
+            if (isAtEnd && hasReachedEnd && !dislikeTriggered && isScrollingDown) {
+              dislikeTriggered = true;
+              widget.onDislike();
+            }
+
+            if (isAtEnd && !hasReachedEnd) {
+              hasReachedEnd = true;
+            }
+
+            if (!isAtEnd) {
+              hasReachedEnd = false;
+              dislikeTriggered = false;
+            }
+          }
+          return false;
+        },
+        child: SingleChildScrollView(
+          controller: _scrollController,
+          physics: Theme.of(context).platform == TargetPlatform.iOS
+              ? const BouncingScrollPhysics()
+              : const ClampingScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 50),
           child: Column(
             children: [
               CarouselSlider(
@@ -50,9 +98,9 @@ class ProfileCard extends StatelessWidget {
                   viewportFraction: 1.0,
                   enlargeCenterPage: false,
                   enableInfiniteScroll: false,
-                  onPageChanged: (imgIndex, _) => onCarouselChange(imgIndex),
+                  onPageChanged: (imgIndex, _) => widget.onCarouselChange(imgIndex),
                 ),
-                items: profile.photoUrls.map((url) {
+                items: widget.profile.photoUrls.map((url) {
                   return Image.network(url, fit: BoxFit.cover, width: double.infinity);
                 }).toList(),
               ),
@@ -65,7 +113,7 @@ class ProfileCard extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: currentImageIndex == i ? Colors.black : Colors.grey,
+                    color: widget.currentImageIndex == i ? Colors.black : Colors.grey,
                   ),
                 )),
               ),
@@ -75,12 +123,12 @@ class ProfileCard extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.close, size: 36, color: Colors.redAccent),
-                    onPressed: onDislike,
+                    onPressed: widget.onDislike,
                   ),
                   const SizedBox(width: 40),
                   IconButton(
                     icon: const Icon(Icons.favorite_border, size: 36, color: AppColors.black),
-                    onPressed: onLike,
+                    onPressed: widget.onLike,
                   ),
                 ],
               ),
@@ -90,27 +138,27 @@ class ProfileCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${profile.name}, ${_calculateAge(profile.birthDate)}',
+                    Text('${widget.profile.name}, ${_calculateAge(widget.profile.birthDate)}',
                         style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
-                    Text(profile.description,
+                    Text(widget.profile.description,
                         style: const TextStyle(fontSize: 16, color: Colors.black87)),
                     const SizedBox(height: 16),
                     Row(children: [
                       const Text('🥂 ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      Text(profile.favoriteDrink,
+                      Text(widget.profile.favoriteDrink,
                           style: const TextStyle(fontSize: 16, fontStyle: FontStyle.normal))
                     ]),
                     const SizedBox(height: 8),
                     Row(children: [
                       const Text('♈ ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      Text(profile.sign ?? '-', style: const TextStyle(fontSize: 16))
+                      Text(widget.profile.sign ?? '-', style: const TextStyle(fontSize: 16))
                     ]),
                     const SizedBox(height: 16),
                     const Text('Canciones favoritas',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 10),
-                    for (final song in profile.topSongs)
+                    for (final song in widget.profile.topSongs)
                       Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: Row(children: [
