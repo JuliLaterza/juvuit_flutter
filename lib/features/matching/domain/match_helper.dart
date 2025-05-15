@@ -24,7 +24,7 @@ Future<bool> handleLikeAndMatch({
       .collection('likesReceived')
       .doc(likedUserId);
 
-  await likesReceivedRef.set({'eventId': eventId}, SetOptions(merge: true));
+  await likesReceivedRef.set({'eventId': eventId});
 
   final snapshot = await currentUserLikesRef.get();
 

@@ -58,7 +58,7 @@ class UserProfile {
       name: map['name'] ?? '',
       description: map['description'] ?? '',
       topSongs: parsedSongs,
-      favoriteDrink: map['drink'] ?? '',
+      favoriteDrink: map['favoriteDrink'] ?? '',
       sign: map['sign'],
       photoUrls: List<String>.from(map['photoUrls'] ?? []),
       attendedEvents: List<String>.from(map['attendedEvents'] ?? []),
