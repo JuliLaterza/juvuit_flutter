@@ -46,6 +46,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
     }
 
     if (userIds.isEmpty) {
+      if (!mounted) return;
       setState(() {
         isLoading = false;
       });
@@ -86,6 +87,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
     tempNewMatches.sort((a, b) => _compareTimes(a['lastTimestamp'], b['lastTimestamp']));
     tempActiveChats.sort((a, b) => _compareTimes(b['lastTimestamp'], a['lastTimestamp']));
 
+    if (!mounted) return;
     setState(() {
       newMatches = tempNewMatches;
       activeChats = tempActiveChats;

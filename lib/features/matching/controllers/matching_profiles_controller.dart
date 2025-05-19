@@ -37,6 +37,7 @@ class MatchingProfilesController {
         .doc(currentUserId)
         .collection('likesReceived')
         .get();
+
     final likedUserIds = likesSnapshot.docs.map((doc) => doc.id).toSet();
 
     final matchesSnapshot = await FirebaseFirestore.instance
@@ -50,7 +51,7 @@ class MatchingProfilesController {
 
     final List<UserProfile> loaded = [];
     for (final uid in event.attendees) {
-      if (uid == currentUserId || likedUserIds.contains(uid) || matchedUserIds.contains(uid)) continue;
+      if (uid == currentUserId || matchedUserIds.contains(uid)) continue;
 
       final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists) {
@@ -94,12 +95,10 @@ class MatchingProfilesController {
   }
 
   void avanzarPagina(int currentPage) {
-    if (currentPage < likedProfiles.length) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOut,
-      );
-    }
+    pageController.nextPage(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+    );
   }
 
   int calculateAge(DateTime? birthDate) {

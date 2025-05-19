@@ -5,7 +5,8 @@ import 'package:juvuit_flutter/features/events/domain/models/event.dart';
 import 'package:juvuit_flutter/features/matching/presentation/screens/matchingprofilescreen.dart';
 
 class MatchingLoader extends StatelessWidget {
-  const MatchingLoader({super.key});
+  final String orderBy;
+  const MatchingLoader({super.key, required this.orderBy});
 
   Future<List<Event>> _fetchUserEvents() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -16,7 +17,16 @@ class MatchingLoader extends StatelessWidget {
         .where('attendees', arrayContains: user.uid)
         .get();
 
-    return snapshot.docs.map((doc) => Event.fromFirestore(doc)).toList();
+    final events = snapshot.docs.map((doc) => Event.fromFirestore(doc)).toList();
+
+    // Ordenar según el criterio
+    if (orderBy == 'fecha') {
+      events.sort((a, b) => a.date.compareTo(b.date));
+    } else if (orderBy == 'asistentes') {
+      events.sort((a, b) => b.attendees.length.compareTo(a.attendees.length));
+    }
+
+    return events;
   }
 
   @override

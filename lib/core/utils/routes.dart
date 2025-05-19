@@ -38,7 +38,7 @@ class AppRoutes {
       case events:
         return MaterialPageRoute(builder: (_) => const EventsScreen());
       case matching:
-        return MaterialPageRoute(builder: (_) => const MatchingLoader());
+        return MaterialPageRoute(builder: (_) => const MatchingScreen());
 
       case chats:
         return MaterialPageRoute(builder: (_) => const ChatsScreen());
