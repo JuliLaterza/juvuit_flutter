@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
 import '../../widgets/matching_loader.dart';
 
@@ -20,7 +21,9 @@ class _MatchingScreenState extends State<MatchingScreen> {
         centerTitle: true,
       ),
       body: Column(
+        //crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text("Agrupar por:"),
           const SizedBox(height: 8),
           Wrap(
             spacing: 12,
@@ -30,18 +33,18 @@ class _MatchingScreenState extends State<MatchingScreen> {
                 label: const Text('Fecha'),
                 selected: _orderBy == 'fecha',
                 onSelected: (_) => setState(() => _orderBy = 'fecha'),
-                selectedColor: Colors.black,
+                selectedColor: AppColors.yellow,
                 labelStyle: TextStyle(
-                  color: _orderBy == 'fecha' ? Colors.white : Colors.black,
+                  color: _orderBy == 'fecha' ? Colors.black : Colors.black,
                 ),
               ),
               ChoiceChip(
                 label: const Text('Asistentes'),
                 selected: _orderBy == 'asistentes',
                 onSelected: (_) => setState(() => _orderBy = 'asistentes'),
-                selectedColor: Colors.black,
+                selectedColor: AppColors.yellow,
                 labelStyle: TextStyle(
-                  color: _orderBy == 'asistentes' ? Colors.white : Colors.black,
+                  color: _orderBy == 'asistentes' ? Colors.black : Colors.black,
                 ),
               ),
             ],
