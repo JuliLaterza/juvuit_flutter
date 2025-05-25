@@ -9,6 +9,7 @@ class CompleteProfileForm extends StatefulWidget {
   final TextEditingController drinkController;
   final void Function(String?) onSignChanged;
   final void Function(String?) onDrinkChanged;
+  final List<Map<String, dynamic>>? initialSongs;
 
   const CompleteProfileForm({
     super.key,
@@ -17,6 +18,7 @@ class CompleteProfileForm extends StatefulWidget {
     required this.drinkController,
     required this.onSignChanged,
     required this.onDrinkChanged,
+    this.initialSongs,
   });
 
   @override
@@ -29,12 +31,13 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
   DateTime? _selectedDate;
 
   DateTime? get selectedBirthDate => _selectedDate;
-  List<Map<String, String>> get selectedSongs => _selectedSongs;
+  List<Map<String, String>> get selectedSongs =>
+      _selectedSongs.whereType<Map<String, String>>().toList();
 
-  final TextEditingController _songSearchController = TextEditingController();
-  List<Map<String, String>> _suggestions = [];
-  List<Map<String, String>> _selectedSongs = [];
-  bool _isSearching = false;
+  final List<TextEditingController> _songControllers = List.generate(3, (_) => TextEditingController());
+  final List<Map<String, String>?> _selectedSongs = List.filled(3, null);
+  final List<List<Map<String, String>>> _suggestions = List.generate(3, (_) => []);
+  final List<bool> _isSearching = List.generate(3, (_) => false);
 
   final List<Map<String, dynamic>> signosZodiacales = [
     {'signo': 'Aries', 'icono': Icons.whatshot},
@@ -55,6 +58,20 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
     'Cerveza', 'Fernet', 'WhisCola', 'Vino', 'Whisky', 'Ron',
     'Vodka', 'Tequila', 'Gin', 'Champagne', 'Gaseosas', 'Agua',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialSongs != null) {
+      for (int i = 0; i < widget.initialSongs!.length && i < 3; i++) {
+        _selectedSongs[i] = {
+          'title': widget.initialSongs![i]['title']?.toString() ?? '',
+          'artist': widget.initialSongs![i]['artist']?.toString() ?? '',
+          'imageUrl': widget.initialSongs![i]['imageUrl']?.toString() ?? '',
+        };
+      }
+    }
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     DateTime? picked = await showDatePicker(
@@ -101,28 +118,26 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
     );
   }
 
-  void _onSearchChanged(String query) async {
+  void _onSearchChanged(String query, int index) async {
     if (query.length < 2) {
-      setState(() => _suggestions = []);
+      setState(() => _suggestions[index] = []);
       return;
     }
-    setState(() => _isSearching = true);
+    setState(() => _isSearching[index] = true);
     try {
       final results = await SpotifyService.searchSongs(query);
-      setState(() => _suggestions = results);
+      setState(() => _suggestions[index] = results);
     } catch (e) {
       print('Error buscando canciones: $e');
     }
-    setState(() => _isSearching = false);
+    setState(() => _isSearching[index] = false);
   }
 
-  void _addSong(Map<String, String> song) {
-    if (_selectedSongs.any((s) => s['title'] == song['title'] && s['artist'] == song['artist'])) return;
+  void _selectSong(Map<String, String> song, int index) {
     setState(() {
-      if (_selectedSongs.length == 3) _selectedSongs.removeAt(0);
-      _selectedSongs.add(song);
-      _songSearchController.clear();
-      _suggestions = [];
+      _selectedSongs[index] = song;
+      _songControllers[index].text = '';
+      _suggestions[index] = [];
     });
   }
 
@@ -144,48 +159,55 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
         const SizedBox(height: 16),
         const Center(child: Text('AGREGA TUS CANCIONES FAVORITAS', style: TextStyle(fontWeight: FontWeight.bold))),
         const SizedBox(height: 8),
-        TextField(
-          controller: _songSearchController,
-          onChanged: _onSearchChanged,
-          decoration: const InputDecoration(
-            hintText: 'Buscar canción...',
-            border: OutlineInputBorder(),
+        for (int i = 0; i < 3; i++) ...[
+          TextField(
+            controller: _songControllers[i],
+            onChanged: (value) => _onSearchChanged(value, i),
+            decoration: InputDecoration(
+              hintText: _selectedSongs[i]?['title'] ?? 'Buscar canción ${i + 1}...',
+              prefixIcon: _selectedSongs[i] != null
+                  ? Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Image.network(
+                        _selectedSongs[i]!['imageUrl']!,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : const Icon(Icons.music_note, color: AppColors.yellow),
+              suffixIcon: _selectedSongs[i] != null
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        setState(() {
+                          _selectedSongs[i] = null;
+                          _songControllers[i].clear();
+                        });
+                      },
+                    )
+                  : null,
+              border: const OutlineInputBorder(),
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        if (_isSearching) const CircularProgressIndicator(),
-        if (_suggestions.isNotEmpty)
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _suggestions.length,
-            itemBuilder: (context, index) {
-              final song = _suggestions[index];
-              return ListTile(
-                leading: Image.network(song['imageUrl']!, width: 50, height: 50, fit: BoxFit.cover),
-                title: Text(song['title']!),
-                subtitle: Text(song['artist']!),
-                onTap: () => _addSong(song),
-              );
-            },
-          ),
-        if (_selectedSongs.isNotEmpty) ...[
-          const SizedBox(height: 8),
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _selectedSongs.length,
-            itemBuilder: (context, index) {
-              final song = _selectedSongs[index];
-              return ListTile(
-                leading: Image.network(song['imageUrl']!, width: 50, height: 50, fit: BoxFit.cover),
-                title: Text(song['title']!),
-                subtitle: Text(song['artist']!),
-              );
-            },
-          ),
+          if (_isSearching[i]) const CircularProgressIndicator(),
+          if (_suggestions[i].isNotEmpty)
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _suggestions[i].length,
+              itemBuilder: (context, index2) {
+                final song = _suggestions[i][index2];
+                return ListTile(
+                  leading: Image.network(song['imageUrl']!, width: 50, height: 50, fit: BoxFit.cover),
+                  title: Text(song['title']!),
+                  subtitle: Text(song['artist']!),
+                  onTap: () => _selectSong(song, i),
+                );
+              },
+            ),
+          const SizedBox(height: 12),
         ],
-        const SizedBox(height: 16),
         const Center(child: Text('AGREGA TU TRAGO FAVORITO', style: TextStyle(fontWeight: FontWeight.bold))),
         const SizedBox(height: 16),
         _buildDropdownList('Trago Favorito', _drinks, _selectedDrink, (value) {
@@ -205,7 +227,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
             labelText: 'Fecha de nacimiento',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             prefixIcon: const Icon(Icons.calendar_today, color: AppColors.yellow),
-            focusedBorder: OutlineInputBorder(
+            focusedBorder: const OutlineInputBorder(
               borderSide: BorderSide(color: AppColors.yellow),
             ),
           ),
@@ -224,7 +246,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: Icon(icon, color: AppColors.yellow),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: AppColors.yellow),
         ),
       ),
@@ -239,7 +261,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: Icon(icon, color: AppColors.yellow),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: AppColors.yellow),
         ),
       ),
@@ -252,7 +274,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: AppColors.yellow),
         ),
       ),
@@ -278,7 +300,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
+        focusedBorder: const OutlineInputBorder(
           borderSide: BorderSide(color: AppColors.yellow),
         ),
       ),
