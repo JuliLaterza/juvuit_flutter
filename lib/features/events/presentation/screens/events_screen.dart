@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
@@ -19,10 +20,14 @@ class _EventsScreenState extends State<EventsScreen> {
   String selectedType = 'Todos';
   late Future<List<Event>> _futureEvents;
 
+  final user = FirebaseAuth.instance.currentUser;
+
+
   @override
   void initState() {
     super.initState();
     _futureEvents = fetchEventsFromFirebase();
+    print(user?.uid);
   }
 
   @override
