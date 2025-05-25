@@ -1,3 +1,5 @@
+// Archivo: match_helper.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -24,7 +26,24 @@ Future<bool> handleLikeAndMatch({
       .collection('likesReceived')
       .doc(likedUserId);
 
-  await likesReceivedRef.set({'eventId': eventId});
+  // Guardar en likesReceived del usuario destino
+  await likesReceivedRef.set({
+    'eventId': eventId,
+    'timestamp': FieldValue.serverTimestamp(),
+  }, SetOptions(merge: true));
+
+  // Guardar en likesGiven del usuario actual
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(currentUserId)
+      .collection('likesGiven')
+      .doc(likedUserId)
+      .set({
+    'eventId': eventId,
+    'timestamp': FieldValue.serverTimestamp(),
+  });
+
+  print("Se dio like correctamente");
 
   final snapshot = await currentUserLikesRef.get();
 
@@ -48,12 +67,12 @@ Future<bool> handleLikeAndMatch({
         matchedUserPhoto: matchedUserPhoto,
         matchedUserName: matchedUserName,
         onMessagePressed: () {
-          Navigator.pop(context, 'ok'); // Se cierra con botón
+          Navigator.pop(context, 'ok');
         },
       ),
     );
 
-    return result != null; // true si se cerró con botón, false si tocó fuera
+    return result != null;
   }
 
   return false;

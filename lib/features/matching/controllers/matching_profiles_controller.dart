@@ -12,7 +12,7 @@ class MatchingProfilesController {
   final Set<String> likedProfiles = {};
   final Map<int, int> currentCarouselIndex = {};
   late UserProfile currentUserProfile;
-
+  
   MatchingProfilesController({required this.pageController});
 
   Future<UserProfile?> loadCurrentUserProfile() async {
@@ -32,26 +32,38 @@ class MatchingProfilesController {
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId == null) return [];
 
-    final likesSnapshot = await FirebaseFirestore.instance
+    // Obtener likes dados por el usuario en este evento
+    final likesGivenSnapshot = await FirebaseFirestore.instance
         .collection('users')
         .doc(currentUserId)
-        .collection('likesReceived')
+        .collection('likesGiven')
         .get();
 
-    final likedUserIds = likesSnapshot.docs.map((doc) => doc.id).toSet();
+    final likedUserIds = likesGivenSnapshot.docs
+        .where((doc) => doc.data()['eventId'] == event.id)
+        .map((doc) => doc.id)
+        .toSet();
 
+    // Obtener matches con chats ya iniciados
     final matchesSnapshot = await FirebaseFirestore.instance
         .collection('matches')
         .where('users', arrayContains: currentUserId)
         .get();
-    final matchedUserIds = matchesSnapshot.docs.expand((doc) {
-      final users = List<String>.from(doc['users']);
-      return users.where((uid) => uid != currentUserId);
-    }).toSet();
+
+    final Set<String> matchedAndChattedUserIds = {};
+    for (final doc in matchesSnapshot.docs) {
+      final data = doc.data();
+      final users = List<String>.from(data['users']);
+      final otherUserId = users.firstWhere((uid) => uid != currentUserId);
+      final lastMessage = data['lastMessage'];
+      if (lastMessage != null && lastMessage.toString().trim().isNotEmpty) {
+        matchedAndChattedUserIds.add(otherUserId);
+      }
+    }
 
     final List<UserProfile> loaded = [];
     for (final uid in event.attendees) {
-      if (uid == currentUserId || matchedUserIds.contains(uid)) continue;
+      if (uid == currentUserId || likedUserIds.contains(uid) || matchedAndChattedUserIds.contains(uid)) continue;
 
       final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
       if (doc.exists) {
@@ -75,6 +87,17 @@ class MatchingProfilesController {
 
     final likedUser = profiles[currentPage];
     likedProfiles.add(likedUser.userId);
+
+    // Guardar también en likesGiven
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUser.uid)
+        .collection('likesGiven')
+        .doc(likedUser.userId)
+        .set({
+      'eventId': event.id,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
 
     await handleLikeAndMatch(
       currentUserId: currentUser.uid,
