@@ -258,7 +258,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               title: const Text('Editar Perfil'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
-                // Navegar a edición de perfil
+                Navigator.pushNamed(context, AppRoutes.editProfile);
               },
             ),
             ListTile(
