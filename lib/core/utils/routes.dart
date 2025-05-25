@@ -7,6 +7,7 @@ import 'package:juvuit_flutter/features/events/presentation/screens/events_scree
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_ig_screen.dart';
 // ignore: unused_import
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_screen.dart';
+import 'package:juvuit_flutter/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/profile_screen.dart';
 // ignore: unused_import
 import 'package:juvuit_flutter/features/profiles/presentation/screens/profiles_screen.dart'; // Nueva importación
@@ -28,6 +29,8 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String profiles = '/profiles';
   static const String debug = '/debug'; // Nueva ruta
+  static const String editProfile = '/edit-profile';
+
 
   // Generador de rutas
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -56,6 +59,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case profiles:
         return MaterialPageRoute(builder: (_) => const MatchingIgScreen()); // Agregado
+      case editProfile:
+        return MaterialPageRoute(builder: (_) => const EditProfileScreen());
       case debug:
         return MaterialPageRoute(builder: (_) => const DebugScreenRestartUsers());
       default:
