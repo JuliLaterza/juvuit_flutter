@@ -140,7 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-
+  bool _notificationsEnabled = true;
 
   @override
   Widget build(BuildContext context) {
@@ -270,13 +270,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const Divider(),
             const Text('Notificaciones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            SwitchListTile(
-              activeColor: AppColors.yellow,
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Recibir notificaciones'),
-              value: true,
-              onChanged: (value) {},
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Recibir notificaciones'),
+                Switch(
+                  value: _notificationsEnabled,
+                  activeColor: AppColors.yellow,
+                  onChanged: (value) {
+                    setState(() {
+                      _notificationsEnabled = value;
+                    });
+                  },
+                ),
+              ],
             ),
+
             const Divider(),
             const Text('Ayuda', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
