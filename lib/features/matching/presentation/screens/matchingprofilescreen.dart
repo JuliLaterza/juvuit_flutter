@@ -116,6 +116,7 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
                 _controller.currentCarouselIndex[index] = imgIndex;
               });
             },
+            showActions: true,
           );
         },
       ),
