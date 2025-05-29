@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 //import 'dart:async';
 
 class ChatScreen extends StatefulWidget {
@@ -62,18 +63,41 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  void _goToProfile() async {
+    final user = await FirebaseFirestore.instance
+        .collection('users')
+        .where('name', isEqualTo: widget.personName)
+        .limit(1)
+        .get();
+
+    if (user.docs.isNotEmpty) {
+      final data = user.docs.first.data();
+      final userId = user.docs.first.id;
+      final profile = UserProfile.fromMap(userId, data);
+      if (context.mounted) {
+        Navigator.pushNamed(context, '/public_profile', arguments: {'profile': profile});
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundImage: NetworkImage(widget.personPhotoUrl),
-            ),
-            const SizedBox(width: 10),
-            Text(widget.personName),
-          ],
+        title: GestureDetector(
+          onTap: _goToProfile,
+          child: Row(
+            children: [
+              CircleAvatar(backgroundImage: NetworkImage(widget.personPhotoUrl)),
+              const SizedBox(width: 10),
+              Text(widget.personName),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.info_outline),
+                onPressed: _goToProfile,
+              ),
+            ],
+          ),
         ),
       ),
       body: Column(
