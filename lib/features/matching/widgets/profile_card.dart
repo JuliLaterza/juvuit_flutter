@@ -12,6 +12,7 @@ class ProfileCard extends StatelessWidget {
   final VoidCallback onLike;
   final VoidCallback onDislike;
   final Function(int) onCarouselChange;
+  final bool showActions;
 
   const ProfileCard({
     super.key,
@@ -21,6 +22,7 @@ class ProfileCard extends StatelessWidget {
     required this.onLike,
     required this.onDislike,
     required this.onCarouselChange,
+    required this.showActions
   });
 
   int _calculateAge(DateTime? birthDate) {
@@ -70,7 +72,8 @@ class ProfileCard extends StatelessWidget {
                 )),
               ),
               const SizedBox(height: 16),
-              Row(
+              if(showActions)
+                Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
@@ -83,7 +86,7 @@ class ProfileCard extends StatelessWidget {
                     onPressed: onLike,
                   ),
                 ],
-              ),
+                ),
               const SizedBox(height: 30),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
