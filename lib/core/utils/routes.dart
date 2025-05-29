@@ -16,7 +16,8 @@ import 'package:juvuit_flutter/features/matching/widgets/matching_loader.dart';
 import 'package:juvuit_flutter/features/testing/screens/DebugScreenRestartUsers.dart';
 import 'package:juvuit_flutter/features/testing/screens/debug_screen_delete.dart';
 //import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
-import 'package:juvuit_flutter/features/profile/presentation/screens/public_profile_screen.dart'; // nueva importación
+import 'package:juvuit_flutter/features/profile/presentation/screens/public_profile_screen.dart';
+import 'package:juvuit_flutter/features/testing/screens/debug_screen_infomap.dart'; // nueva importación
 
 
 
@@ -70,7 +71,7 @@ class AppRoutes {
           builder: (_) => PublicProfileScreen(profile: args['profile']),
         );
       case debug:
-        return MaterialPageRoute(builder: (_) => const DebugScreenRestartUsers());
+        return MaterialPageRoute(builder: (_) => const DebugScreenApiMap());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
