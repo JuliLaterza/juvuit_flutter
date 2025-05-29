@@ -9,12 +9,14 @@ import 'package:juvuit_flutter/features/matching/presentation/screens/matching_i
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/profile_screen.dart';
+import 'package:juvuit_flutter/features/profile/presentation/screens/public_profile_screen.dart';
 // ignore: unused_import
 import 'package:juvuit_flutter/features/profiles/presentation/screens/profiles_screen.dart'; // Nueva importación
 import 'package:juvuit_flutter/features/matching/widgets/matching_loader.dart';
 import 'package:juvuit_flutter/features/testing/screens/DebugScreenRestartUsers.dart';
 import 'package:juvuit_flutter/features/testing/screens/debug_screen_delete.dart';
 //import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
+import 'package:juvuit_flutter/features/profile/presentation/screens/public_profile_screen.dart'; // nueva importación
 
 
 
@@ -30,6 +32,7 @@ class AppRoutes {
   static const String profiles = '/profiles';
   static const String debug = '/debug'; // Nueva ruta
   static const String editProfile = '/edit-profile';
+  static const String userProfile = '/user-profile';
 
 
   // Generador de rutas
@@ -43,7 +46,6 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const EventsScreen());
       case matching:
         return MaterialPageRoute(builder: (_) => const MatchingScreen());
-
       case chats:
         return MaterialPageRoute(builder: (_) => const ChatsScreen());
       case chat:
@@ -61,6 +63,12 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const MatchingIgScreen()); // Agregado
       case editProfile:
         return MaterialPageRoute(builder: (_) => const EditProfileScreen());
+      case userProfile:
+      case '/public_profile':
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => PublicProfileScreen(profile: args['profile']),
+        );
       case debug:
         return MaterialPageRoute(builder: (_) => const DebugScreenRestartUsers());
       default:
