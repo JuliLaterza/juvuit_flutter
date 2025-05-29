@@ -24,10 +24,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final ImagePicker _picker = ImagePicker();
   List<String> _existingPhotoUrls = [];
 
-  List<TextEditingController> _songControllers = List.generate(3, (_) => TextEditingController());
+  final List<TextEditingController> _songControllers = List.generate(3, (_) => TextEditingController());
   List<Map<String, String>> _selectedSongs = List.generate(3, (_) => {'title': '', 'artist': '', 'imageUrl': ''});
-  List<List<Map<String, String>>> _suggestions = List.generate(3, (_) => []);
-  List<bool> _isSearching = List.generate(3, (_) => false);
+  final List<List<Map<String, String>>> _suggestions = List.generate(3, (_) => []);
+  final List<bool> _isSearching = List.generate(3, (_) => false);
 
   bool _isLoading = true;
 
