@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import, duplicate_ignore, duplicate_import
+
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/login_screen.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/register_screen.dart';
