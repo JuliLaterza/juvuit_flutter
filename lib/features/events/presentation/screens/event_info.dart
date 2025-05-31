@@ -7,7 +7,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:juvuit_flutter/features/events/application/attend_event_service.dart';
 import 'package:apple_maps_flutter/apple_maps_flutter.dart' as apple_maps;
-import 'package:google_maps_flutter/google_maps_flutter.dart' as google_maps;
 import 'package:url_launcher/url_launcher.dart';
 
 class EventInfoScreen extends StatefulWidget {
@@ -22,13 +21,10 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
   bool isAttending = false;
   bool _isMapReady = false;
   apple_maps.AppleMapController? appleMapController;
-  google_maps.GoogleMapController? googleMapController;
 
   final apple_maps.LatLng _appleLocation = const apple_maps.LatLng(-34.48047028921573, -58.52066647214408);
-  final google_maps.LatLng _googleLocation = const google_maps.LatLng(-34.48047028921573, -58.52066647214408);
-
+  
   Set<apple_maps.Annotation> _appleAnnotations = {};
-  Set<google_maps.Marker> _googleMarkers = {};
 
   @override
   void initState() {
@@ -43,13 +39,6 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
         annotationId: apple_maps.AnnotationId('ubicacion_evento'),
         position: _appleLocation,
         infoWindow: const apple_maps.InfoWindow(title: 'Costanera Norte'),
-      ),
-    };
-    _googleMarkers = {
-      google_maps.Marker(
-        markerId: const google_maps.MarkerId('ubicacion_evento'),
-        position: _googleLocation,
-        infoWindow: const google_maps.InfoWindow(title: 'Costanera Norte'),
       ),
     };
   }
@@ -99,15 +88,10 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
         zoomGesturesEnabled: false,
       );
     } else {
-      return google_maps.GoogleMap(
-        onMapCreated: (controller) => googleMapController = controller,
-        initialCameraPosition: google_maps.CameraPosition(target: _googleLocation, zoom: 15),
-        markers: _googleMarkers,
-        zoomGesturesEnabled: false,
-        scrollGesturesEnabled: false,
-      );
+      return const SizedBox.shrink(); // No mostrar nada en Android
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +125,7 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
                     Text(event.description),
                     const SizedBox(height: 16),
                     GestureDetector(
-                      onTap: () => _openExternalMap(_googleLocation.latitude, _googleLocation.longitude),
+                      onTap: () => _openExternalMap(_appleLocation.latitude, _appleLocation.longitude),
                       child: AbsorbPointer(
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
