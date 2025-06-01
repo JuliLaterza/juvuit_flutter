@@ -123,8 +123,9 @@ class _EventCardState extends State<EventCard> {
               children: [
                 Text(widget.event.title,
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.black)),
+                const SizedBox(height: 4),
                 Text(widget.event.subtitle,
-                    style: const TextStyle(fontSize: 10, color: AppColors.gray)),
+                    style: const TextStyle(fontSize: 10, color: AppColors.black)),
                 const SizedBox(height: 4),
                 Row(
                   children: [
