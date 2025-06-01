@@ -65,7 +65,7 @@ class CustomBottomNavBar extends StatelessWidget {
           label: 'Eventos',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.local_fire_department),
+          icon: Icon(Icons.connect_without_contact),
           label: 'Matching',
           
         ),
