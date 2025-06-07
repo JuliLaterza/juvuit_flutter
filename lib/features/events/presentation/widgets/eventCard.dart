@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/models/event.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
+// ignore: unused_import
 import '../screens/event_info.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
