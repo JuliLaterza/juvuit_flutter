@@ -100,7 +100,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
       'name': _nameController.text.trim(),
       'description': _descriptionController.text.trim(),
-      'favoriteDrink': _drinkController.text.trim(),
+      'drink': _drinkController.text.trim(),
       'top_3canciones': _selectedSongs,
       'photoUrls': newPhotoUrls,
     });
