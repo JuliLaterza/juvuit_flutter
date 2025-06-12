@@ -1,5 +1,3 @@
-// ignore_for_file: unused_import
-
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/password_input_field.dart';
@@ -24,7 +22,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
 
   Future<void> _login() async {
-    // Validar campos vacíos
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       _showMessage('Por favor, llena todos los campos');
       return;
@@ -35,34 +32,27 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Login en Firebase con email y contraseña
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
       _showMessage('Inicio de sesión exitoso');
 
-      // Navegar a HomeScreen
-     
       Navigator.pushAndRemoveUntil(
-      // ignore: use_build_context_synchronously
-      context,
-      MaterialPageRoute(builder: (context) => const EventsScreen()),
-      (route) => false, // Esto elimina todas las rutas anteriores
-    );
-    
-    
-    //Para TESTING
-    /*
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const DebugScreen()),
-      (route) => false,
-    );
-    */
+        context,
+        MaterialPageRoute(builder: (context) => const EventsScreen()),
+        (route) => false,
+      );
 
+      // TESTING:
+      /*
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const DebugScreen()),
+        (route) => false,
+      );
+      */
     } on FirebaseAuthException catch (e) {
-      // Manejo de errores comunes de Firebase
       if (e.code == 'user-not-found') {
         _showMessage('Usuario no encontrado');
       } else if (e.code == 'wrong-password') {
@@ -83,128 +73,112 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  String home_path_png = "/Users/jlaterza/Documents/workspace/juvuit_flutter/assets/images/homescreen/home.png";
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white, // Fondo blanco
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40), // Espacio superior
-              const Center(
-                child: Column(
-                  children: [
-                    Text(
-                      'WIT Ü',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.black,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            home_path_png,
+            fit: BoxFit.cover,
+          ),
+          Container(color: Colors.black.withOpacity(0.1)), // mejora contraste
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 200),
+                  const SizedBox(height: 40),
+                  TextField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Correo electrónico',
+                      labelStyle: const TextStyle(color: Colors.white),
+                      filled: true,
+                      fillColor: Colors.black.withOpacity(0.5),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide.none,
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Inicia sesión para continuar',
-                      style: TextStyle(fontSize: 16, color: AppColors.gray),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 20),
+                  PasswordInputField(
+                    labelText: 'Contraseña',
+                    controller: _passwordController,
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      child: _isLoading
+                          ? const CircularProgressIndicator(color: AppColors.black)
+                          : const Text(
+                              'Iniciar sesión',
+                              style: TextStyle(
+                                color: AppColors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 40),
-              // Email Input
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Correo electrónico',
-                  labelStyle: const TextStyle(color: AppColors.darkGray),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGray),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.yellow),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Contraseña Input
-              PasswordInputField(
-                labelText: 'Contraseña',
-                controller: _passwordController,
-              ),
-              const SizedBox(height: 30),
-              // Botón de Login
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _login,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.yellow,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(
-                          color: AppColors.black,
-                        )
-                      : const Text(
-                          'Iniciar sesión',
+                  const SizedBox(height: 15),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('¿No tienes cuenta?',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                          );
+                        },
+                        child: const Text(
+                          'Regístrate',
                           style: TextStyle(
-                            color: AppColors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                              color: AppColors.black, fontWeight: FontWeight.bold),
                         ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              // Forgot Password & Sign Up
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text('¿No tienes cuenta?',
-                      style: TextStyle(color: AppColors.gray)),
-                  TextButton(
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  SocialLoginButton(
+                    icon: FontAwesomeIcons.google,
+                    text: 'Continuar con Google',
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const RegisterScreen(),
-                        ),
-                      );
+                      print('Google Login');
                     },
-                    child: const Text('Regístrate',
-                        style: TextStyle(
-                            color: AppColors.yellow,
-                            fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 20),
+                  SocialLoginButton(
+                    icon: FontAwesomeIcons.apple,
+                    text: 'Continuar con Apple',
+                    onPressed: () {
+                      print('Apple Login');
+                    },
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              SocialLoginButton(
-                icon: FontAwesomeIcons.google,
-                text: 'Continuar con Google',
-                onPressed: () {
-                  print('Google Login');
-                },
-              ),
-              const SizedBox(height: 20),
-              SocialLoginButton(
-                icon: FontAwesomeIcons.apple,
-                text: 'Continuar con Apple',
-                onPressed: () {
-                  print('Apple Login');
-                },
-              ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
