@@ -7,8 +7,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
 
-import '../../../testing/screens/debug_screen_v3.dart';
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -27,9 +25,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -43,15 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (context) => const EventsScreen()),
         (route) => false,
       );
-
-      // TESTING:
-      /*
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const DebugScreen()),
-        (route) => false,
-      );
-      */
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         _showMessage('Usuario no encontrado');
@@ -61,9 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _showMessage('Error: ${e.message}');
       }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      setState(() => _isLoading = false);
     }
   }
 
@@ -75,7 +60,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String home_path_png = "/Users/jlaterza/Documents/workspace/juvuit_flutter/assets/images/homescreen/home.png";
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,42 +70,54 @@ class _LoginScreenState extends State<LoginScreen> {
             home_path_png,
             fit: BoxFit.cover,
           ),
-          Container(color: Colors.black.withOpacity(0.1)), // mejora contraste
+          Container(color: Colors.black.withOpacity(0.05)),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 children: [
-                  const SizedBox(height: 200),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 250),
+                  // Email
                   TextField(
                     controller: _emailController,
+                    style: const TextStyle(color: Colors.black),
                     decoration: InputDecoration(
-                      labelText: 'Correo electrónico',
-                      labelStyle: const TextStyle(color: Colors.white),
+                      hintText: 'Correo electrónico',
+                      hintStyle: const TextStyle(color: Colors.black),
+                      prefixIcon: const Icon(Icons.mail, color: Colors.black),
                       filled: true,
-                      fillColor: Colors.black.withOpacity(0.5),
+                      fillColor: Colors.white.withAlpha(150),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide.none,
                       ),
                     ),
-                    style: const TextStyle(color: Colors.white),
                   ),
                   const SizedBox(height: 20),
+                  // Password
                   PasswordInputField(
                     labelText: 'Contraseña',
                     controller: _passwordController,
+                    labelColor: Colors.black,
+                    textColor: Colors.black,
+                    iconColor: Colors.black,
+                    borderRadius: 30,
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    fillColor: Colors.white.withAlpha(150),
                   ),
                   const SizedBox(height: 30),
+                  // Botón login
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.white,
+                        backgroundColor: Colors.white,
+                        foregroundColor: AppColors.black,
+                        elevation: 6,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(30),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
@@ -130,19 +126,17 @@ class _LoginScreenState extends State<LoginScreen> {
                           : const Text(
                               'Iniciar sesión',
                               style: TextStyle(
-                                color: AppColors.black,
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,
                               ),
                             ),
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('¿No tienes cuenta?',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      const Text('¿No tienes cuenta?', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                       TextButton(
                         onPressed: () {
                           Navigator.push(
@@ -153,12 +147,15 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: const Text(
                           'Regístrate',
                           style: TextStyle(
-                              color: AppColors.black, fontWeight: FontWeight.bold),
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 20),
+                  // Login con redes
                   SocialLoginButton(
                     icon: FontAwesomeIcons.google,
                     text: 'Continuar con Google',
@@ -166,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       print('Google Login');
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
                   SocialLoginButton(
                     icon: FontAwesomeIcons.apple,
                     text: 'Continuar con Apple',
@@ -174,6 +171,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       print('Apple Login');
                     },
                   ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),

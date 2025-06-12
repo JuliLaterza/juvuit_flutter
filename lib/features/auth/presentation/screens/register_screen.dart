@@ -134,12 +134,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               PasswordInputField(
                 labelText: 'Contraseña',
                 controller: _passwordController,
+                fillColor: Colors.white.withAlpha(150)
               ),
               const SizedBox(height: 20),
               // Confirmar Contraseña Input
               PasswordInputField(
                 labelText: 'Confirmar contraseña',
                 controller: _confirmPasswordController,
+                fillColor: Colors.white.withAlpha(150)
               ),
               const SizedBox(height: 30),
               // Botón de Registro

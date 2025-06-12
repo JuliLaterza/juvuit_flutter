@@ -4,11 +4,23 @@ import 'package:juvuit_flutter/core/utils/colors.dart';
 class PasswordInputField extends StatefulWidget {
   final String labelText;
   final TextEditingController? controller;
+  final Color labelColor;
+  final Color textColor;
+  final Color iconColor;
+  final double borderRadius;
+  final EdgeInsetsGeometry? padding;
+  final Color fillColor;
 
   const PasswordInputField({
     super.key,
     required this.labelText,
     this.controller,
+    this.labelColor = AppColors.darkGray,
+    this.textColor = AppColors.black,
+    this.iconColor = AppColors.gray,
+    this.borderRadius = 8.0,
+    this.padding,
+    required this.fillColor,
   });
 
   @override
@@ -26,26 +38,29 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: widget.controller,
-      obscureText: _obscureText,
-      decoration: InputDecoration(
-        labelText: widget.labelText,
-        labelStyle: const TextStyle(color: AppColors.darkGray),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.lightGray),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.yellow),
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscureText ? Icons.visibility_off : Icons.visibility,
-            color: AppColors.gray,
+    return Padding(
+      padding: widget.padding ?? EdgeInsets.zero,
+      child: TextField(
+        controller: widget.controller,
+        obscureText: _obscureText,
+        style: TextStyle(color: widget.textColor),
+        decoration: InputDecoration(
+          labelText: widget.labelText,
+          labelStyle: TextStyle(color: widget.labelColor),
+          filled: true,
+          fillColor: widget.fillColor, // ← acá el cambio importante
+          prefixIcon: Icon(Icons.vpn_key, color: widget.iconColor),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            borderSide: BorderSide.none,
           ),
-          onPressed: _toggleVisibility,
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscureText ? Icons.visibility_off : Icons.visibility,
+              color: widget.iconColor,
+            ),
+            onPressed: _toggleVisibility,
+          ),
         ),
       ),
     );
