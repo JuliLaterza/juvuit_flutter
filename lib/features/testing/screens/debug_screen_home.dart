@@ -82,6 +82,7 @@ class _DebugHomeScreenState extends State<DebugHomeScreen> {
                       PasswordInputField(
                         labelText: 'Contraseña',
                         controller: _passwordController,
+                        fillColor: Colors.white.withAlpha(150)
                       ),
                       const SizedBox(height: 30),
                       SizedBox(
