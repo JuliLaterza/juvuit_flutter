@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  String home_path_png = "/Users/jlaterza/Documents/workspace/juvuit_flutter/assets/images/homescreen/home.png";
+  //String home_path_png = "/Users/jlaterza/Documents/workspace/juvuit_flutter/assets/images/homescreen/home.png";
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
         fit: StackFit.expand,
         children: [
           Image.asset(
-            home_path_png,
+            'assets/images/homescreen/home.png',
             fit: BoxFit.cover,
           ),
           Container(color: Colors.black.withOpacity(0.05)),
