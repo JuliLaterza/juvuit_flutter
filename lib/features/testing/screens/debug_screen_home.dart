@@ -80,7 +80,7 @@ class _DebugHomeScreenState extends State<DebugHomeScreen> {
                       ),
                       const SizedBox(height: 20),
                       PasswordInputField(
-                        labelText: 'Contraseña',
+                        hintText: 'Contraseña',
                         controller: _passwordController,
                         fillColor: Colors.white.withAlpha(150)
                       ),

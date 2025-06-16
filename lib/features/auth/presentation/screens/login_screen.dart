@@ -97,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 20),
                   // Password
                   PasswordInputField(
-                    labelText: 'Contraseña',
+                    hintText: 'Contraseña',
                     controller: _passwordController,
                     labelColor: Colors.black,
                     textColor: Colors.black,

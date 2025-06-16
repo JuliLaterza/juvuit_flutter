@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 
 class PasswordInputField extends StatefulWidget {
-  final String labelText;
+  final String hintText;
   final TextEditingController? controller;
   final Color labelColor;
   final Color textColor;
@@ -13,7 +13,7 @@ class PasswordInputField extends StatefulWidget {
 
   const PasswordInputField({
     super.key,
-    required this.labelText,
+    required this.hintText,
     this.controller,
     this.labelColor = AppColors.darkGray,
     this.textColor = AppColors.black,
@@ -45,7 +45,7 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
         obscureText: _obscureText,
         style: TextStyle(color: widget.textColor),
         decoration: InputDecoration(
-          labelText: widget.labelText,
+          hintText: widget.hintText,
           labelStyle: TextStyle(color: widget.labelColor),
           filled: true,
           fillColor: widget.fillColor, // ← acá el cambio importante
