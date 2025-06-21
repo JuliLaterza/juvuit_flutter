@@ -119,13 +119,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 decoration: InputDecoration(
                   labelText: 'Correo electrónico',
                   labelStyle: const TextStyle(color: AppColors.darkGray),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.lightGray),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: AppColors.yellow),
+                  prefixIcon: Icon(Icons.mail, color: AppColors.gray,),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: const BorderSide(color: AppColors.lightGray)
                   ),
                 ),
               ),
