@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/login_screen.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/register_screen.dart';
+import 'package:juvuit_flutter/features/auth/presentation/screens/splash_screen.dart';
 import 'package:juvuit_flutter/features/chats/presentation/screens/chats_screen.dart';
 import 'package:juvuit_flutter/features/chats/presentation/screens/chat_screen.dart'; // Importación necesaria
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
@@ -37,11 +38,14 @@ class AppRoutes {
   static const String debug = '/debug'; // Nueva ruta
   static const String editProfile = '/edit-profile';
   static const String userProfile = '/user-profile';
+  static const String splash = '/splash';
 
 
   // Generador de rutas
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case splash:
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case register:
