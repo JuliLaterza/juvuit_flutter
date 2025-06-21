@@ -50,10 +50,8 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
           filled: true,
           fillColor: widget.fillColor, // ← acá el cambio importante
           prefixIcon: Icon(Icons.vpn_key, color: widget.iconColor),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-            borderSide: BorderSide.none,
-          ),
+          enabledBorder: UnderlineInputBorder(
+            borderSide: const BorderSide(color: AppColors.lightGray)),
           suffixIcon: IconButton(
             icon: Icon(
               _obscureText ? Icons.visibility_off : Icons.visibility,
