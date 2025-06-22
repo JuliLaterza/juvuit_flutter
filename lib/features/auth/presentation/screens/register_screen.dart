@@ -6,7 +6,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/complete_profile_screen.dart';
 
-
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -20,10 +19,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
 
-  // Función para registrar un usuario en Firebase
   Future<void> _register() async {
-    if (_emailController.text.isEmpty || 
-        _passwordController.text.isEmpty || 
+    if (_emailController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty) {
       _showMessage('Por favor, llena todos los campos');
       return;
@@ -51,9 +49,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       _showMessage('Registro exitoso');
 
-      // Reemplazar toda la pila con HomeScreen
       Navigator.pushAndRemoveUntil(
-        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
         (route) => false,
@@ -89,58 +85,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40), // Espacio superior
-              const Center(
+              const SizedBox(height: 40),
+              Center(
                 child: Column(
                   children: [
-                    Text(
+                    Image.asset(
+                      'assets/images/homescreen/logo_witu.png',
+                      width: 180,
+                      height: 70,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
                       'Crea tu cuenta',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: AppColors.black,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Regístrate para empezar',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: AppColors.gray,
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 40),
-              // Email Input
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Correo electrónico',
                   labelStyle: const TextStyle(color: AppColors.darkGray),
-                  prefixIcon: Icon(Icons.mail, color: AppColors.gray,),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: const BorderSide(color: AppColors.lightGray)
+                  prefixIcon: const Icon(Icons.mail, color: AppColors.gray),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.lightGray),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              // Contraseña Input
               PasswordInputField(
                 hintText: 'Contraseña',
                 controller: _passwordController,
-                fillColor: Colors.white.withAlpha(150)
+                fillColor: Colors.white.withAlpha(150),
               ),
               const SizedBox(height: 20),
-              // Confirmar Contraseña Input
               PasswordInputField(
                 hintText: 'Confirmar contraseña',
                 controller: _confirmPasswordController,
-                fillColor: Colors.white.withAlpha(150)
+                fillColor: Colors.white.withAlpha(150),
               ),
               const SizedBox(height: 30),
-              // Botón de Registro
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -153,9 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(
-                          color: AppColors.black,
-                        )
+                      ? const CircularProgressIndicator(color: AppColors.black)
                       : const Text(
                           'Registrarse',
                           style: TextStyle(
@@ -167,7 +156,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
               const SizedBox(height: 15),
-              // Botón de regresar al Login
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

@@ -72,21 +72,23 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
-              const Center(
+              Center(
                 child: Column(
                   children: [
-                    Text(
-                      'WIT Ü',
+                    Image.asset(
+                      'assets/images/homescreen/logo_witu.png',
+                      width: 180,
+                      height: 70,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Inicia sesión',
                       style: TextStyle(
-                        fontSize: 28,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: AppColors.black,
                       ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      'Inicia sesión para continuar',
-                      style: TextStyle(fontSize: 16, color: AppColors.gray),
                     ),
                   ],
                 ),
@@ -97,9 +99,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 decoration: InputDecoration(
                   labelText: 'Correo electrónico',
                   labelStyle: const TextStyle(color: AppColors.darkGray),
-                  prefixIcon: Icon(Icons.mail, color: AppColors.gray,),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: const BorderSide(color: AppColors.lightGray)
+                  prefixIcon: const Icon(Icons.mail, color: AppColors.gray),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.lightGray),
                   ),
                 ),
               ),
@@ -107,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
               PasswordInputField(
                 hintText: 'Contraseña',
                 controller: _passwordController,
-                fillColor: Colors.white.withAlpha(150)
+                fillColor: Colors.white.withAlpha(150),
               ),
               const SizedBox(height: 30),
               SizedBox(
@@ -137,8 +139,10 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('¿No tienes cuenta?',
-                      style: TextStyle(color: AppColors.gray)),
+                  const Text(
+                    '¿No tienes cuenta?',
+                    style: TextStyle(color: AppColors.gray),
+                  ),
                   TextButton(
                     onPressed: () {
                       Navigator.push(
@@ -148,10 +152,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       );
                     },
-                    child: const Text('Regístrate',
-                        style: TextStyle(
-                            color: AppColors.yellow,
-                            fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      'Regístrate',
+                      style: TextStyle(
+                          color: AppColors.yellow, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
