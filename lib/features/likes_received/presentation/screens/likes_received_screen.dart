@@ -7,7 +7,7 @@ import 'package:juvuit_flutter/features/likes_received/presentation/widgets/swip
 import 'package:juvuit_flutter/features/matching/domain/match_helper.dart';
 import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
-import 'like_preview_screen.dart'; // Importa tu pantalla nueva
+import 'like_preview_screen.dart';
 
 class LikesReceivedScreen extends StatefulWidget {
   const LikesReceivedScreen({super.key});
@@ -68,8 +68,36 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
               return FutureBuilder<Map<String, dynamic>>(
                 future: _repo.fetchUserAndEvent(otherId, eventId),
                 builder: (c, s) {
-                  if (s.hasError)  return _error();
-                  if (!s.hasData)  return _loading();
+                  if (s.connectionState == ConnectionState.waiting) {
+                    // ---- SKELETON CARD ----
+                    return Card(
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 80, height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300, shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Container(
+                              width: 60, height: 12, color: Colors.grey.shade300,
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: 80, height: 12, color: Colors.grey.shade300,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  if (s.hasError || !s.hasData) return _error();
                   final data = s.data!;
                   return SwipeCard(
                     photoUrl:   data['photoUrl'],
@@ -77,15 +105,12 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
                     age:        data['age'],
                     eventTitle: data['eventTitle'],
                     onReject: () async {
-                      // Elimina el like recibido en Firestore (para que no vuelva a aparecer)
                       await FirebaseFirestore.instance
                           .collection('users')
                           .doc(_myId)
                           .collection('likesReceived')
                           .doc(otherId)
                           .delete();
-
-                      // Elimina la card de la UI
                       setState(() {
                         docs.removeAt(i);
                       });
@@ -122,14 +147,12 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
                             ),
                           ),
                         );
-                        // Al volver de la preview, elimina la card visualmente
                         setState(() {
                           docs.removeAt(i);
                         });
                       }
                     },
                     onAccept: () async {
-                      // Hacé el like y el posible match
                       await handleLikeAndMatch(
                         currentUserId: _myId,
                         likedUserId: otherId,
@@ -141,8 +164,6 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
                         matchedUserPhoto: data['photoUrl'],
                         matchedUserName: data['name'],
                       );
-
-                      // Solo actualizá la UI (no borres el like recibido, tu filtro ya lo oculta)
                       setState(() {
                         docs.removeAt(i);
                       });

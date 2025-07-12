@@ -1,14 +1,11 @@
-// lib/features/likes_received/data/likes_repository.dart
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 
 class LikesRepository {
   final FirebaseFirestore _fire = FirebaseFirestore.instance;
 
-  /// Obtiene la lista de documentos de "likesReceived" para el usuario dado,
-  /// excluyendo aquellos con los que ya hay un match.
-  Future<List<QueryDocumentSnapshot>> fetchLikes(String myId) async {
+  /// Nueva versión: obtiene todos los datos necesarios para la card en un solo Future.
+  Future<List<Map<String, dynamic>>> fetchLikesWithFullInfo(String myId) async {
     // 1. Traer todos los likes recibidos
     final snap = await _fire
         .collection('users')
@@ -27,12 +24,59 @@ class LikesRepository {
       return (!m1.exists && !m2.exists);
     }));
 
-    // 3. Filtrar solo los que aún no son match
+    // 3. Traer datos completos de usuario y evento
+    final List<Map<String, dynamic>> fullData = [];
+    for (var i = 0; i < likes.length; i++) {
+      if (!results[i]) continue;
+      final doc = likes[i];
+      final otherId = doc.id;
+      final eventId = doc.get('eventId') as String? ?? '';
+
+      // Usuario
+      final userSnap = await _fire.collection('users').doc(otherId).get();
+      final photos = (userSnap.data()?['photoUrls'] as List<dynamic>?) ?? [];
+      final name = userSnap.data()?['name'] as String? ?? '';
+      final age = userSnap.data()?['age']?.toString() ?? '';
+
+      // Evento
+      final eventSnap = await _fire.collection('events').doc(eventId).get();
+      final eventTitle = eventSnap.exists
+          ? (eventSnap.data()?['title'] as String?) ?? ''
+          : '';
+
+      fullData.add({
+        'otherId': otherId,
+        'eventId': eventId,
+        'photoUrl': photos.isNotEmpty ? photos.first as String : '',
+        'name': name,
+        'age': age,
+        'eventTitle': eventTitle,
+      });
+    }
+    return fullData;
+  }
+
+  /// (Antiguo) Obtiene la lista de documentos de "likesReceived" para el usuario dado,
+  /// excluyendo aquellos con los que ya hay un match.
+  Future<List<QueryDocumentSnapshot>> fetchLikes(String myId) async {
+    final snap = await _fire
+        .collection('users')
+        .doc(myId)
+        .collection('likesReceived')
+        .get();
+    final likes = snap.docs;
+    final results = await Future.wait(likes.map((doc) async {
+      final otherId = doc.id;
+      final matchId1 = '${myId}_$otherId';
+      final matchId2 = '${otherId}_$myId';
+      final m1 = await _fire.collection('matches').doc(matchId1).get();
+      final m2 = await _fire.collection('matches').doc(matchId2).get();
+      return (!m1.exists && !m2.exists);
+    }));
     final filtered = <QueryDocumentSnapshot>[];
     for (var i = 0; i < likes.length; i++) {
       if (results[i]) filtered.add(likes[i]);
     }
-
     return filtered;
   }
 
