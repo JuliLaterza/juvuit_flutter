@@ -7,6 +7,7 @@ import 'package:juvuit_flutter/features/likes_received/presentation/widgets/swip
 import 'package:juvuit_flutter/features/matching/domain/match_helper.dart';
 import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
+import 'like_preview_screen.dart'; // Importa tu pantalla nueva
 
 class LikesReceivedScreen extends StatefulWidget {
   const LikesReceivedScreen({super.key});
@@ -89,14 +90,42 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
                         docs.removeAt(i);
                       });
                     },
-                    onInfo:   () async {
+                    onInfo: () async {
                       final profile = await _repo.queryProfileByName(data['name']);
                       if (profile != null && context.mounted) {
-                        Navigator.pushNamed(
+                        await Navigator.push(
                           context,
-                          '/public_profile',
-                          arguments: {'profile': profile},
+                          MaterialPageRoute(
+                            builder: (context) => LikePreviewScreen(
+                              profile: profile,
+                              onLike: () async {
+                                await handleLikeAndMatch(
+                                  currentUserId: _myId,
+                                  likedUserId: otherId,
+                                  eventId: eventId,
+                                  context: context,
+                                  currentUserPhoto: _myProfile?.photoUrls.isNotEmpty == true
+                                      ? _myProfile!.photoUrls.first
+                                      : 'https://via.placeholder.com/150',
+                                  matchedUserPhoto: data['photoUrl'],
+                                  matchedUserName: data['name'],
+                                );
+                              },
+                              onDislike: () async {
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(_myId)
+                                    .collection('likesReceived')
+                                    .doc(otherId)
+                                    .delete();
+                              },
+                            ),
+                          ),
                         );
+                        // Al volver de la preview, elimina la card visualmente
+                        setState(() {
+                          docs.removeAt(i);
+                        });
                       }
                     },
                     onAccept: () async {
