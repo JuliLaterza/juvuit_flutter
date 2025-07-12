@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_screen.dart';
+import 'package:juvuit_flutter/features/likes_received/presentation/screens/likes_received_screen.dart';
 import 'package:juvuit_flutter/features/chats/presentation/screens/chats_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/profile_screen.dart';
-//import '../utils/colors.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -14,21 +14,23 @@ class CustomBottomNavBar extends StatelessWidget {
   });
 
   void _onItemTapped(BuildContext context, int index) {
-    if (index == currentIndex) return; // Evita recargar la misma pantalla
+    if (index == currentIndex) return;
 
     Widget nextScreen;
-
     switch (index) {
       case 0:
         nextScreen = const EventsScreen();
         break;
       case 1:
-        nextScreen = MatchingScreen(); // temporal, si no tenés acceso a la lista real acá
+        nextScreen = const MatchingScreen();
         break;
       case 2:
-        nextScreen = const ChatsScreen();
+        nextScreen = const LikesReceivedScreen();
         break;
       case 3:
+        nextScreen = const ChatsScreen();
+        break;
+      case 4:
         nextScreen = const ProfileScreen();
         break;
       default:
@@ -38,11 +40,11 @@ class CustomBottomNavBar extends StatelessWidget {
     Navigator.pushAndRemoveUntil(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
+        pageBuilder: (_, __, ___) => nextScreen,
         transitionDuration: Duration.zero,
-        reverseTransitionDuration: Duration.zero
+        reverseTransitionDuration: Duration.zero,
       ),
-      (route) => false, // Limpia el stack de navegación
+      (_) => false,
     );
   }
 
@@ -51,14 +53,14 @@ class CustomBottomNavBar extends StatelessWidget {
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: (index) => _onItemTapped(context, index),
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      backgroundColor: const Color(0xFFFFFFFF),
       selectedItemColor: const Color(0xFFFFD600),
       unselectedItemColor: const Color(0xFF292929),
       selectedIconTheme: const IconThemeData(size: 30),
       unselectedIconTheme: const IconThemeData(size: 30),
       showSelectedLabels: false,
       showUnselectedLabels: false,
-      type: BottomNavigationBarType.fixed, // Muestra todos los íconos sin recortar
+      type: BottomNavigationBarType.fixed,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.event),
@@ -66,8 +68,11 @@ class CustomBottomNavBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.connect_without_contact),
-          label: 'Matching',
-          
+          label: 'Anotados',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.thumb_up),
+          label: 'Likes recibidos',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.chat),
