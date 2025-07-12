@@ -1,15 +1,15 @@
-// lib/features/likes_received/presentation/screens/likes_received_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
 import 'package:juvuit_flutter/features/likes_received/data/likes_repository.dart';
 import 'package:juvuit_flutter/features/likes_received/presentation/widgets/swipe_card.dart';
-//import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
+import 'package:juvuit_flutter/features/matching/domain/match_helper.dart';
+import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
+import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 
 class LikesReceivedScreen extends StatefulWidget {
-  const LikesReceivedScreen({Key? key}) : super(key: key);
+  const LikesReceivedScreen({super.key});
   @override
   State<LikesReceivedScreen> createState() => _LikesReceivedScreenState();
 }
@@ -18,9 +18,30 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
   final _repo = LikesRepository();
   final _myId = FirebaseAuth.instance.currentUser?.uid;
 
+  UserProfile? _myProfile;
+  bool _isLoadingProfile = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadMyProfile();
+  }
+
+  Future<void> _loadMyProfile() async {
+    if (_myId == null) return;
+    final service = UserProfileService();
+    final profile = await service.getUserProfile(_myId);
+    setState(() {
+      _myProfile = profile;
+      _isLoadingProfile = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_myId == null) return _notAuth();
+    if (_isLoadingProfile) return _loading();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Likes recibidos')),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
@@ -31,6 +52,7 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
           if (!snap.hasData)   return _loading();
           final docs = snap.data!;
           if (docs.isEmpty)    return _empty();
+
           return GridView.builder(
             padding: const EdgeInsets.all(12),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -38,13 +60,13 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
               childAspectRatio: 0.65,
             ),
             itemCount: docs.length,
-            itemBuilder: (ctx,i) {
+            itemBuilder: (ctx, i) {
               final doc     = docs[i];
               final otherId = doc.id;
               final eventId = doc.get('eventId') as String? ?? '';
               return FutureBuilder<Map<String, dynamic>>(
                 future: _repo.fetchUserAndEvent(otherId, eventId),
-                builder: (c,s) {
+                builder: (c, s) {
                   if (s.hasError)  return _error();
                   if (!s.hasData)  return _loading();
                   final data = s.data!;
@@ -53,7 +75,20 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
                     name:       data['name'],
                     age:        data['age'],
                     eventTitle: data['eventTitle'],
-                    onReject: () {/*…*/},
+                    onReject: () async {
+                      // Elimina el like recibido en Firestore (para que no vuelva a aparecer)
+                      await FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(_myId)
+                          .collection('likesReceived')
+                          .doc(otherId)
+                          .delete();
+
+                      // Elimina la card de la UI
+                      setState(() {
+                        docs.removeAt(i);
+                      });
+                    },
                     onInfo:   () async {
                       final profile = await _repo.queryProfileByName(data['name']);
                       if (profile != null && context.mounted) {
@@ -64,7 +99,25 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
                         );
                       }
                     },
-                    onAccept: () {/*…*/},
+                    onAccept: () async {
+                      // Hacé el like y el posible match
+                      await handleLikeAndMatch(
+                        currentUserId: _myId,
+                        likedUserId: otherId,
+                        eventId: eventId,
+                        context: context,
+                        currentUserPhoto: _myProfile?.photoUrls.isNotEmpty == true
+                            ? _myProfile!.photoUrls.first
+                            : 'https://via.placeholder.com/150',
+                        matchedUserPhoto: data['photoUrl'],
+                        matchedUserName: data['name'],
+                      );
+
+                      // Solo actualizá la UI (no borres el like recibido, tu filtro ya lo oculta)
+                      setState(() {
+                        docs.removeAt(i);
+                      });
+                    },
                   );
                 },
               );

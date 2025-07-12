@@ -238,7 +238,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                 ),
               ],
             ),
-      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
+      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 3),
     );
   }
 }
