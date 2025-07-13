@@ -10,6 +10,7 @@ class UserProfile {
   final List<String> photoUrls;
   final List<String> attendedEvents;
   final DateTime? birthDate;
+  final bool isPremium;
 
   UserProfile({
     required this.userId,
@@ -21,6 +22,7 @@ class UserProfile {
     required this.photoUrls,
     required this.attendedEvents,
     this.birthDate,
+    required this.isPremium,
   });
 
   Map<String, dynamic> toMap() {
@@ -33,12 +35,13 @@ class UserProfile {
       'sign': sign,
       'photoUrls': photoUrls,
       'attendedEvents': attendedEvents,
+      'isPremium': isPremium,
       if (birthDate != null) 'birthDate': Timestamp.fromDate(birthDate!),
     };
   }
+
   factory UserProfile.fromMap(String userId, Map<String, dynamic> map) {
     final rawSongs = map['top_3canciones'];
-
     final List<Map<String, dynamic>> parsedSongs = [];
 
     if (rawSongs is List) {
@@ -47,7 +50,7 @@ class UserProfile {
           parsedSongs.add({
             'title': item['title'] ?? '',
             'artist': item['artist'] ?? '',
-            'imageUrl': item['imageUrl'] ?? ''
+            'imageUrl': item['imageUrl'] ?? '',
           });
         }
       }
@@ -65,7 +68,7 @@ class UserProfile {
       birthDate: map['birthDate'] != null
           ? (map['birthDate'] as Timestamp).toDate()
           : null,
+      isPremium: map['isPremium'] ?? false,
     );
   }
-
 }

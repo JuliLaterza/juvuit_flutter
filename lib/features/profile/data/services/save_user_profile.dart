@@ -20,6 +20,7 @@ Future<void> saveUserProfile({
     'drink': drink,
     'sign': sign,
     'photoUrls': photoUrls,
+    'isPremium': false, // ← nuevo campo
     if (birthDate != null) 'birthDate': Timestamp.fromDate(birthDate),
   };
 
