@@ -18,12 +18,23 @@ class _ChatsScreenState extends State<ChatsScreen> {
   List<Map<String, dynamic>> newMatches = [];
   List<Map<String, dynamic>> activeChats = [];
   final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    });
     fetchMatches();
+  }
+
+  String normalize(String text) {
+    return text.toLowerCase().replaceAll(RegExp(r'[^\w\s]+'), '');
   }
 
   Future<void> fetchMatches() async {
@@ -109,6 +120,16 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final normalizedQuery = normalize(_searchQuery);
+
+    final filteredNewMatches = newMatches
+        .where((match) => normalize(match['name']).contains(normalizedQuery))
+        .toList();
+
+    final filteredActiveChats = activeChats
+        .where((chat) => normalize(chat['name']).contains(normalizedQuery))
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Wit Ü'),
@@ -119,6 +140,33 @@ class _ChatsScreenState extends State<ChatsScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Buscar persona',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                FocusScope.of(context).unfocus();
+                              },
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.lightGray),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppColors.yellow),
+                      ),
+                    ),
+                  ),
+                ),
                 Container(
                   alignment: Alignment.centerLeft,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -129,13 +177,13 @@ class _ChatsScreenState extends State<ChatsScreen> {
                 ),
                 SizedBox(
                   height: 110,
-                  child: newMatches.isEmpty
+                  child: filteredNewMatches.isEmpty
                       ? const Center(child: Text('Aún no tenés nuevos matches'))
                       : ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: newMatches.length,
+                          itemCount: filteredNewMatches.length,
                           itemBuilder: (context, index) {
-                            final match = newMatches[index];
+                            final match = filteredNewMatches[index];
                             return GestureDetector(
                               onTap: () {
                                 Navigator.pushNamed(
@@ -189,12 +237,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
                   ),
                 ),
                 Expanded(
-                  child: activeChats.isEmpty
+                  child: filteredActiveChats.isEmpty
                       ? const Center(child: Text('Aún no tenés chats activos'))
                       : ListView.builder(
-                          itemCount: activeChats.length,
+                          itemCount: filteredActiveChats.length,
                           itemBuilder: (context, index) {
-                            final chat = activeChats[index];
+                            final chat = filteredActiveChats[index];
                             return ListTile(
                               leading: CircleAvatar(
                                 radius: 25,
