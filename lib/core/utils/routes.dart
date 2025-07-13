@@ -21,7 +21,8 @@ import 'package:juvuit_flutter/features/testing/screens/debug_screen_delete.dart
 //import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/public_profile_screen.dart';
 import 'package:juvuit_flutter/features/testing/screens/debug_screen_home.dart';
-import 'package:juvuit_flutter/features/testing/screens/debug_screen_infomap.dart'; // nueva importación
+import 'package:juvuit_flutter/features/testing/screens/debug_screen_infomap.dart';
+import 'package:juvuit_flutter/features/testing/screens/debug_screen_premium.dart'; // nueva importación
 
 
 
@@ -78,7 +79,7 @@ class AppRoutes {
           builder: (_) => PublicProfileScreen(profile: args['profile']),
         );
       case debug:
-        return MaterialPageRoute(builder: (_) => const DebugHomeScreen());
+        return MaterialPageRoute(builder: (_) => const DebugSetPremiumScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(
