@@ -10,6 +10,7 @@ import 'package:juvuit_flutter/features/events/presentation/screens/events_scree
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_ig_screen.dart';
 // ignore: unused_import
 import 'package:juvuit_flutter/features/matching/presentation/screens/matching_screen.dart';
+import 'package:juvuit_flutter/features/onboarding/presentation/screens/intro_slides_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/profile_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/public_profile_screen.dart';
@@ -23,7 +24,6 @@ import 'package:juvuit_flutter/features/profile/presentation/screens/public_prof
 import 'package:juvuit_flutter/features/testing/screens/debug_screen_home.dart';
 import 'package:juvuit_flutter/features/testing/screens/debug_screen_infomap.dart';
 import 'package:juvuit_flutter/features/testing/screens/debug_screen_premium.dart'; // nueva importación
-
 
 
 class AppRoutes {
@@ -40,6 +40,8 @@ class AppRoutes {
   static const String editProfile = '/edit-profile';
   static const String userProfile = '/user-profile';
   static const String splash = '/splash';
+  static const String onboarding = '/onboarding';
+
 
 
   // Generador de rutas
@@ -47,6 +49,8 @@ class AppRoutes {
     switch (settings.name) {
       case splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
+      case onboarding:
+        return MaterialPageRoute(builder: (_) => const IntroSlidesScreen());
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case register:
