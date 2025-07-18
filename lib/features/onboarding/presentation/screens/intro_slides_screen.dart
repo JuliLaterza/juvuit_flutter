@@ -17,7 +17,7 @@ class _IntroSlidesScreenState extends State<IntroSlidesScreen> {
   final List<Map<String, String>> slides = [
     {
       'title': 'Descubrí momentos únicos',
-      'description': 'Conectá con personas que van a los mismos eventos que vos.',
+      'description': 'Conectá con personas que van a ir al mismo lugar que vos y comparten tus mismas ganas de divertirse.',
     },
     {
       'title': 'Tu perfil, tu estilo',
@@ -25,7 +25,7 @@ class _IntroSlidesScreenState extends State<IntroSlidesScreen> {
     },
     {
       'title': '¡Empezá a vivir la experiencia!',
-      'description': 'Wit Ü es más que una app, es tu nueva forma de conectar.',
+      'description': 'Wit Ü es más que una app, es tu nueva forma de conectar. Somos seres humanos y queremos compartir momentos en comunidad.',
     },
   ];
 
