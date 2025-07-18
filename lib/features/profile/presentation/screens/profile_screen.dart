@@ -18,6 +18,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   late final PageController _pageController;
   int _currentPage = 0;
+  bool _isDescriptionExpanded = false;
 
   @override
   void initState() {
@@ -240,29 +241,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
             Center(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    _userProfile!.name,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.black,
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '${_userProfile!.name},',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.black,
+                        ),
+                      ),
+                      if (_userProfile!.birthDate != null) ...[
+                        const SizedBox(width: 8),
+                        Text(
+                          '${calculateAge(_userProfile!.birthDate!)}',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.black,
+                          ),
+                        ),
+                      ]
+                    ],
                   ),
-                  if (_userProfile!.birthDate != null)
-                    Text(
-                      '${calculateAge(_userProfile!.birthDate!)} años',
-                      style: const TextStyle(fontSize: 14, color: AppColors.gray),
+                  if (_userProfile!.description.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Column(
+                        children: [
+                          Text(
+                            _userProfile!.description,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 14, color: AppColors.gray),
+                            maxLines: _isDescriptionExpanded ? null : 3,
+                            overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                          ),
+                          if (_userProfile!.description.length > 65) // Puedes ajustar el umbral
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isDescriptionExpanded = !_isDescriptionExpanded;
+                                });
+                              },
+                              child: Text(_isDescriptionExpanded ? 'Ver menos' : 'Ver más'),
+                            ),
+                        ],
+                      ),
                     ),
                 ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Center(
-              child: Text(
-                _userProfile!.description,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: AppColors.gray),
               ),
             ),
             const SizedBox(height: 16),
