@@ -103,7 +103,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       'drink': _drinkController.text.trim(),
       'top_3canciones': _selectedSongs,
       'photoUrls': newPhotoUrls,
-    });
+    }, SetOptions(merge: true)); // SetOptions(merge: true) para actualizar solo los campos que cambiamos
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
