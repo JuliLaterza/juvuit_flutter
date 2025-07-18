@@ -16,11 +16,20 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   UserProfile? _userProfile;
   bool _isLoading = true;
+  late final PageController _pageController;
+  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(viewportFraction: 0.85);
     _loadProfile();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadProfile() async {
@@ -165,24 +174,68 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
-            Center(
-              child: Builder(
-                builder: (context) {
-                  final photos = _userProfile!.photoUrls;
-                  if (photos.isEmpty) {
-                    return const CircleAvatar(
-                      radius: 80,
-                      backgroundImage: NetworkImage(
-                        'https://tse2.mm.bing.net/th?id=OIP.9UPbYqPai-PXbgNHqMUxigHaHa&pid=Api',
+            Column(
+              children: [
+                SizedBox(
+                  height: 240,
+                  child: Builder(
+                    builder: (context) {
+                      final photos = _userProfile!.photoUrls;
+                      if (photos.isEmpty) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.network(
+                            'https://tse2.mm.bing.net/th?id=OIP.9UPbYqPai-PXbgNHqMUxigHaHa&pid=Api',
+                            width: double.infinity,
+                            height: 240,
+                            fit: BoxFit.cover,
+                          ),
+                        );
+                      }
+                      return PageView.builder(
+                        itemCount: photos.length,
+                        controller: _pageController,
+                        onPageChanged: (index) {
+                          setState(() {
+                            _currentPage = index;
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.network(
+                                photos[index],
+                                width: double.infinity,
+                                height: 240,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (_userProfile!.photoUrls.isNotEmpty)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(
+                      _userProfile!.photoUrls.length,
+                      (index) => Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _currentPage == index ? AppColors.yellow : AppColors.gray,
+                        ),
                       ),
-                    );
-                  }
-                  return CircleAvatar(
-                    radius: 80,
-                    backgroundImage: NetworkImage(photos[0]),
-                  );
-                },
-              ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 16),
             Center(
