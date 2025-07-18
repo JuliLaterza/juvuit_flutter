@@ -168,19 +168,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        toolbarHeight: 40,
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 8.0),
-          child: Image.asset(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(52),
+        child: AppBar(
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          title: Image.asset(
             'assets/images/homescreen/logo_witu.png',
             height: 32,
           ),
+          centerTitle: false,
         ),
-        title: null,
       ),
       body: Column(
         children: [
@@ -318,8 +316,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: const Column(
                           children: [
                             Icon(Icons.music_note, color: AppColors.yellow),
-                            SizedBox(height: 4),
-                            Text('Top Canciones', style: TextStyle(fontSize: 12)),
+                            SizedBox(height: 8),
+                            Text('Canciones', style: TextStyle(fontSize: 14)),
                           ],
                         ),
                       ),
@@ -327,10 +325,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Column(
                         children: [
                           const Icon(Icons.local_bar, color: AppColors.yellow),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 8),
                           Text(
                             _userProfile!.favoriteDrink,
-                            style: const TextStyle(fontSize: 12),
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ],
                       ),
@@ -338,10 +336,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Column(
                         children: [
                           const Icon(Icons.star, color: AppColors.yellow),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 8),
                           Text(
                             _userProfile!.sign ?? '—',
-                            style: const TextStyle(fontSize: 12),
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ],
                       ),

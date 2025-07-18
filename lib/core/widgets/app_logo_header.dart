@@ -11,7 +11,7 @@ class AppLogoHeader extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Image.asset(
           'assets/images/homescreen/logo_witu.png',
-          height: 32,
+          height: 40,
         ),
       ),
     );
