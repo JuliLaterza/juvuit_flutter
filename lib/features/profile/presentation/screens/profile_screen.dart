@@ -5,6 +5,7 @@ import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
 import 'package:juvuit_flutter/core/utils/routes.dart';
 import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
+import 'package:juvuit_flutter/core/widgets/app_logo_header.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -169,238 +170,255 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
+        toolbarHeight: 40,
         backgroundColor: AppColors.white,
+        elevation: 0,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8.0),
+          child: Image.asset(
+            'assets/images/homescreen/logo_witu.png',
+            height: 32,
+          ),
+        ),
+        title: null,
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            Column(
-              children: [
-                SizedBox(
-                  height: 240,
-                  child: Builder(
-                    builder: (context) {
-                      final photos = _userProfile!.photoUrls;
-                      if (photos.isEmpty) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: Image.network(
-                            'https://tse2.mm.bing.net/th?id=OIP.9UPbYqPai-PXbgNHqMUxigHaHa&pid=Api',
-                            width: double.infinity,
-                            height: 240,
-                            fit: BoxFit.cover,
-                          ),
-                        );
-                      }
-                      return PageView.builder(
-                        itemCount: photos.length,
-                        controller: _pageController,
-                        onPageChanged: (index) {
-                          setState(() {
-                            _currentPage = index;
-                          });
-                        },
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: Image.network(
-                                photos[index],
-                                width: double.infinity,
-                                height: 240,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(height: 8),
-                if (_userProfile!.photoUrls.isNotEmpty)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      _userProfile!.photoUrls.length,
-                      (index) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _currentPage == index ? AppColors.yellow : AppColors.gray,
+      body: Column(
+        children: [
+          Expanded(
+            child: SafeArea(
+              top: false,
+              child: ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
+                  Column(
+                    children: [
+                      SizedBox(
+                        height: 240,
+                        child: Builder(
+                          builder: (context) {
+                            final photos = _userProfile!.photoUrls;
+                            if (photos.isEmpty) {
+                              return ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.network(
+                                  'https://tse2.mm.bing.net/th?id=OIP.9UPbYqPai-PXbgNHqMUxigHaHa&pid=Api',
+                                  width: double.infinity,
+                                  height: 240,
+                                  fit: BoxFit.cover,
+                                ),
+                              );
+                            }
+                            return PageView.builder(
+                              itemCount: photos.length,
+                              controller: _pageController,
+                              onPageChanged: (index) {
+                                setState(() {
+                                  _currentPage = index;
+                                });
+                              },
+                              itemBuilder: (context, index) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Image.network(
+                                      photos[index],
+                                      width: double.infinity,
+                                      height: 240,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      if (_userProfile!.photoUrls.isNotEmpty)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(
+                            _userProfile!.photoUrls.length,
+                            (index) => Container(
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _currentPage == index ? AppColors.yellow : AppColors.gray,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              '${_userProfile!.name},',
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.black,
+                              ),
+                            ),
+                            if (_userProfile!.birthDate != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                '${calculateAge(_userProfile!.birthDate!)}',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.black,
+                                ),
+                              ),
+                            ]
+                          ],
+                        ),
+                        if (_userProfile!.description.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Column(
+                              children: [
+                                Text(
+                                  _userProfile!.description,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(fontSize: 14, color: AppColors.gray),
+                                  maxLines: _isDescriptionExpanded ? null : 3,
+                                  overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                                ),
+                                if (_userProfile!.description.length > 65) // Puedes ajustar el umbral
+                                  TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _isDescriptionExpanded = !_isDescriptionExpanded;
+                                      });
+                                    },
+                                    child: Text(_isDescriptionExpanded ? 'Ver menos' : 'Ver más'),
+                                  ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
+                  const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
-                        '${_userProfile!.name},',
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.black,
+                      GestureDetector(
+                        onTap: () => _showSongsModal(context),
+                        child: const Column(
+                          children: [
+                            Icon(Icons.music_note, color: AppColors.yellow),
+                            SizedBox(height: 4),
+                            Text('Top Canciones', style: TextStyle(fontSize: 12)),
+                          ],
                         ),
                       ),
-                      if (_userProfile!.birthDate != null) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          '${calculateAge(_userProfile!.birthDate!)}',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.black,
-                          ),
-                        ),
-                      ]
-                    ],
-                  ),
-                  if (_userProfile!.description.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Column(
+                      const SizedBox(width: 24),
+                      Column(
                         children: [
+                          const Icon(Icons.local_bar, color: AppColors.yellow),
+                          const SizedBox(height: 4),
                           Text(
-                            _userProfile!.description,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 14, color: AppColors.gray),
-                            maxLines: _isDescriptionExpanded ? null : 3,
-                            overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+                            _userProfile!.favoriteDrink,
+                            style: const TextStyle(fontSize: 12),
                           ),
-                          if (_userProfile!.description.length > 65) // Puedes ajustar el umbral
-                            TextButton(
-                              onPressed: () {
-                                setState(() {
-                                  _isDescriptionExpanded = !_isDescriptionExpanded;
-                                });
-                              },
-                              child: Text(_isDescriptionExpanded ? 'Ver menos' : 'Ver más'),
-                            ),
                         ],
                       ),
-                    ),
+                      const SizedBox(width: 24),
+                      Column(
+                        children: [
+                          const Icon(Icons.star, color: AppColors.yellow),
+                          const SizedBox(height: 4),
+                          Text(
+                            _userProfile!.sign ?? '—',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  const Divider(),
+                  const Text('Cuenta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    leading: const Icon(Icons.person, color: AppColors.gray),
+                    title: const Text('Editar Perfil'),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.editProfile);
+                    },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.lock, color: AppColors.gray),
+                    title: const Text('Privacidad'),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {},
+                  ),
+                  const Divider(),
+                  const Text('Notificaciones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Recibir notificaciones'),
+                      Switch(
+                        value: _notificationsEnabled,
+                        activeColor: AppColors.yellow,
+                        onChanged: (value) {
+                          setState(() {
+                            _notificationsEnabled = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+
+                  const Divider(),
+                  const Text('Ayuda', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    leading: const Icon(Icons.help_outline, color: AppColors.gray),
+                    title: const Text('Centro de ayuda'),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {},
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.feedback_outlined, color: AppColors.gray),
+                    title: const Text('Enviar feedback'),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {},
+                  ),
+                  const Divider(),
+                  const Text('Cuenta avanzada', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    leading: const Icon(Icons.logout, color: AppColors.gray),
+                    title: const Text('Cerrar sesión'),
+                    onTap: () => _showLogoutConfirmationDialog(context),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.delete_outline, color: Colors.red),
+                    title: const Text('Eliminar cuenta'),
+                    titleTextStyle: const TextStyle(color: Colors.red),
+                    onTap: () {
+                      // Lógica para eliminar cuenta
+                    },
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () => _showSongsModal(context),
-                  child: const Column(
-                    children: [
-                      Icon(Icons.music_note, color: AppColors.yellow),
-                      SizedBox(height: 4),
-                      Text('Top Canciones', style: TextStyle(fontSize: 12)),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 24),
-                Column(
-                  children: [
-                    const Icon(Icons.local_bar, color: AppColors.yellow),
-                    const SizedBox(height: 4),
-                    Text(
-                      _userProfile!.favoriteDrink,
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 24),
-                Column(
-                  children: [
-                    const Icon(Icons.star, color: AppColors.yellow),
-                    const SizedBox(height: 4),
-                    Text(
-                      _userProfile!.sign ?? '—',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const Divider(),
-            const Text('Cuenta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            ListTile(
-              leading: const Icon(Icons.person, color: AppColors.gray),
-              title: const Text('Editar Perfil'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.pushNamed(context, AppRoutes.editProfile);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.lock, color: AppColors.gray),
-              title: const Text('Privacidad'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {},
-            ),
-            const Divider(),
-            const Text('Notificaciones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Recibir notificaciones'),
-                Switch(
-                  value: _notificationsEnabled,
-                  activeColor: AppColors.yellow,
-                  onChanged: (value) {
-                    setState(() {
-                      _notificationsEnabled = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-
-            const Divider(),
-            const Text('Ayuda', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            ListTile(
-              leading: const Icon(Icons.help_outline, color: AppColors.gray),
-              title: const Text('Centro de ayuda'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.feedback_outlined, color: AppColors.gray),
-              title: const Text('Enviar feedback'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {},
-            ),
-            const Divider(),
-            const Text('Cuenta avanzada', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            ListTile(
-              leading: const Icon(Icons.logout, color: AppColors.gray),
-              title: const Text('Cerrar sesión'),
-              onTap: () => _showLogoutConfirmationDialog(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text('Eliminar cuenta'),
-              titleTextStyle: const TextStyle(color: Colors.red),
-              onTap: () {
-                // Lógica para eliminar cuenta
-              },
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 4),
     );
