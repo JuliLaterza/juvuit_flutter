@@ -6,6 +6,7 @@ import 'package:juvuit_flutter/core/utils/routes.dart';
 import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 import 'package:juvuit_flutter/core/widgets/app_logo_header.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -377,6 +378,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
                   ListTile(
+                    leading: const Icon(Icons.health_and_safety, color: Colors.blue),
+                    title: const Text('Líneas de emergencia'),
+                    subtitle: const Text('Recursos de ayuda profesional'),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () async {
+                      const url = 'https://findahelpline.com/es-ES/countries/ar';
+                      try {
+                        await launchUrl(Uri.parse(url));
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('No se pudo abrir el enlace')),
+                        );
+                      }
+                    },
+                  ),
+                  ListTile(
                     leading: const Icon(Icons.lock, color: AppColors.gray),
                     title: const Text('Privacidad'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -416,7 +433,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     leading: const Icon(Icons.feedback_outlined, color: AppColors.gray),
                     title: const Text('Enviar feedback'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.feedback);
+                    },
                   ),
                   const Divider(),
                   const Text('Cuenta avanzada', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
