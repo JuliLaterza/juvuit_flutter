@@ -20,17 +20,27 @@ class EventsScreen extends StatefulWidget {
 class _EventsScreenState extends State<EventsScreen> {
   String selectedType = 'Todos';
   late Future<List<Event>> _futureEvents;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   final user = FirebaseAuth.instance.currentUser;
-
 
   @override
   void initState() {
     super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    });
     _futureEvents = fetchEventsFromFirebase();
     if (kDebugMode) {
       print(user?.uid);
     }
+  }
+
+  String normalize(String text) {
+    return text.toLowerCase().replaceAll(RegExp(r'[^\w\s]+'), '');
   }
 
   @override
@@ -52,6 +62,34 @@ class _EventsScreenState extends State<EventsScreen> {
         top: false,
         child: Column(
           children: [
+            // Campo de búsqueda
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Buscar evento',
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            _searchController.clear();
+                            FocusScope.of(context).unfocus();
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.lightGray),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppColors.yellow),
+                  ),
+                ),
+              ),
+            ),
             // Botones de filtro
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -79,11 +117,51 @@ class _EventsScreenState extends State<EventsScreen> {
                   }
 
                   final filteredEvents = filterEventsByType(snapshot.data!, selectedType);
+                  
+                  // Aplicar filtro de búsqueda
+                  final normalizedQuery = normalize(_searchQuery);
+                  if (kDebugMode) {
+                    print('🔍 Búsqueda: "$_searchQuery" -> Normalizada: "$normalizedQuery"');
+                    print('📋 Eventos filtrados por tipo: ${filteredEvents.length}');
+                    print('🔍 Buscando eventos que contengan: "$normalizedQuery"');
+                    for (var event in filteredEvents.take(5)) {
+                      print('  📅 Evento: "${event.title}" (${event.subtitle})');
+                      print('    - Título normalizado: "${normalize(event.title)}"');
+                      print('    - Subtítulo normalizado: "${normalize(event.subtitle)}"');
+                    }
+                  }
+                  
+                  final searchFilteredEvents = filteredEvents
+                      .where((event) {
+                        final normalizedTitle = normalize(event.title);
+                        final normalizedSubtitle = normalize(event.subtitle);
+                        final matchesTitle = normalizedTitle.contains(normalizedQuery);
+                        final matchesSubtitle = normalizedSubtitle.contains(normalizedQuery);
+                        final matches = matchesTitle || matchesSubtitle;
+                        
+                        if (kDebugMode && _searchQuery.isNotEmpty) {
+                          if (matchesTitle || matchesSubtitle) {
+                            print('  ✅ COINCIDE: "${event.title}"');
+                            if (matchesTitle) print('    - Coincide en título');
+                            if (matchesSubtitle) print('    - Coincide en subtítulo');
+                          }
+                        }
+                        return matches;
+                      })
+                      .toList();
+
+                  if (kDebugMode) {
+                    print('✅ Eventos encontrados: ${searchFilteredEvents.length}');
+                  }
+
+                  if (searchFilteredEvents.isEmpty && _searchQuery.isNotEmpty) {
+                    return const Center(child: Text('No se encontraron eventos con ese nombre'));
+                  }
 
                   return ListView.builder(
-                    itemCount: filteredEvents.length,
+                    itemCount: searchFilteredEvents.length,
                     itemBuilder: (context, index) {
-                      final event = filteredEvents[index];
+                      final event = searchFilteredEvents[index];
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                         child: EventCard(
