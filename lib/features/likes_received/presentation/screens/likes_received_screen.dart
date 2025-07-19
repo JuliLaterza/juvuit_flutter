@@ -45,177 +45,202 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
     if (_isLoadingProfile) return _loading();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Likes recibidos')),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(52),
+        child: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          title: Image.asset(
+            'assets/images/homescreen/logo_witu.png',
+            height: 32,
+          ),
+          centerTitle: false,
+        ),
+      ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
-      body: FutureBuilder<List<QueryDocumentSnapshot>>(
-        future: _repo.fetchLikes(_myId),
-        builder: (ctx, snap) {
-          if (snap.hasError) return _error();
-          if (!snap.hasData) return _loading();
-          final docs = snap.data!;
-          if (docs.isEmpty) return _empty();
+      body: SafeArea(
+        top: false,
+        child: FutureBuilder<List<QueryDocumentSnapshot>>(
+          future: _repo.fetchLikes(_myId),
+          builder: (ctx, snap) {
+            if (snap.hasError) return _error();
+            if (!snap.hasData) return _loading();
+            final docs = snap.data!;
+            if (docs.isEmpty) return _empty();
 
-          return Stack(
-            children: [
-              GridView.builder(
-                padding: const EdgeInsets.all(12),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
-                  childAspectRatio: 0.65,
-                ),
-                itemCount: docs.length,
-                itemBuilder: (ctx, i) {
-                  final doc     = docs[i];
-                  final otherId = doc.id;
-                  final eventId = doc.get('eventId') as String? ?? '';
-                  return FutureBuilder<Map<String, dynamic>>(
-                    future: _repo.fetchUserAndEvent(otherId, eventId),
-                    builder: (c, s) {
-                      if (s.connectionState == ConnectionState.waiting) {
-                        return Card(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          elevation: 2,
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 80, height: 80,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade300, shape: BoxShape.circle,
+            return Stack(
+              children: [
+                GridView.builder(
+                  padding: const EdgeInsets.all(12),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, crossAxisSpacing: 12, mainAxisSpacing: 12,
+                    childAspectRatio: 0.65,
+                  ),
+                  itemCount: docs.length,
+                  itemBuilder: (ctx, i) {
+                    final doc     = docs[i];
+                    final otherId = doc.id;
+                    final eventId = doc.get('eventId') as String? ?? '';
+                    return FutureBuilder<Map<String, dynamic>>(
+                      future: _repo.fetchUserAndEvent(otherId, eventId),
+                      builder: (c, s) {
+                        if (s.connectionState == ConnectionState.waiting) {
+                          return Card(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            elevation: 2,
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 80, height: 80,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade300, shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Container(
+                                    width: 60, height: 12, color: Colors.grey.shade300,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    width: 80, height: 12, color: Colors.grey.shade300,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+                        if (s.hasError || !s.hasData) return _error();
+                        final data = s.data!;
+                        return SwipeCard(
+                          photoUrl:   data['photoUrl'],
+                          name:       data['name'],
+                          age:        data['age'],
+                          eventTitle: data['eventTitle'],
+                          onReject: () async {
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(_myId)
+                                .collection('likesReceived')
+                                .doc(otherId)
+                                .delete();
+                            setState(() {
+                              docs.removeAt(i);
+                            });
+                          },
+                          onInfo: () async {
+                            final profile = await _repo.queryProfileByName(data['name']);
+                            if (profile != null && context.mounted) {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => LikePreviewScreen(
+                                    profile: profile,
+                                    onLike: () async {
+                                      await handleLikeAndMatch(
+                                        currentUserId: _myId,
+                                        likedUserId: otherId,
+                                        eventId: eventId,
+                                        context: context,
+                                        currentUserPhoto: _myProfile?.photoUrls.isNotEmpty == true
+                                            ? _myProfile!.photoUrls.first
+                                            : 'https://via.placeholder.com/150',
+                                        matchedUserPhoto: data['photoUrl'],
+                                        matchedUserName: data['name'],
+                                      );
+                                    },
+                                    onDislike: () async {
+                                      await FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(_myId)
+                                          .collection('likesReceived')
+                                          .doc(otherId)
+                                          .delete();
+                                    },
                                   ),
                                 ),
-                                const SizedBox(height: 16),
-                                Container(
-                                  width: 60, height: 12, color: Colors.grey.shade300,
-                                ),
-                                const SizedBox(height: 8),
-                                Container(
-                                  width: 80, height: 12, color: Colors.grey.shade300,
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-                      if (s.hasError || !s.hasData) return _error();
-                      final data = s.data!;
-                      return SwipeCard(
-                        photoUrl:   data['photoUrl'],
-                        name:       data['name'],
-                        age:        data['age'],
-                        eventTitle: data['eventTitle'],
-                        onReject: () async {
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(_myId)
-                              .collection('likesReceived')
-                              .doc(otherId)
-                              .delete();
-                          setState(() {
-                            docs.removeAt(i);
-                          });
-                        },
-                        onInfo: () async {
-                          final profile = await _repo.queryProfileByName(data['name']);
-                          if (profile != null && context.mounted) {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => LikePreviewScreen(
-                                  profile: profile,
-                                  onLike: () async {
-                                    await handleLikeAndMatch(
-                                      currentUserId: _myId,
-                                      likedUserId: otherId,
-                                      eventId: eventId,
-                                      context: context,
-                                      currentUserPhoto: _myProfile?.photoUrls.isNotEmpty == true
-                                          ? _myProfile!.photoUrls.first
-                                          : 'https://via.placeholder.com/150',
-                                      matchedUserPhoto: data['photoUrl'],
-                                      matchedUserName: data['name'],
-                                    );
-                                  },
-                                  onDislike: () async {
-                                    await FirebaseFirestore.instance
-                                        .collection('users')
-                                        .doc(_myId)
-                                        .collection('likesReceived')
-                                        .doc(otherId)
-                                        .delete();
-                                  },
-                                ),
-                              ),
+                              );
+                              setState(() {
+                                docs.removeAt(i);
+                              });
+                            }
+                          },
+                          onAccept: () async {
+                            await handleLikeAndMatch(
+                              currentUserId: _myId,
+                              likedUserId: otherId,
+                              eventId: eventId,
+                              context: context,
+                              currentUserPhoto: _myProfile?.photoUrls.isNotEmpty == true
+                                  ? _myProfile!.photoUrls.first
+                                  : 'https://via.placeholder.com/150',
+                              matchedUserPhoto: data['photoUrl'],
+                              matchedUserName: data['name'],
                             );
                             setState(() {
                               docs.removeAt(i);
                             });
-                          }
-                        },
-                        onAccept: () async {
-                          await handleLikeAndMatch(
-                            currentUserId: _myId,
-                            likedUserId: otherId,
-                            eventId: eventId,
-                            context: context,
-                            currentUserPhoto: _myProfile?.photoUrls.isNotEmpty == true
-                                ? _myProfile!.photoUrls.first
-                                : 'https://via.placeholder.com/150',
-                            matchedUserPhoto: data['photoUrl'],
-                            matchedUserName: data['name'],
-                          );
-                          setState(() {
-                            docs.removeAt(i);
-                          });
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
-              if (!(_myProfile?.isPremium ?? false))
-                Positioned.fill(
-                  child: Container(
-                    color: Colors.white.withOpacity(0.6),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(Icons.lock, size: 48, color: Colors.black54),
-                            const SizedBox(height: 16),
-                            const Text(
-                              'Descubrí quiénes te quieren conocer!',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: () {}, // futura navegación a premium
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
+                if (!(_myProfile?.isPremium ?? false))
+                  Positioned.fill(
+                    child: Container(
+                      color: Colors.white.withOpacity(0.6),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.lock, size: 48, color: Colors.black54),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Descubrí quiénes te quieren conocer!',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                               ),
-                              child: const Text('Activar Premium', style: TextStyle(color: Colors.white)),
-                            ),
-                          ],
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () {}, // futura navegación a premium
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                                ),
+                                child: const Text('Activar Premium', style: TextStyle(color: Colors.white)),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
   Widget _notAuth() => Scaffold(
-    appBar: AppBar(title: const Text('Likes recibidos')),
+    appBar: PreferredSize(
+      preferredSize: const Size.fromHeight(52),
+      child: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: Image.asset(
+          'assets/images/homescreen/logo_witu.png',
+          height: 32,
+        ),
+        centerTitle: false,
+      ),
+    ),
     bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
     body: const Center(child: Text('Usuario no autenticado')),
   );

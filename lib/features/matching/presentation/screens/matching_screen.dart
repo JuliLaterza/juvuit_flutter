@@ -16,42 +16,53 @@ class _MatchingScreenState extends State<MatchingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Eventos anotados'),
-        centerTitle: true,
-      ),
-      body: Column(
-        //crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Agrupar por:"),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 12,
-            alignment: WrapAlignment.center,
-            children: [
-              ChoiceChip(
-                label: const Text('Fecha'),
-                selected: _orderBy == 'fecha',
-                onSelected: (_) => setState(() => _orderBy = 'fecha'),
-                selectedColor: AppColors.yellow,
-                labelStyle: TextStyle(
-                  color: _orderBy == 'fecha' ? Colors.black : Colors.black,
-                ),
-              ),
-              ChoiceChip(
-                label: const Text('Asistentes'),
-                selected: _orderBy == 'asistentes',
-                onSelected: (_) => setState(() => _orderBy = 'asistentes'),
-                selectedColor: AppColors.yellow,
-                labelStyle: TextStyle(
-                  color: _orderBy == 'asistentes' ? Colors.black : Colors.black,
-                ),
-              ),
-            ],
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(52),
+        child: AppBar(
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          title: Image.asset(
+            'assets/images/homescreen/logo_witu.png',
+            height: 32,
           ),
-          const SizedBox(height: 8),
-          Expanded(child: MatchingLoader(orderBy: _orderBy)),
-        ],
+          centerTitle: false,
+        ),
+      ),
+      body: SafeArea(
+        top: false,
+        child: Column(
+          //crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Agrupar por:"),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 12,
+              alignment: WrapAlignment.center,
+              children: [
+                ChoiceChip(
+                  label: const Text('Fecha'),
+                  selected: _orderBy == 'fecha',
+                  onSelected: (_) => setState(() => _orderBy = 'fecha'),
+                  selectedColor: AppColors.yellow,
+                  labelStyle: TextStyle(
+                    color: _orderBy == 'fecha' ? Colors.black : Colors.black,
+                  ),
+                ),
+                ChoiceChip(
+                  label: const Text('Asistentes'),
+                  selected: _orderBy == 'asistentes',
+                  onSelected: (_) => setState(() => _orderBy = 'asistentes'),
+                  selectedColor: AppColors.yellow,
+                  labelStyle: TextStyle(
+                    color: _orderBy == 'asistentes' ? Colors.black : Colors.black,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Expanded(child: MatchingLoader(orderBy: _orderBy)),
+          ],
+        ),
       ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 1),
     );

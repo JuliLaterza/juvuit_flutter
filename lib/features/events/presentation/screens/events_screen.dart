@@ -36,17 +36,20 @@ class _EventsScreenState extends State<EventsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Momentos que importan 🎉',
-          style: TextStyle(fontStyle: FontStyle.normal),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(52),
+        child: AppBar(
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          title: Image.asset(
+            'assets/images/homescreen/logo_witu.png',
+            height: 32,
+          ),
+          centerTitle: false,
         ),
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.black,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
       ),
       body: SafeArea(
+        top: false,
         child: Column(
           children: [
             // Botones de filtro

@@ -131,160 +131,170 @@ class _ChatsScreenState extends State<ChatsScreen> {
         .toList();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Wit Ü'),
-        centerTitle: true,
-        backgroundColor: AppColors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(52),
+        child: AppBar(
+          backgroundColor: AppColors.white,
+          elevation: 0,
+          title: Image.asset(
+            'assets/images/homescreen/logo_witu.png',
+            height: 32,
+          ),
+          centerTitle: false,
+        ),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      hintText: 'Buscar persona',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: _searchQuery.isNotEmpty
-                          ? IconButton(
-                              icon: const Icon(Icons.clear),
-                              onPressed: () {
-                                _searchController.clear();
-                                FocusScope.of(context).unfocus();
-                              },
-                            )
-                          : null,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.lightGray),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppColors.yellow),
+          : SafeArea(
+              top: false,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: TextField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        hintText: 'Buscar persona',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: _searchQuery.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  FocusScope.of(context).unfocus();
+                                },
+                              )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.lightGray),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: AppColors.yellow),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: const Text(
-                    'Nuevos matches',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: const Text(
+                      'Nuevos matches',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-                SizedBox(
-                  height: 110,
-                  child: filteredNewMatches.isEmpty
-                      ? const Center(child: Text('Aún no tenés nuevos matches'))
-                      : ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: filteredNewMatches.length,
-                          itemBuilder: (context, index) {
-                            final match = filteredNewMatches[index];
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.chat,
-                                  arguments: {
-                                    'matchId': match['matchId'],
-                                    'personName': match['name'],
-                                    'personPhotoUrl': match['photoUrl'],
-                                  },
-                                ).then((_) => fetchMatches());
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10),
-                                child: Column(
-                                  children: [
-                                    CircleAvatar(
-                                      radius: 35,
-                                      backgroundColor: Colors.grey.shade300,
-                                      backgroundImage: match['photoUrl'] != null
-                                          ? CachedNetworkImageProvider(match['photoUrl'])
-                                          : null,
-                                      child: match['photoUrl'] == null
-                                          ? const Icon(Icons.person, color: Colors.white, size: 35)
-                                          : null,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    SizedBox(
-                                      width: 70,
-                                      child: Text(
-                                        match['name'],
-                                        overflow: TextOverflow.ellipsis,
-                                        textAlign: TextAlign.center,
-                                        style: const TextStyle(fontSize: 12),
+                  SizedBox(
+                    height: 110,
+                    child: filteredNewMatches.isEmpty
+                        ? const Center(child: Text('Aún no tenés nuevos matches'))
+                        : ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: filteredNewMatches.length,
+                            itemBuilder: (context, index) {
+                              final match = filteredNewMatches[index];
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.chat,
+                                    arguments: {
+                                      'matchId': match['matchId'],
+                                      'personName': match['name'],
+                                      'personPhotoUrl': match['photoUrl'],
+                                    },
+                                  ).then((_) => fetchMatches());
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                  child: Column(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 35,
+                                        backgroundColor: Colors.grey.shade300,
+                                        backgroundImage: match['photoUrl'] != null
+                                            ? CachedNetworkImageProvider(match['photoUrl'])
+                                            : null,
+                                        child: match['photoUrl'] == null
+                                            ? const Icon(Icons.person, color: Colors.white, size: 35)
+                                            : null,
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 4),
+                                      SizedBox(
+                                        width: 70,
+                                        child: Text(
+                                          match['name'],
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(fontSize: 12),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                ),
-                const Divider(),
-                Container(
-                  alignment: Alignment.centerLeft,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: const Text(
-                    'Chats',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              );
+                            },
+                          ),
                   ),
-                ),
-                Expanded(
-                  child: filteredActiveChats.isEmpty
-                      ? const Center(child: Text('Aún no tenés chats activos'))
-                      : ListView.builder(
-                          itemCount: filteredActiveChats.length,
-                          itemBuilder: (context, index) {
-                            final chat = filteredActiveChats[index];
-                            return ListTile(
-                              leading: CircleAvatar(
-                                radius: 25,
-                                backgroundImage: chat['photoUrl'] != null
-                                    ? CachedNetworkImageProvider(chat['photoUrl'])
+                  const Divider(),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: const Text(
+                      'Chats',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Expanded(
+                    child: filteredActiveChats.isEmpty
+                        ? const Center(child: Text('Aún no tenés chats activos'))
+                        : ListView.builder(
+                            itemCount: filteredActiveChats.length,
+                            itemBuilder: (context, index) {
+                              final chat = filteredActiveChats[index];
+                              return ListTile(
+                                leading: CircleAvatar(
+                                  radius: 25,
+                                  backgroundImage: chat['photoUrl'] != null
+                                      ? CachedNetworkImageProvider(chat['photoUrl'])
+                                      : null,
+                                  backgroundColor: Colors.grey.shade300,
+                                  child: chat['photoUrl'] == null
+                                      ? const Icon(Icons.person, color: Colors.white)
+                                      : null,
+                                ),
+                                title: Text(
+                                  chat['name'],
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                                subtitle: Text(
+                                  chat['lastMessage'] ?? '',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                trailing: chat['lastTimestamp'] != null
+                                    ? Text(
+                                        formatTime(chat['lastTimestamp']),
+                                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                      )
                                     : null,
-                                backgroundColor: Colors.grey.shade300,
-                                child: chat['photoUrl'] == null
-                                    ? const Icon(Icons.person, color: Colors.white)
-                                    : null,
-                              ),
-                              title: Text(
-                                chat['name'],
-                                style: const TextStyle(fontWeight: FontWeight.w600),
-                              ),
-                              subtitle: Text(
-                                chat['lastMessage'] ?? '',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              trailing: chat['lastTimestamp'] != null
-                                  ? Text(
-                                      formatTime(chat['lastTimestamp']),
-                                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                    )
-                                  : null,
-                              onTap: () {
-                                Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.chat,
-                                  arguments: {
-                                    'matchId': chat['matchId'],
-                                    'personName': chat['name'],
-                                    'personPhotoUrl': chat['photoUrl'],
-                                  },
-                                ).then((_) => fetchMatches());
-                              },
-                            );
-                          },
-                        ),
-                ),
-              ],
+                                onTap: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.chat,
+                                    arguments: {
+                                      'matchId': chat['matchId'],
+                                      'personName': chat['name'],
+                                      'personPhotoUrl': chat['photoUrl'],
+                                    },
+                                  ).then((_) => fetchMatches());
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
             ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 3),
     );
