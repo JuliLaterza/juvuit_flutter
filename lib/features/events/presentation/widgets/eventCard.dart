@@ -33,12 +33,17 @@ class _EventCardState extends State<EventCard> {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
 
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    if (userDoc.exists) {
-      final attendedEvents = List<String>.from(userDoc.data()?['attendedEvents'] ?? []);
+    // Verificar directamente en el evento
+    final eventDoc = await FirebaseFirestore.instance
+        .collection('events')
+        .doc(widget.event.id)
+        .get();
+        
+    if (eventDoc.exists) {
+      final attendees = List<String>.from(eventDoc.data()?['attendees'] ?? []);
       if (mounted) {
         setState(() {
-          isAttending = attendedEvents.contains(widget.event.id);
+          isAttending = attendees.contains(userId);
         });
       }
     }

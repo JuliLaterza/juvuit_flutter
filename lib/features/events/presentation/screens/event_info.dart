@@ -46,23 +46,78 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
   Future<void> _checkIfUserIsAttending() async {
     final userId = FirebaseAuth.instance.currentUser?.uid;
     if (userId == null) return;
-    final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-    final attendedEvents = List<String>.from(doc.data()?['attendedEvents'] ?? []);
-    if (mounted) {
-      setState(() {
-        isAttending = attendedEvents.contains(widget.event.id);
-      });
+    
+    // Verificar directamente en el evento (sincronizado con eventCard.dart)
+    final eventDoc = await FirebaseFirestore.instance
+        .collection('events')
+        .doc(widget.event.id)
+        .get();
+        
+    if (eventDoc.exists) {
+      final attendees = List<String>.from(eventDoc.data()?['attendees'] ?? []);
+      if (mounted) {
+        setState(() {
+          isAttending = attendees.contains(userId);
+        });
+      }
     }
   }
 
-  void _handleAttend() {
-    setState(() => isAttending = true);
-    attendEvent(widget.event.id).catchError((e) {
-      setState(() => isAttending = false);
+  Future<void> _handleAttendOrLeave() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    final firestore = FirebaseFirestore.instance;
+    final eventRef = firestore.collection('events').doc(widget.event.id);
+    final userRef = firestore.collection('users').doc(userId);
+
+    final eventSnapshot = await eventRef.get();
+    if (!eventSnapshot.exists) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al asistir: $e')),
+        const SnackBar(content: Text('Este evento no existe')),
       );
-    });
+      return;
+    }
+
+    final attendees = eventSnapshot.data()?['attendees'] ?? [];
+
+    if (attendees.contains(userId)) {
+      // Dejar de asistir
+      await eventRef.update({
+        'attendees': FieldValue.arrayRemove([userId]),
+      });
+      await userRef.update({
+        'attendedEvents': FieldValue.arrayRemove([widget.event.id]),
+      });
+
+      if (mounted) {
+        setState(() {
+          isAttending = false;
+        });
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Has dejado de asistir a este evento!')),
+      );
+    } else {
+      // Asistir
+      await eventRef.update({
+        'attendees': FieldValue.arrayUnion([userId]),
+      });
+      await userRef.update({
+        'attendedEvents': FieldValue.arrayUnion([widget.event.id]),
+      });
+
+      if (mounted) {
+        setState(() {
+          isAttending = true;
+        });
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Estás asistiendo a este evento!')),
+      );
+    }
   }
 
   Future<void> _openExternalMap(double lat, double lng) async {
@@ -141,14 +196,14 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: isAttending ? null : _handleAttend,
+                            onPressed: _handleAttendOrLeave,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isAttending ? Colors.grey : AppColors.yellow,
+                              backgroundColor: isAttending ? Colors.redAccent : AppColors.yellow,
                               foregroundColor: AppColors.black,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: Text(isAttending ? 'Ya estás unido' : 'Asistir'),
+                            child: Text(isAttending ? 'Dejar de asistir' : 'Asistir'),
                           ),
                         ),
                         const SizedBox(width: 12),
