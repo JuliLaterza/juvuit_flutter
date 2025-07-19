@@ -357,6 +357,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
                   ListTile(
+                    leading: const Icon(Icons.tune, color: AppColors.gray),
+                    title: const Text('Preferencias'),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.matchingPreferences);
+                    },
+                  ),
+                  const Divider(),
+                  const Text('Seguridad', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  ListTile(
+                    leading: const Icon(Icons.emergency, color: Colors.red),
+                    title: const Text('Botón antipánico'),
+                    subtitle: const Text('Configurar contacto de emergencia'),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.emergencyContact);
+                    },
+                  ),
+                  ListTile(
                     leading: const Icon(Icons.lock, color: AppColors.gray),
                     title: const Text('Privacidad'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -388,7 +408,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     leading: const Icon(Icons.help_outline, color: AppColors.gray),
                     title: const Text('Centro de ayuda'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.pushNamed(context, AppRoutes.helpCenter);
+                    },
                   ),
                   ListTile(
                     leading: const Icon(Icons.feedback_outlined, color: AppColors.gray),
