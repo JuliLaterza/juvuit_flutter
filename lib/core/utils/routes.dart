@@ -17,6 +17,7 @@ import 'package:juvuit_flutter/features/profile/presentation/screens/public_prof
 import 'package:juvuit_flutter/features/profile/presentation/screens/matching_preferences_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/emergency_contact_screen.dart';
 import 'package:juvuit_flutter/features/profile/presentation/screens/help_center_screen.dart';
+import 'package:juvuit_flutter/features/profile/presentation/screens/feedback_screen.dart';
 // ignore: unused_import
 import 'package:juvuit_flutter/features/profiles/presentation/screens/profiles_screen.dart'; // Nueva importación
 import 'package:juvuit_flutter/features/matching/widgets/matching_loader.dart';
@@ -47,6 +48,7 @@ class AppRoutes {
   static const String matchingPreferences = '/matching-preferences';
   static const String emergencyContact = '/emergency-contact';
   static const String helpCenter = '/help-center';
+  static const String feedback = '/feedback';
 
 
   // Generador de rutas
@@ -87,6 +89,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const EmergencyContactScreen());
       case helpCenter:
         return MaterialPageRoute(builder: (_) => const HelpCenterScreen());
+      case feedback:
+        return MaterialPageRoute(builder: (_) => const FeedbackScreen());
       case userProfile:
       case '/public_profile':
         final args = settings.arguments as Map<String, dynamic>;
