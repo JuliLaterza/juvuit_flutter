@@ -33,7 +33,7 @@ class AppThemes {
     cardTheme: CardTheme(
       color: ThemeColors.light.surface,
       elevation: 2,
-      shadowColor: AppColors.black.withOpacity(0.1),
+      shadowColor: ThemeColors.light.onBackground.withOpacity(0.1),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -55,23 +55,23 @@ class AppThemes {
       fillColor: ThemeColors.light.surface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.lightGray),
+        borderSide: BorderSide(color: ThemeColors.light.onSurface.withOpacity(0.3)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.lightGray),
+        borderSide: BorderSide(color: ThemeColors.light.onSurface.withOpacity(0.3)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: ThemeColors.light.primary),
       ),
       labelStyle: TextStyle(color: ThemeColors.light.onSurface),
-      hintStyle: TextStyle(color: AppColors.gray),
+      hintStyle: TextStyle(color: ThemeColors.light.onSurface.withOpacity(0.6)),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: ThemeColors.light.surface,
       selectedItemColor: ThemeColors.light.primary,
-      unselectedItemColor: AppColors.gray,
+      unselectedItemColor: ThemeColors.light.onSurface.withOpacity(0.6),
       type: BottomNavigationBarType.fixed,
       elevation: 8,
     ),
@@ -119,7 +119,7 @@ class AppThemes {
     cardTheme: CardTheme(
       color: ThemeColors.dark.surface,
       elevation: 2,
-      shadowColor: AppColors.black.withOpacity(0.3),
+      shadowColor: ThemeColors.dark.onBackground.withOpacity(0.3),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
@@ -141,23 +141,23 @@ class AppThemes {
       fillColor: ThemeColors.dark.surface,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.gray),
+        borderSide: BorderSide(color: ThemeColors.dark.onSurface.withOpacity(0.3)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.gray),
+        borderSide: BorderSide(color: ThemeColors.dark.onSurface.withOpacity(0.3)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: ThemeColors.dark.primary),
       ),
       labelStyle: TextStyle(color: ThemeColors.dark.onSurface),
-      hintStyle: TextStyle(color: AppColors.lightGray),
+      hintStyle: TextStyle(color: ThemeColors.dark.onSurface.withOpacity(0.6)),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: ThemeColors.dark.surface,
       selectedItemColor: ThemeColors.dark.primary,
-      unselectedItemColor: AppColors.lightGray,
+      unselectedItemColor: ThemeColors.dark.onSurface.withOpacity(0.6),
       type: BottomNavigationBarType.fixed,
       elevation: 8,
     ),

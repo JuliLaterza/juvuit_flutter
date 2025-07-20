@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:juvuit_flutter/core/utils/colors.dart';
+import 'package:provider/provider.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
 import 'package:juvuit_flutter/core/utils/routes.dart';
+import 'package:juvuit_flutter/core/widgets/theme_aware_logo.dart';
+import 'package:juvuit_flutter/core/services/theme_provider.dart';
 import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
-import 'package:juvuit_flutter/core/widgets/app_logo_header.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -156,6 +157,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     if (_isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -172,13 +175,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(52),
         child: AppBar(
-          backgroundColor: AppColors.white,
+          backgroundColor: theme.colorScheme.surface,
           elevation: 0,
-          title: Image.asset(
-            'assets/images/homescreen/logo_witu.png',
-            height: 32,
-          ),
+          title: const HeaderLogo(),
           centerTitle: false,
+          actions: [
+            Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) {
+                return IconButton(
+                  onPressed: () {
+                    themeProvider.toggleTheme();
+                  },
+                  icon: Icon(
+                    themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+          ],
         ),
       ),
       body: Column(
@@ -245,7 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               height: 8,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: _currentPage == index ? AppColors.yellow : AppColors.gray,
+                                color: _currentPage == index ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
                               ),
                             ),
                           ),
@@ -262,20 +278,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           children: [
                             Text(
                               '${_userProfile!.name},',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.black,
+                                color: theme.colorScheme.onBackground,
                               ),
                             ),
                             if (_userProfile!.birthDate != null) ...[
                               const SizedBox(width: 8),
                               Text(
                                 '${calculateAge(_userProfile!.birthDate!)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.black,
+                                  color: theme.colorScheme.onBackground,
                                 ),
                               ),
                             ]
@@ -289,7 +305,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 Text(
                                   _userProfile!.description,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(fontSize: 14, color: AppColors.gray),
+                                  style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                                   maxLines: _isDescriptionExpanded ? null : 3,
                                   overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
                                 ),
@@ -314,18 +330,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       GestureDetector(
                         onTap: () => _showSongsModal(context),
-                        child: const Column(
+                        child: Column(
                           children: [
-                            Icon(Icons.music_note, color: AppColors.yellow),
-                            SizedBox(height: 8),
-                            Text('Canciones', style: TextStyle(fontSize: 14)),
+                            Icon(Icons.music_note, color: theme.colorScheme.primary),
+                            const SizedBox(height: 8),
+                            const Text('Canciones', style: TextStyle(fontSize: 14)),
                           ],
                         ),
                       ),
                       const SizedBox(width: 24),
                       Column(
                         children: [
-                          const Icon(Icons.local_bar, color: AppColors.yellow),
+                          Icon(Icons.local_bar, color: theme.colorScheme.primary),
                           const SizedBox(height: 8),
                           Text(
                             _userProfile!.favoriteDrink,
@@ -336,7 +352,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(width: 24),
                       Column(
                         children: [
-                          const Icon(Icons.star, color: AppColors.yellow),
+                          Icon(Icons.star, color: theme.colorScheme.primary),
                           const SizedBox(height: 8),
                           Text(
                             _userProfile!.sign ?? '—',
@@ -350,7 +366,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Text('Cuenta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   ListTile(
-                    leading: const Icon(Icons.person, color: AppColors.gray),
+                    leading: Icon(Icons.person, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                     title: const Text('Editar Perfil'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
@@ -358,7 +374,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Icons.tune, color: AppColors.gray),
+                    leading: Icon(Icons.tune, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                     title: const Text('Preferencias'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
@@ -394,7 +410,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Icons.lock, color: AppColors.gray),
+                    leading: Icon(Icons.lock, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                     title: const Text('Privacidad'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {},
@@ -408,7 +424,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const Text('Recibir notificaciones'),
                       Switch(
                         value: _notificationsEnabled,
-                        activeColor: AppColors.yellow,
+                        activeColor: theme.colorScheme.primary,
                         onChanged: (value) {
                           setState(() {
                             _notificationsEnabled = value;
@@ -422,7 +438,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Text('Ayuda', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   ListTile(
-                    leading: const Icon(Icons.help_outline, color: AppColors.gray),
+                    leading: Icon(Icons.help_outline, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                     title: const Text('Centro de ayuda'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
@@ -430,7 +446,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Icons.feedback_outlined, color: AppColors.gray),
+                    leading: Icon(Icons.feedback_outlined, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                     title: const Text('Enviar feedback'),
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                     onTap: () {
@@ -441,7 +457,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Text('Cuenta avanzada', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   ListTile(
-                    leading: const Icon(Icons.logout, color: AppColors.gray),
+                    leading: Icon(Icons.logout, color: theme.colorScheme.onSurface.withOpacity(0.6)),
                     title: const Text('Cerrar sesión'),
                     onTap: () => _showLogoutConfirmationDialog(context),
                   ),

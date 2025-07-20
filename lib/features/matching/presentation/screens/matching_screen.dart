@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
+import 'package:juvuit_flutter/core/widgets/theme_aware_logo.dart';
 import '../../widgets/matching_loader.dart';
 
 class MatchingScreen extends StatefulWidget {
@@ -23,32 +23,27 @@ class _MatchingScreenState extends State<MatchingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: theme.colorScheme.background,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80),
         child: Container(
           decoration: BoxDecoration(
-            color: AppColors.white,
+            color: theme.colorScheme.surface,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: theme.colorScheme.onBackground.withOpacity(0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
           child: AppBar(
-            backgroundColor: AppColors.white,
+            backgroundColor: theme.colorScheme.surface,
             elevation: 0,
-            title: Row(
-              children: [
-                Image.asset(
-                  'assets/images/homescreen/logo_witu.png',
-                  height: 32,
-                )
-              ],
-            ),
+            title: const HeaderLogo(),
             centerTitle: false,
           ),
         ),
@@ -61,11 +56,11 @@ class _MatchingScreenState extends State<MatchingScreen> {
             Container(
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: AppColors.darkWhite,
+                color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: theme.colorScheme.onBackground.withOpacity(0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -81,12 +76,12 @@ class _MatchingScreenState extends State<MatchingScreen> {
                 decoration: InputDecoration(
                   hintText: 'Buscar eventos...',
                   hintStyle: TextStyle(
-                    color: AppColors.gray,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
                     fontSize: 16,
                   ),
                   prefixIcon: Icon(
                     Icons.search,
-                    color: AppColors.gray,
+                    color: theme.colorScheme.onSurface.withOpacity(0.6),
                     size: 24,
                   ),
                   border: InputBorder.none,
@@ -104,12 +99,12 @@ class _MatchingScreenState extends State<MatchingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Ordenar por:',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.black,
+                      color: theme.colorScheme.onBackground,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -157,6 +152,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
     required String value,
     required IconData icon,
   }) {
+    final theme = Theme.of(context);
     final isSelected = _orderBy == value;
     
     return GestureDetector(
@@ -164,15 +160,15 @@ class _MatchingScreenState extends State<MatchingScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.yellow : AppColors.darkWhite,
+          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? AppColors.yellow : AppColors.lightGray,
+            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
             width: 1.5,
           ),
           boxShadow: isSelected ? [
             BoxShadow(
-              color: AppColors.yellow.withOpacity(0.3),
+              color: theme.colorScheme.primary.withOpacity(0.3),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -184,7 +180,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
             Icon(
               icon,
               size: 18,
-              color: isSelected ? AppColors.black : AppColors.gray,
+              color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.6),
             ),
             const SizedBox(width: 8),
             Text(
@@ -192,7 +188,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? AppColors.black : AppColors.gray,
+                color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
           ],

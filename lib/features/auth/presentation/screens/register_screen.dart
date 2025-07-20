@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/password_input_field.dart';
 import 'package:juvuit_flutter/core/widgets/social_login_button.dart';
+import 'package:juvuit_flutter/core/widgets/theme_aware_logo.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/complete_profile_screen.dart';
@@ -91,19 +92,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Center(
                 child: Column(
                   children: [
-                    Image.asset(
-                      'assets/images/homescreen/logo_witu.png',
-                      width: 180,
-                      height: 70,
-                      fit: BoxFit.contain,
-                    ),
+                    const LargeLogo(),
                     const SizedBox(height: 10),
-                    const Text(
+                    Text(
                       'Crea tu cuenta',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.black,
+                        color: theme.colorScheme.onBackground,
                       ),
                     ),
                   ],
@@ -114,10 +110,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Correo electrónico',
-                  labelStyle: const TextStyle(color: AppColors.darkGray),
-                  prefixIcon: const Icon(Icons.mail, color: AppColors.gray),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.lightGray),
+                  labelStyle: TextStyle(color: theme.colorScheme.onSurface),
+                  prefixIcon: Icon(Icons.mail, color: theme.colorScheme.onSurface),
+                  filled: true,
+                  fillColor: theme.colorScheme.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
                   ),
                 ),
               ),
@@ -137,18 +144,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _register,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.yellow,
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: AppColors.black)
-                      : const Text(
+                      ? CircularProgressIndicator(color: theme.colorScheme.onPrimary)
+                      : Text(
                           'Registrarse',
                           style: TextStyle(
-                            color: AppColors.black,
+                            color: theme.colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -159,18 +167,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     '¿Ya tienes cuenta?',
-                    style: TextStyle(color: AppColors.gray),
+                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.pop(context);
                     },
-                    child: const Text(
+                    child: Text(
                       'Inicia sesión',
                       style: TextStyle(
-                          color: AppColors.yellow, fontWeight: FontWeight.bold),
+                          color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

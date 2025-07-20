@@ -37,4 +37,10 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/images/homescreen/
+    - assets/images/homescreen/witu_logo_dark.png
+    - assets/images/homescreen/logo_witu.png
+    - assets/images/homescreen/witu_logo_light.png
+    - assets/images/homescreen/home.png
+    - assets/images/homescreen/degrade-19.png
+    - assets/images/homescreen/degrade-20.png
+    - assets/images/

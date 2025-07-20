@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/core/widgets/password_input_field.dart';
 import 'package:juvuit_flutter/core/widgets/social_login_button.dart';
+import 'package:juvuit_flutter/core/widgets/theme_aware_logo.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/register_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -76,12 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Center(
                 child: Column(
                   children: [
-                    Image.asset(
-                      'assets/images/homescreen/logo_witu.png',
-                      width: 180,
-                      height: 70,
-                      fit: BoxFit.contain,
-                    ),
+                    const LargeLogo(),
                     const SizedBox(height: 10),
                     Text(
                       'Inicia sesión :)',
