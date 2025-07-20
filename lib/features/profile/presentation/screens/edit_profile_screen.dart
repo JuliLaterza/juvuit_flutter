@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
 import 'package:juvuit_flutter/core/services/spotify_service.dart';
+import 'package:juvuit_flutter/features/upload_imag/storage_service.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -86,15 +87,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    final newPhotoUrls = List<String>.from(_existingPhotoUrls);
+    // 1. Mantener solo las URLs existentes que no fueron eliminadas
+    List<String> finalPhotoUrls = List<String>.from(_existingPhotoUrls.where((url) => url.isNotEmpty));
+
+    // 2. Subir nuevas imágenes locales y agregar sus URLs
     for (int i = 0; i < _images.length; i++) {
-      if (_images[i] != null) {
-        if (i < newPhotoUrls.length) {
-          newPhotoUrls[i] = 'https://via.placeholder.com/300.png?text=Foto';
+      final img = _images[i];
+      if (img != null) {
+        final url = await StorageService().uploadUserImage(userId: user.uid, file: img);
+        if (url != null) {
+          if (i < finalPhotoUrls.length) {
+            finalPhotoUrls[i] = url;
+          } else {
+            finalPhotoUrls.add(url);
+          }
         } else {
-          newPhotoUrls.add('https://via.placeholder.com/300.png?text=Foto');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No se pudo subir una de las imágenes. Intenta con otra.')),
+          );
+          return;
         }
       }
+    }
+
+    // 3. Limitar a máximo 6 fotos
+    if (finalPhotoUrls.length > 6) {
+      finalPhotoUrls = finalPhotoUrls.sublist(0, 6);
     }
 
     await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
@@ -102,8 +120,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       'description': _descriptionController.text.trim(),
       'drink': _drinkController.text.trim(),
       'top_3canciones': _selectedSongs,
-      'photoUrls': newPhotoUrls,
-    }, SetOptions(merge: true)); // SetOptions(merge: true) para actualizar solo los campos que cambiamos
+      'photoUrls': finalPhotoUrls,
+    }, SetOptions(merge: true));
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -134,6 +152,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       _songControllers[index].text = '';
       _suggestions[index] = [];
     });
+  }
+
+  Future<void> _deleteImage(int index) async {
+    // Si la imagen es una URL existente, eliminar de Storage y de la lista
+    if (index < _existingPhotoUrls.length && _existingPhotoUrls[index].isNotEmpty) {
+      final url = _existingPhotoUrls[index];
+      try {
+        await StorageService().deleteUserImage(url);
+      } catch (e) {
+        // Puedes mostrar un mensaje de error si lo deseas
+      }
+      setState(() {
+        _existingPhotoUrls.removeAt(index);
+        _images.removeAt(index);
+        _images.add(null); // Mantener tamaño 6
+      });
+    } else if (_images[index] != null) {
+      // Si es una imagen local, solo quitarla
+      setState(() {
+        _images[index] = null;
+      });
+    }
   }
 
   @override
@@ -323,9 +363,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
           Widget imageWidget;
           if (imageFile != null) {
-            imageWidget = Image.file(imageFile, fit: BoxFit.cover);
+            imageWidget = Image.file(imageFile, fit: BoxFit.cover, width: double.infinity, height: double.infinity);
           } else if (hasUploadedImage) {
-            imageWidget = Image.network(_existingPhotoUrls[index], fit: BoxFit.cover);
+            imageWidget = Image.network(_existingPhotoUrls[index], fit: BoxFit.cover, width: double.infinity, height: double.infinity);
           } else {
             imageWidget = const Icon(Icons.add_a_photo, size: 40);
           }
@@ -339,7 +379,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: imageWidget,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    imageWidget,
+                    if (imageFile != null || hasUploadedImage)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: GestureDetector(
+                          onTap: () => _deleteImage(index),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black54,
+                              shape: BoxShape.circle,
+                            ),
+                            padding: const EdgeInsets.all(2),
+                            child: const Icon(Icons.close, color: Colors.white, size: 18),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           );

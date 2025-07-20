@@ -5,6 +5,7 @@ import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/features/auth/presentation/widgets/complete_profile_form.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/features/profile/data/services/save_user_profile.dart';
+import 'package:juvuit_flutter/features/upload_imag/storage_service.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -21,6 +22,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final TextEditingController _drinkController = TextEditingController();
 
   final List<File?> _images = List.generate(6, (_) => null);
+  final List<String> _preloadedUrls = [];
   final ImagePicker _picker = ImagePicker();
 
   String? _selectedSign;
@@ -65,10 +67,31 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     final birthDate = _formKey.currentState?.selectedBirthDate;
     final topSongs = _formKey.currentState?.selectedSongs ?? [];
 
-    final photoUrls = _images
-        .where((img) => img != null)
-        .map((_) => 'https://via.placeholder.com/300.png?text=Foto')
-        .toList();
+    final StorageService storageService = StorageService();
+    List<String> photoUrls = [];
+    try {
+      for (final img in _images) {
+        if (img != null && await img.exists()) {
+          final url = await storageService.uploadUserImage(userId: currentUser.uid, file: img);
+          if (url != null) {
+            photoUrls.add(url);
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('No se pudo subir una de las imágenes. Intenta con otra.')),
+            );
+            return;
+          }
+        }
+      }
+      // Agregar las URLs precargadas
+      photoUrls.addAll(_preloadedUrls);
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error subiendo imágenes: $e')),
+      );
+      return;
+    }
 
     await saveUserProfile(
       name: _nameController.text.trim(),

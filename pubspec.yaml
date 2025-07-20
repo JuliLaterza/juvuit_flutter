@@ -29,6 +29,7 @@ dependencies:
   shared_preferences: ^2.2.2
   firebase_storage: ^12.4.0
   uuid: ^4.3.3
+  flutter_image_compress: ^2.2.0
 
 
 dev_dependencies:
