@@ -77,8 +77,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -123,13 +125,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
               PasswordInputField(
                 hintText: 'Contraseña',
                 controller: _passwordController,
-                fillColor: Colors.white.withAlpha(150),
               ),
               const SizedBox(height: 20),
               PasswordInputField(
                 hintText: 'Confirmar contraseña',
                 controller: _confirmPasswordController,
-                fillColor: Colors.white.withAlpha(150),
               ),
               const SizedBox(height: 30),
               SizedBox(

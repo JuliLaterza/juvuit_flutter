@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
+import 'package:juvuit_flutter/core/widgets/theme_toggle_button.dart';
 import 'package:juvuit_flutter/features/events/domain/utils/events_filter.dart';
 import 'package:juvuit_flutter/features/events/presentation/screens/event_info.dart';
 import 'package:juvuit_flutter/features/events/presentation/widgets/eventCard.dart';
@@ -45,17 +45,23 @@ class _EventsScreenState extends State<EventsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(52),
         child: AppBar(
-          backgroundColor: AppColors.white,
+          backgroundColor: theme.colorScheme.surface,
           elevation: 0,
           title: Image.asset(
             'assets/images/homescreen/logo_witu.png',
             height: 32,
           ),
           centerTitle: false,
+          actions: [
+            const ThemeToggleButton(showLabel: false),
+            const SizedBox(width: 8),
+          ],
         ),
       ),
       body: SafeArea(
@@ -69,10 +75,10 @@ class _EventsScreenState extends State<EventsScreen> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Buscar evento',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurface),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: Icon(Icons.clear, color: theme.colorScheme.onSurface),
                           onPressed: () {
                             _searchController.clear();
                             FocusScope.of(context).unfocus();
@@ -81,11 +87,11 @@ class _EventsScreenState extends State<EventsScreen> {
                       : null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.lightGray),
+                    borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.yellow),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
                   ),
                 ),
               ),

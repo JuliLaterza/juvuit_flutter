@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:juvuit_flutter/core/utils/colors.dart';
 
 class EmailInputField extends StatelessWidget {
   final String labelText;
   final TextEditingController? controller;
-  final Color labelColor;
-  final Color textColor;
-  final Color iconColor;
   final double borderRadius;
   final EdgeInsetsGeometry? padding;
 
@@ -14,30 +10,37 @@ class EmailInputField extends StatelessWidget {
     super.key,
     required this.labelText,
     this.controller,
-    this.labelColor = AppColors.darkGray,
-    this.textColor = AppColors.black,
-    this.iconColor = AppColors.black,
-    this.borderRadius = 8.0,
+    this.borderRadius = 12.0,
     this.padding,
   });
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Padding(
       padding: padding ?? EdgeInsets.zero,
       child: TextField(
         controller: controller,
-        style: TextStyle(color: textColor),
+        style: TextStyle(color: theme.colorScheme.onSurface),
         decoration: InputDecoration(
           labelText: labelText,
-          labelStyle: TextStyle(color: labelColor),
-          prefixIcon: Icon(Icons.mail, color: iconColor),
+          labelStyle: TextStyle(color: theme.colorScheme.onSurface),
+          prefixIcon: Icon(Icons.mail, color: theme.colorScheme.onSurface),
           filled: true,
-          fillColor: Colors.white,
+          fillColor: theme.colorScheme.surface,
           contentPadding: const EdgeInsets.symmetric(vertical: 16),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(borderRadius),
-            borderSide: BorderSide.none,
+            borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(borderRadius),
+            borderSide: BorderSide(color: theme.colorScheme.primary),
           ),
         ),
       ),

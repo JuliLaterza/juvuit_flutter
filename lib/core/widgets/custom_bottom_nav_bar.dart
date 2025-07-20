@@ -50,17 +50,20 @@ class CustomBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: (index) => _onItemTapped(context, index),
-      backgroundColor: const Color(0xFFFFFFFF),
-      selectedItemColor: const Color(0xFFFFD600),
-      unselectedItemColor: const Color(0xFF292929),
+      backgroundColor: theme.bottomNavigationBarTheme.backgroundColor,
+      selectedItemColor: theme.bottomNavigationBarTheme.selectedItemColor,
+      unselectedItemColor: theme.bottomNavigationBarTheme.unselectedItemColor,
       selectedIconTheme: const IconThemeData(size: 30),
       unselectedIconTheme: const IconThemeData(size: 30),
       showSelectedLabels: false,
       showUnselectedLabels: false,
       type: BottomNavigationBarType.fixed,
+      elevation: theme.bottomNavigationBarTheme.elevation ?? 8,
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.event),

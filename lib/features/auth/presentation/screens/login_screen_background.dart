@@ -99,12 +99,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   PasswordInputField(
                     hintText: 'Contraseña',
                     controller: _passwordController,
-                    labelColor: Colors.black,
-                    textColor: Colors.black,
-                    iconColor: Colors.black,
                     borderRadius: 30,
                     padding: const EdgeInsets.symmetric(horizontal: 0),
-                    fillColor: Colors.white.withAlpha(150),
                   ),
                   const SizedBox(height: 30),
                   // Botón login

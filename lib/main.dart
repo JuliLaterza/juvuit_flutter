@@ -2,8 +2,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
 import 'core/utils/routes.dart';
+import 'core/services/theme_provider.dart';
+import 'core/utils/app_themes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,20 +19,20 @@ class MyApp extends StatelessWidget {
   
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'WIT Ü',
-      debugShowCheckedModeBanner: false,
-      initialRoute: AppRoutes.splash,// Ruta inicial
-      onGenerateRoute: AppRoutes.generateRoute,
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.white,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
-          scrolledUnderElevation: 0
-        ),
+    return ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'WIT Ü',
+            debugShowCheckedModeBanner: false,
+            initialRoute: AppRoutes.splash,// Ruta inicial
+            onGenerateRoute: AppRoutes.generateRoute,
+            theme: AppThemes.lightTheme,
+            darkTheme: AppThemes.darkTheme,
+            themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          );
+        },
       ),
     );
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/core/widgets/password_input_field.dart';
 import 'package:juvuit_flutter/core/widgets/social_login_button.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/register_screen.dart';
@@ -63,8 +62,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -82,12 +83,12 @@ class _LoginScreenState extends State<LoginScreen> {
                       fit: BoxFit.contain,
                     ),
                     const SizedBox(height: 10),
-                    const Text(
+                    Text(
                       'Inicia sesión :)',
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.black,
+                        color: theme.colorScheme.onBackground,
                       ),
                     ),
                   ],
@@ -98,10 +99,21 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Correo electrónico',
-                  labelStyle: const TextStyle(color: AppColors.darkGray),
-                  prefixIcon: const Icon(Icons.mail, color: AppColors.gray),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.lightGray),
+                  labelStyle: TextStyle(color: theme.colorScheme.onSurface),
+                  prefixIcon: Icon(Icons.mail, color: theme.colorScheme.onSurface),
+                  filled: true,
+                  fillColor: theme.colorScheme.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
                   ),
                 ),
               ),
@@ -109,7 +121,6 @@ class _LoginScreenState extends State<LoginScreen> {
               PasswordInputField(
                 hintText: 'Contraseña',
                 controller: _passwordController,
-                fillColor: Colors.white.withAlpha(150),
               ),
               const SizedBox(height: 30),
               SizedBox(
@@ -117,18 +128,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.yellow,
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading
-                      ? const CircularProgressIndicator(color: AppColors.black)
-                      : const Text(
+                      ? CircularProgressIndicator(color: theme.colorScheme.onPrimary)
+                      : Text(
                           'Iniciar sesión',
                           style: TextStyle(
-                            color: AppColors.black,
+                            color: theme.colorScheme.onPrimary,
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                           ),
@@ -139,9 +151,9 @@ class _LoginScreenState extends State<LoginScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
+                  Text(
                     '¿No tienes cuenta?',
-                    style: TextStyle(color: AppColors.gray),
+                    style: TextStyle(color: theme.colorScheme.onSurface.withOpacity(0.6)),
                   ),
                   TextButton(
                     onPressed: () {
@@ -152,10 +164,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Regístrate',
                       style: TextStyle(
-                          color: AppColors.yellow, fontWeight: FontWeight.bold),
+                          color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],

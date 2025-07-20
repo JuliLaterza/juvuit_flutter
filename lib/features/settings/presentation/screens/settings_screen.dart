@@ -1,32 +1,38 @@
 import 'package:flutter/material.dart';
-import 'package:juvuit_flutter/core/utils/colors.dart';
+import 'package:provider/provider.dart';
+import 'package:juvuit_flutter/core/services/theme_provider.dart';
+import 'package:juvuit_flutter/core/widgets/theme_toggle_button.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = Theme.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Configuraciones'),
-        backgroundColor: AppColors.black,
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.onSurface,
       ),
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16.0),
           children: [
             // Sección de cuenta
-            const Text(
+            Text(
               'Cuenta',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.black,
+                color: theme.colorScheme.onBackground,
               ),
             ),
             const SizedBox(height: 8),
             ListTile(
-              leading: const Icon(Icons.person, color: AppColors.gray),
+              leading: Icon(Icons.person, color: theme.colorScheme.onSurface.withOpacity(0.6)),
               title: const Text('Editar Perfil'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
@@ -34,7 +40,7 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.lock, color: AppColors.gray),
+              leading: Icon(Icons.lock, color: theme.colorScheme.onSurface.withOpacity(0.6)),
               title: const Text('Privacidad'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
@@ -43,18 +49,34 @@ class SettingsScreen extends StatelessWidget {
             ),
             const Divider(),
 
+            // Sección de apariencia
+            Text(
+              'Apariencia',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.onBackground,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const ThemeToggleButton(
+              label: 'Modo nocturno',
+              subtitle: 'Cambiar entre tema claro y oscuro',
+            ),
+            const Divider(),
+
             // Sección de notificaciones
-            const Text(
+            Text(
               'Notificaciones',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.black,
+                color: theme.colorScheme.onBackground,
               ),
             ),
             const SizedBox(height: 8),
             SwitchListTile(
-              activeColor: AppColors.yellow,
+              activeColor: theme.colorScheme.primary,
               contentPadding: EdgeInsets.zero,
               title: const Text('Recibir notificaciones'),
               value: true, // Cambiar según el estado actual
@@ -65,17 +87,17 @@ class SettingsScreen extends StatelessWidget {
             const Divider(),
 
             // Sección de ayuda
-            const Text(
+            Text(
               'Ayuda',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.black,
+                color: theme.colorScheme.onBackground,
               ),
             ),
             const SizedBox(height: 8),
             ListTile(
-              leading: const Icon(Icons.help_outline, color: AppColors.gray),
+              leading: Icon(Icons.help_outline, color: theme.colorScheme.onSurface.withOpacity(0.6)),
               title: const Text('Centro de ayuda'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
@@ -83,7 +105,7 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.feedback_outlined, color: AppColors.gray),
+              leading: Icon(Icons.feedback_outlined, color: theme.colorScheme.onSurface.withOpacity(0.6)),
               title: const Text('Enviar feedback'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
@@ -93,17 +115,17 @@ class SettingsScreen extends StatelessWidget {
             const Divider(),
 
             // Sección de cuenta avanzada
-            const Text(
+            Text(
               'Cuenta avanzada',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.black,
+                color: theme.colorScheme.onBackground,
               ),
             ),
             const SizedBox(height: 8),
             ListTile(
-              leading: const Icon(Icons.logout, color: AppColors.gray),
+              leading: Icon(Icons.logout, color: theme.colorScheme.onSurface.withOpacity(0.6)),
               title: const Text('Cerrar sesión'),
               onTap: () {
                 // Lógica para cerrar sesión

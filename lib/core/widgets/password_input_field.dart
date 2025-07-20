@@ -1,26 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:juvuit_flutter/core/utils/colors.dart';
 
 class PasswordInputField extends StatefulWidget {
   final String hintText;
   final TextEditingController? controller;
-  final Color labelColor;
-  final Color textColor;
-  final Color iconColor;
   final double borderRadius;
   final EdgeInsetsGeometry? padding;
-  final Color fillColor;
 
   const PasswordInputField({
     super.key,
     required this.hintText,
     this.controller,
-    this.labelColor = AppColors.darkGray,
-    this.textColor = AppColors.black,
-    this.iconColor = AppColors.gray,
-    this.borderRadius = 8.0,
+    this.borderRadius = 12.0,
     this.padding,
-    required this.fillColor,
   });
 
   @override
@@ -38,24 +29,37 @@ class _PasswordInputFieldState extends State<PasswordInputField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Padding(
       padding: widget.padding ?? EdgeInsets.zero,
       child: TextField(
         controller: widget.controller,
         obscureText: _obscureText,
-        style: TextStyle(color: widget.textColor),
+        style: TextStyle(color: theme.colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: widget.hintText,
-          labelStyle: TextStyle(color: widget.labelColor),
+          labelStyle: TextStyle(color: theme.colorScheme.onSurface),
           filled: true,
-          fillColor: widget.fillColor, // ← acá el cambio importante
-          prefixIcon: Icon(Icons.vpn_key, color: widget.iconColor),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: const BorderSide(color: AppColors.lightGray)),
+          fillColor: theme.colorScheme.surface,
+          prefixIcon: Icon(Icons.vpn_key, color: theme.colorScheme.onSurface),
+          contentPadding: const EdgeInsets.symmetric(vertical: 16),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(widget.borderRadius),
+            borderSide: BorderSide(color: theme.colorScheme.primary),
+          ),
           suffixIcon: IconButton(
             icon: Icon(
               _obscureText ? Icons.visibility_off : Icons.visibility,
-              color: widget.iconColor,
+              color: theme.colorScheme.onSurface,
             ),
             onPressed: _toggleVisibility,
           ),
