@@ -27,6 +27,8 @@ dependencies:
   apple_maps_flutter: ^1.0.2
   url_launcher: ^6.2.5
   shared_preferences: ^2.2.2
+  firebase_storage: ^12.4.0
+  uuid: ^4.3.3
 
 
 dev_dependencies:
