@@ -123,16 +123,7 @@ class _EventsScreenState extends State<EventsScreen> {
                   
                   // Aplicar filtro de búsqueda
                   final normalizedQuery = normalize(_searchQuery);
-                  if (kDebugMode) {
-                    print('🔍 Búsqueda: "$_searchQuery" -> Normalizada: "$normalizedQuery"');
-                    print('📋 Eventos filtrados por tipo: ${filteredEvents.length}');
-                    print('🔍 Buscando eventos que contengan: "$normalizedQuery"');
-                    for (var event in filteredEvents.take(5)) {
-                      print('  📅 Evento: "${event.title}" (${event.subtitle})');
-                      print('    - Título normalizado: "${normalize(event.title)}"');
-                      print('    - Subtítulo normalizado: "${normalize(event.subtitle)}"');
-                    }
-                  }
+                  //if (kDebugMode) {}
                   
                   final searchFilteredEvents = filteredEvents
                       .where((event) {
@@ -142,20 +133,21 @@ class _EventsScreenState extends State<EventsScreen> {
                         final matchesSubtitle = normalizedSubtitle.contains(normalizedQuery);
                         final matches = matchesTitle || matchesSubtitle;
                         
-                        if (kDebugMode && _searchQuery.isNotEmpty) {
+                        /*if (kDebugMode && _searchQuery.isNotEmpty) {
                           if (matchesTitle || matchesSubtitle) {
                             print('  ✅ COINCIDE: "${event.title}"');
                             if (matchesTitle) print('    - Coincide en título');
                             if (matchesSubtitle) print('    - Coincide en subtítulo');
                           }
-                        }
+                        }*/
+
                         return matches;
                       })
                       .toList();
 
-                  if (kDebugMode) {
-                    print('✅ Eventos encontrados: ${searchFilteredEvents.length}');
-                  }
+                  //if (kDebugMode) {
+                    //print('✅ Eventos encontrados: ${searchFilteredEvents.length}');
+                  //}
 
                   if (searchFilteredEvents.isEmpty && _searchQuery.isNotEmpty) {
                     return const Center(child: Text('No se encontraron eventos con ese nombre'));
