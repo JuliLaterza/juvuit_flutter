@@ -8,6 +8,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:juvuit_flutter/features/events/application/attend_event_service.dart';
 import 'package:apple_maps_flutter/apple_maps_flutter.dart' as apple_maps;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:juvuit_flutter/core/utils/routes.dart';
 
 class EventInfoScreen extends StatefulWidget {
   const EventInfoScreen({super.key, required this.event});
@@ -100,7 +101,56 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
         const SnackBar(content: Text('¡Has dejado de asistir a este evento!')),
       );
     } else {
-      // Asistir
+      // Si va a asistir, verificar si es evento tipo FIESTA
+      if (widget.event.type.toLowerCase() == 'fiesta' || 
+          widget.event.type.toLowerCase() == 'boliche' || 
+          widget.event.type.toLowerCase() == 'party') {
+        
+        print('DEBUG: Evento tipo fiesta detectado: ${widget.event.type}');
+        
+        // Verificar si el usuario tiene canciones y trago completados
+        final userDoc = await userRef.get();
+        if (userDoc.exists) {
+          final userData = userDoc.data()!;
+          final hasSongs = userData['top_3canciones'] != null && 
+                          (userData['top_3canciones'] as List).isNotEmpty;
+          final hasDrink = userData['drink'] != null && 
+                          userData['drink'].toString().isNotEmpty;
+
+          print('DEBUG: Usuario tiene canciones: $hasSongs, trago: $hasDrink');
+
+          if (!hasSongs || !hasDrink) {
+            print('DEBUG: Mostrando modal obligatorio');
+            // Mostrar modal obligatorio
+            final shouldContinue = await _showSongsDrinkModal();
+            if (!shouldContinue) {
+              print('DEBUG: Usuario canceló, no asistir al evento');
+              return; // No asistir al evento
+            }
+            print('DEBUG: Usuario completó perfil, continuar con asistencia');
+            
+            // Después de completar el perfil, verificar nuevamente si tiene canciones y trago
+            final updatedUserDoc = await userRef.get();
+            if (updatedUserDoc.exists) {
+              final updatedUserData = updatedUserDoc.data()!;
+              final hasSongs = updatedUserData['top_3canciones'] != null && 
+                              (updatedUserData['top_3canciones'] as List).isNotEmpty;
+              final hasDrink = updatedUserData['drink'] != null && 
+                              updatedUserData['drink'].toString().isNotEmpty;
+
+              if (!hasSongs || !hasDrink) {
+                print('DEBUG: Usuario aún no tiene canciones/trago completados');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Completá tus canciones y trago favoritos para poder asistir')),
+                );
+                return; // No asistir al evento
+              }
+            }
+          }
+        }
+      }
+
+      // Asistir al evento
       await eventRef.update({
         'attendees': FieldValue.arrayUnion([userId]),
       });
@@ -118,6 +168,74 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
         const SnackBar(content: Text('¡Estás asistiendo a este evento!')),
       );
     }
+  }
+
+  Future<bool> _showSongsDrinkModal() async {
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.music_note, color: AppColors.darkmedium),
+              SizedBox(width: 8),
+              Text('¡Completá tu perfil!'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Para asistir a eventos de fiesta, necesitás:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(Icons.music_note, size: 16, color: Colors.grey[600]),
+                  SizedBox(width: 8),
+                  Text('Tus 3 canciones favoritas'),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.local_bar, size: 16, color: Colors.grey[600]),
+                  SizedBox(width: 8),
+                  Text('Tu trago preferido'),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey[600])),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.darkmedium,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+                // Navegar a la pantalla de completar perfil
+                Navigator.pushNamed(context, AppRoutes.completeSongsDrink);
+              },
+              child: Text('Completar perfil'),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
   }
 
   Future<void> _openExternalMap(double lat, double lng) async {

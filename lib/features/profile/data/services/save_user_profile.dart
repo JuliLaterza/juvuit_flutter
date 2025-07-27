@@ -30,6 +30,24 @@ Future<void> saveUserProfile({
       .set(userData, SetOptions(merge: true));
 }
 
+// Nueva función específica para actualizar solo canciones y trago
+Future<void> updateUserSongsAndDrink({
+  required List<Map<String, String>> topSongs,
+  required String drink,
+}) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+
+  // Usar update() para modificar SOLO estos campos específicos
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(user.uid)
+      .update({
+        'top_3canciones': topSongs,
+        'drink': drink,
+      });
+}
+
 Future<void> saveUserPersonality({
   String? gender,
   List<String>? interests,
@@ -44,20 +62,21 @@ Future<void> saveUserPersonality({
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
 
-  final personalityData = {
-    if (gender != null) 'gender': gender,
-    if (interests != null) 'interests': interests,
-    if (lookingFor != null) 'lookingFor': lookingFor,
-    if (job != null) 'job': job,
-    if (studies != null) 'studies': studies,
-    if (university != null) 'university': university,
-    if (smoke != null) 'smoke': smoke,
-    if (traits != null) 'traits': traits,
-    'profileComplete': profileComplete,
-  };
+  // Usar update() para modificar solo los campos específicos
+  final updateData = <String, dynamic>{};
+  
+  if (gender != null) updateData['gender'] = gender;
+  if (interests != null) updateData['interests'] = interests;
+  if (lookingFor != null) updateData['lookingFor'] = lookingFor;
+  if (job != null) updateData['job'] = job;
+  if (studies != null) updateData['studies'] = studies;
+  if (university != null) updateData['university'] = university;
+  if (smoke != null) updateData['smoke'] = smoke;
+  if (traits != null) updateData['traits'] = traits;
+  updateData['profileComplete'] = profileComplete;
 
   await FirebaseFirestore.instance
       .collection('users')
       .doc(user.uid)
-      .set(personalityData, SetOptions(merge: true));
+      .update(updateData);
 }

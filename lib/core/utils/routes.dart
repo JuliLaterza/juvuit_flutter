@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/login_screen.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/register_screen.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/splash_screen.dart';
+import 'package:juvuit_flutter/features/auth/presentation/screens/complete_profile_screen.dart';
 import 'package:juvuit_flutter/features/chats/presentation/screens/chats_screen.dart';
 import 'package:juvuit_flutter/features/chats/presentation/screens/chat_screen.dart'; // Importación necesaria
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
@@ -49,6 +50,7 @@ class AppRoutes {
   static const String emergencyContact = '/emergency-contact';
   static const String helpCenter = '/help-center';
   static const String feedback = '/feedback';
+  static const String completeSongsDrink = '/complete-songs-drink';
 
 
   // Generador de rutas
@@ -91,6 +93,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const HelpCenterScreen());
       case feedback:
         return MaterialPageRoute(builder: (_) => const FeedbackScreen());
+      case completeSongsDrink:
+        return MaterialPageRoute(builder: (_) => const CompleteSongsDrinkScreen());
       case userProfile:
       case '/public_profile':
         final args = settings.arguments as Map<String, dynamic>;

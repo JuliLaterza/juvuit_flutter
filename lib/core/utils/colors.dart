@@ -4,6 +4,7 @@ class AppColors {
   // Colores base del modo nocturno
   static const Color darkBackground = Color(0xFF333333);
   static const Color lightBackground = Color(0xFFF9F9F9);
+  static const Color green = Color.fromARGB(255, 58, 214, 58);
   
   // Neutrales
   static const Color black = Color(0xFF000000);
@@ -14,6 +15,7 @@ class AppColors {
   //static const Color white = Color(0xFFFFFCF2);
   static const Color darkWhite = Color.fromARGB(255, 228, 228, 228);
   static const Color darkmedium = Color.fromARGB(255, 32, 31, 34);
+
 
   // Amarillos
   static const Color yellow = Color(0xFFFFD600); // Primario
