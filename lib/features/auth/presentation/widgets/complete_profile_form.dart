@@ -29,6 +29,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
   String? _selectedSign;
   String? _selectedDrink;
   DateTime? _selectedDate;
+  late TextEditingController _dateController;
 
   DateTime? get selectedBirthDate => _selectedDate;
   List<Map<String, String>> get selectedSongs =>
@@ -62,6 +63,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
   @override
   void initState() {
     super.initState();
+    _dateController = TextEditingController();
     if (widget.initialSongs != null) {
       for (int i = 0; i < widget.initialSongs!.length && i < 3; i++) {
         _selectedSongs[i] = {
@@ -71,6 +73,12 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
         };
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    super.dispose();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -84,6 +92,8 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        // Actualizar el controlador de texto con la fecha seleccionada
+        _dateController.text = DateFormat('dd/MM/yyyy').format(picked);
       });
 
       if (_calculateAge(picked) < 18) {
@@ -156,64 +166,6 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
           setState(() => _selectedSign = value);
           widget.onSignChanged(value);
         }),
-        const SizedBox(height: 16),
-        const Center(child: Text('AGREGA TUS CANCIONES FAVORITAS', style: TextStyle(fontWeight: FontWeight.bold))),
-        const SizedBox(height: 8),
-        for (int i = 0; i < 3; i++) ...[
-          TextField(
-            controller: _songControllers[i],
-            onChanged: (value) => _onSearchChanged(value, i),
-            decoration: InputDecoration(
-              hintText: _selectedSongs[i]?['title'] ?? 'Buscar canción ${i + 1}...',
-              prefixIcon: _selectedSongs[i] != null
-                  ? Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Image.network(
-                        _selectedSongs[i]!['imageUrl']!,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : const Icon(Icons.music_note, color: AppColors.yellow),
-              suffixIcon: _selectedSongs[i] != null
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        setState(() {
-                          _selectedSongs[i] = null;
-                          _songControllers[i].clear();
-                        });
-                      },
-                    )
-                  : null,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          if (_isSearching[i]) const CircularProgressIndicator(),
-          if (_suggestions[i].isNotEmpty)
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _suggestions[i].length,
-              itemBuilder: (context, index2) {
-                final song = _suggestions[i][index2];
-                return ListTile(
-                  leading: Image.network(song['imageUrl']!, width: 50, height: 50, fit: BoxFit.cover),
-                  title: Text(song['title']!),
-                  subtitle: Text(song['artist']!),
-                  onTap: () => _selectSong(song, i),
-                );
-              },
-            ),
-          const SizedBox(height: 12),
-        ],
-        const Center(child: Text('AGREGA TU TRAGO FAVORITO', style: TextStyle(fontWeight: FontWeight.bold))),
-        const SizedBox(height: 16),
-        _buildDropdownList('Trago Favorito', _drinks, _selectedDrink, (value) {
-          setState(() => _selectedDrink = value);
-          widget.onDrinkChanged(value);
-        }),
       ],
     );
   }
@@ -231,9 +183,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
               borderSide: BorderSide(color: AppColors.yellow),
             ),
           ),
-          controller: TextEditingController(
-            text: _selectedDate == null ? '' : DateFormat('dd/MM/yyyy').format(_selectedDate!),
-          ),
+          controller: _dateController,
         ),
       ),
     );

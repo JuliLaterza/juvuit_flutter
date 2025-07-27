@@ -4,8 +4,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:juvuit_flutter/features/auth/presentation/widgets/complete_profile_form.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:juvuit_flutter/features/profile/data/services/save_user_profile.dart';
 import 'package:juvuit_flutter/features/upload_imag/storage_service.dart';
+import 'package:juvuit_flutter/features/onboarding/presentation/screens/personality_onboarding_screen.dart';
+import 'package:juvuit_flutter/core/services/spotify_service.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -93,11 +96,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       return;
     }
 
+    // Debug: Verificar que la fecha se está obteniendo correctamente
+    print('DEBUG: birthDate from form: $birthDate');
+    if (birthDate != null) {
+      print('DEBUG: birthDate formatted: ${birthDate.toIso8601String()}');
+    }
+
     await saveUserProfile(
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
-      topSongs: topSongs,
-      drink: _selectedDrink ?? '',
       sign: _selectedSign,
       birthDate: birthDate,
       photoUrls: photoUrls,
@@ -107,7 +114,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       const SnackBar(content: Text('Perfil guardado')),
     );
 
-    Navigator.pushNamedAndRemoveUntil(context, '/events', (route) => false);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const PersonalityOnboardingScreen()),
+    );
   }
 
   @override
@@ -249,6 +259,226 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class CompleteSongsDrinkScreen extends StatefulWidget {
+  const CompleteSongsDrinkScreen({super.key});
+
+  @override
+  State<CompleteSongsDrinkScreen> createState() => _CompleteSongsDrinkScreenState();
+}
+
+class _CompleteSongsDrinkScreenState extends State<CompleteSongsDrinkScreen> {
+  final List<TextEditingController> _songControllers = List.generate(3, (_) => TextEditingController());
+  List<Map<String, String>> _selectedSongs = List.generate(3, (_) => {'title': '', 'artist': '', 'imageUrl': ''});
+  final List<List<Map<String, String>>> _suggestions = List.generate(3, (_) => []);
+  final List<bool> _isSearching = List.generate(3, (_) => false);
+  String? _selectedDrink;
+  bool _isLoading = false;
+
+  final List<String> _drinks = [
+    'Cerveza', 'Fernet', 'WhisCola', 'Vino', 'Whisky', 'Ron',
+    'Vodka', 'Tequila', 'Gin', 'Champagne', 'Gaseosas', 'Agua',
+  ];
+
+  void _onSearchChanged(String query, int index) async {
+    if (query.length < 2) {
+      setState(() => _suggestions[index] = []);
+      return;
+    }
+    setState(() => _isSearching[index] = true);
+    try {
+      final results = await SpotifyService.searchSongs(query);
+      setState(() => _suggestions[index] = results);
+    } catch (e) {
+      print('Error buscando canciones: $e');
+    }
+    setState(() => _isSearching[index] = false);
+  }
+
+  void _selectSong(Map<String, String> song, int index) {
+    setState(() {
+      _selectedSongs[index] = song;
+      _songControllers[index].text = '';
+      _suggestions[index] = [];
+    });
+  }
+
+  Future<void> _saveSongsAndDrink() async {
+    setState(() => _isLoading = true);
+
+    try {
+      final currentUser = FirebaseAuth.instance.currentUser;
+      if (currentUser == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Usuario no autenticado')),
+        );
+        return;
+      }
+
+      // Filtrar solo las canciones que tienen título
+      final topSongs = _selectedSongs
+          .where((song) => song['title']!.isNotEmpty)
+          .toList();
+
+      // Obtener las fotos existentes del usuario para no sobrescribirlas
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+      
+      List<String> existingPhotoUrls = [];
+      if (userDoc.exists) {
+        final userData = userDoc.data()!;
+        existingPhotoUrls = List<String>.from(userData['photoUrls'] ?? []);
+      }
+
+      // Usar la función específica para actualizar solo canciones y trago
+      await updateUserSongsAndDrink(
+        topSongs: topSongs,
+        drink: _selectedDrink ?? '',
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Perfil actualizado')),
+      );
+
+      Navigator.pop(context); // Volver a la pantalla anterior
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Completá tu perfil'),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.orange),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Completá estos datos para poder conectar en eventos de fiesta',
+                        style: TextStyle(color: Colors.orange[800]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 24),
+              const Center(child: Text('AGREGA TUS CANCIONES FAVORITAS', style: TextStyle(fontWeight: FontWeight.bold))),
+              const SizedBox(height: 8),
+              for (int i = 0; i < 3; i++) ...[
+                TextField(
+                  controller: _songControllers[i],
+                  onChanged: (value) => _onSearchChanged(value, i),
+                  decoration: InputDecoration(
+                    hintText: _selectedSongs[i]['title']!.isNotEmpty ? _selectedSongs[i]['title'] : 'Buscar canción ${i + 1}...',
+                    prefixIcon: _selectedSongs[i]['imageUrl']!.isNotEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Image.network(
+                              _selectedSongs[i]['imageUrl']!,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : const Icon(Icons.music_note, color: AppColors.yellow),
+                    suffixIcon: _selectedSongs[i]['title']!.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              setState(() {
+                                _selectedSongs[i] = {'title': '', 'artist': '', 'imageUrl': ''};
+                                _songControllers[i].clear();
+                              });
+                            },
+                          )
+                        : null,
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
+                if (_isSearching[i]) const CircularProgressIndicator(),
+                if (_suggestions[i].isNotEmpty)
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _suggestions[i].length,
+                    itemBuilder: (context, index2) {
+                      final song = _suggestions[i][index2];
+                      return ListTile(
+                        leading: Image.network(song['imageUrl']!, width: 50, height: 50, fit: BoxFit.cover),
+                        title: Text(song['title']!),
+                        subtitle: Text(song['artist']!),
+                        onTap: () => _selectSong(song, i),
+                      );
+                    },
+                  ),
+                const SizedBox(height: 12),
+              ],
+              const Center(child: Text('AGREGA TU TRAGO FAVORITO', style: TextStyle(fontWeight: FontWeight.bold))),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedDrink,
+                decoration: InputDecoration(
+                  labelText: 'Trago favorito',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: const OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.yellow),
+                  ),
+                ),
+                items: _drinks.map((drink) => DropdownMenuItem(
+                  value: drink,
+                  child: Text(drink),
+                )).toList(),
+                onChanged: (value) => setState(() => _selectedDrink = value),
+              ),
+              SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.green,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: _isLoading ? null : _saveSongsAndDrink,
+                  child: _isLoading
+                      ? CircularProgressIndicator(color: Colors.white)
+                      : Text('Guardar', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

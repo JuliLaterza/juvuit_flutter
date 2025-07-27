@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/features/events/domain/models/event.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 import '../domain/match_helper.dart';
+import 'package:juvuit_flutter/core/utils/routes.dart';
 
 class MatchingProfilesController {
   late final PageController pageController;
@@ -85,6 +86,34 @@ class MatchingProfilesController {
     final currentPage = pageController.page!.toInt();
     if (currentUser == null || currentPage >= profiles.length) return;
 
+    // Verificar si es evento tipo "Fiesta" y si el usuario tiene canciones/trago completados
+    if (event.type.toLowerCase() == 'fiesta' || event.type.toLowerCase() == 'boliche' || event.type.toLowerCase() == 'party') {
+      print('DEBUG: Evento tipo fiesta detectado: ${event.type}');
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+      
+      if (userDoc.exists) {
+        final userData = userDoc.data()!;
+        final hasSongs = userData['top_3canciones'] != null && 
+                        (userData['top_3canciones'] as List).isNotEmpty;
+        final hasDrink = userData['drink'] != null && 
+                        userData['drink'].toString().isNotEmpty;
+
+        print('DEBUG: Usuario tiene canciones: $hasSongs, trago: $hasDrink');
+
+        if (!hasSongs || !hasDrink) {
+          print('DEBUG: Mostrando modal obligatorio');
+          // Mostrar modal obligatorio
+          final shouldContinue = await _showSongsDrinkModal(context);
+          if (!shouldContinue) return;
+        }
+      }
+    } else {
+      print('DEBUG: Evento no es tipo fiesta: ${event.type}');
+    }
+
     final likedUser = profiles[currentPage];
     likedProfiles.add(likedUser.userId);
 
@@ -110,6 +139,74 @@ class MatchingProfilesController {
     );
 
     avanzarPagina(currentPage);
+  }
+
+  Future<bool> _showSongsDrinkModal(BuildContext context) async {
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.music_note, color: Colors.yellow),
+              SizedBox(width: 8),
+              Text('¡Completá tu perfil!'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Para conectar en eventos de fiesta, necesitás:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(Icons.music_note, size: 16, color: Colors.grey[600]),
+                  SizedBox(width: 8),
+                  Text('Tus 3 canciones favoritas'),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.local_bar, size: 16, color: Colors.grey[600]),
+                  SizedBox(width: 8),
+                  Text('Tu trago preferido'),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey[600])),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+                // Navegar a la pantalla de completar perfil
+                Navigator.pushNamed(context, AppRoutes.completeSongsDrink);
+              },
+              child: Text('Completar perfil'),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
   }
 
   void onDislike(List<UserProfile> profiles) {

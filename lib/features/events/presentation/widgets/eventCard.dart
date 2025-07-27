@@ -5,6 +5,7 @@ import 'package:juvuit_flutter/core/utils/colors.dart';
 import '../screens/event_info.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:juvuit_flutter/core/utils/routes.dart';
 
 class EventCard extends StatefulWidget {
   final Event event;
@@ -68,6 +69,7 @@ class _EventCardState extends State<EventCard> {
     final attendees = eventSnapshot.data()?['attendees'] ?? [];
 
     if (attendees.contains(userId)) {
+      // Si ya está asistiendo, dejar de asistir
       await eventRef.update({
         'attendees': FieldValue.arrayRemove([userId]),
       });
@@ -85,6 +87,56 @@ class _EventCardState extends State<EventCard> {
         const SnackBar(content: Text('¡Has dejado de asistir a este evento!')),
       );
     } else {
+      // Si va a asistir, verificar si es evento tipo FIESTA
+      if (widget.event.type.toLowerCase() == 'fiesta' || 
+          widget.event.type.toLowerCase() == 'boliche' || 
+          widget.event.type.toLowerCase() == 'party') {
+        
+        print('DEBUG: Evento tipo fiesta detectado: ${widget.event.type}');
+        
+        // Verificar si el usuario tiene canciones y trago completados
+        final userDoc = await userRef.get();
+        if (userDoc.exists) {
+          final userData = userDoc.data()!;
+          final hasSongs = userData['top_3canciones'] != null && 
+                          (userData['top_3canciones'] as List).isNotEmpty;
+          final hasDrink = userData['drink'] != null && 
+                          userData['drink'].toString().isNotEmpty;
+
+          print('DEBUG: Usuario tiene canciones: $hasSongs, trago: $hasDrink');
+
+          if (!hasSongs || !hasDrink) {
+            print('DEBUG: Mostrando modal obligatorio');
+            // Mostrar modal obligatorio
+            final shouldContinue = await _showSongsDrinkModal();
+            if (!shouldContinue) {
+              print('DEBUG: Usuario canceló, no asistir al evento');
+              return; // No asistir al evento
+            }
+            print('DEBUG: Usuario completó perfil, continuar con asistencia');
+            
+            // Después de completar el perfil, verificar nuevamente si tiene canciones y trago
+            final updatedUserDoc = await userRef.get();
+            if (updatedUserDoc.exists) {
+              final updatedUserData = updatedUserDoc.data()!;
+              final hasSongs = updatedUserData['top_3canciones'] != null && 
+                              (updatedUserData['top_3canciones'] as List).isNotEmpty;
+              final hasDrink = updatedUserData['drink'] != null && 
+                              updatedUserData['drink'].toString().isNotEmpty;
+
+              if (!hasSongs || !hasDrink) {
+                print('DEBUG: Usuario aún no tiene canciones/trago completados');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Completá tus canciones y trago favoritos para poder asistir')),
+                );
+                return; // No asistir al evento
+              }
+            }
+          }
+        }
+      }
+
+      // Asistir al evento
       await eventRef.update({
         'attendees': FieldValue.arrayUnion([userId]),
       });
@@ -102,6 +154,74 @@ class _EventCardState extends State<EventCard> {
         const SnackBar(content: Text('¡Estás asistiendo a este evento!')),
       );
     }
+  }
+
+  Future<bool> _showSongsDrinkModal() async {
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.music_note, color: AppColors.darkmedium),
+              SizedBox(width: 8),
+              Text('¡Completá tu perfil!'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Para asistir a eventos de fiesta, necesitás:',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(Icons.music_note, size: 16, color: Colors.grey[600]),
+                  SizedBox(width: 8),
+                  Text('Tus 3 canciones favoritas'),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.local_bar, size: 16, color: Colors.grey[600]),
+                  SizedBox(width: 8),
+                  Text('Tu trago preferido'),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('Cancelar', style: TextStyle(color: Colors.grey[600])),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.darkmedium,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+                // Navegar a la pantalla de completar perfil
+                Navigator.pushNamed(context, AppRoutes.completeSongsDrink);
+              },
+              child: Text('Completar perfil'),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
   }
 
   @override
@@ -131,18 +251,18 @@ class _EventCardState extends State<EventCard> {
                     style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.black)),
                 const SizedBox(height: 4),
                 Text(widget.event.subtitle,
-                    style: const TextStyle(fontSize: 10, color: AppColors.black)),
+                    style: const TextStyle(fontSize: 12, color: AppColors.black)),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Text(
                       'Fecha: ${widget.event.date.day}/${widget.event.date.month}/${widget.event.date.year}',
-                      style: const TextStyle(fontSize: 10, color: AppColors.darkGray),
+                      style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Asistentes: ${widget.event.attendeesCount}',
-                      style: const TextStyle(fontSize: 10, color: AppColors.darkGray),
+                      style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
                     ),
                   ],
                 ),
