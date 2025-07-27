@@ -156,64 +156,6 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
           setState(() => _selectedSign = value);
           widget.onSignChanged(value);
         }),
-        const SizedBox(height: 16),
-        const Center(child: Text('AGREGA TUS CANCIONES FAVORITAS', style: TextStyle(fontWeight: FontWeight.bold))),
-        const SizedBox(height: 8),
-        for (int i = 0; i < 3; i++) ...[
-          TextField(
-            controller: _songControllers[i],
-            onChanged: (value) => _onSearchChanged(value, i),
-            decoration: InputDecoration(
-              hintText: _selectedSongs[i]?['title'] ?? 'Buscar canción ${i + 1}...',
-              prefixIcon: _selectedSongs[i] != null
-                  ? Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Image.network(
-                        _selectedSongs[i]!['imageUrl']!,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : const Icon(Icons.music_note, color: AppColors.yellow),
-              suffixIcon: _selectedSongs[i] != null
-                  ? IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        setState(() {
-                          _selectedSongs[i] = null;
-                          _songControllers[i].clear();
-                        });
-                      },
-                    )
-                  : null,
-              border: const OutlineInputBorder(),
-            ),
-          ),
-          if (_isSearching[i]) const CircularProgressIndicator(),
-          if (_suggestions[i].isNotEmpty)
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: _suggestions[i].length,
-              itemBuilder: (context, index2) {
-                final song = _suggestions[i][index2];
-                return ListTile(
-                  leading: Image.network(song['imageUrl']!, width: 50, height: 50, fit: BoxFit.cover),
-                  title: Text(song['title']!),
-                  subtitle: Text(song['artist']!),
-                  onTap: () => _selectSong(song, i),
-                );
-              },
-            ),
-          const SizedBox(height: 12),
-        ],
-        const Center(child: Text('AGREGA TU TRAGO FAVORITO', style: TextStyle(fontWeight: FontWeight.bold))),
-        const SizedBox(height: 16),
-        _buildDropdownList('Trago Favorito', _drinks, _selectedDrink, (value) {
-          setState(() => _selectedDrink = value);
-          widget.onDrinkChanged(value);
-        }),
       ],
     );
   }

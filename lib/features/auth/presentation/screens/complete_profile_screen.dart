@@ -6,6 +6,7 @@ import 'package:juvuit_flutter/features/auth/presentation/widgets/complete_profi
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/features/profile/data/services/save_user_profile.dart';
 import 'package:juvuit_flutter/features/upload_imag/storage_service.dart';
+import 'package:juvuit_flutter/features/onboarding/presentation/screens/personality_onboarding_screen.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   const CompleteProfileScreen({super.key});
@@ -96,8 +97,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     await saveUserProfile(
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
-      topSongs: topSongs,
-      drink: _selectedDrink ?? '',
       sign: _selectedSign,
       birthDate: birthDate,
       photoUrls: photoUrls,
@@ -107,7 +106,10 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       const SnackBar(content: Text('Perfil guardado')),
     );
 
-    Navigator.pushNamedAndRemoveUntil(context, '/events', (route) => false);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const PersonalityOnboardingScreen()),
+    );
   }
 
   @override
