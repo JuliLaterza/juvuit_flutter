@@ -29,6 +29,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
   String? _selectedSign;
   String? _selectedDrink;
   DateTime? _selectedDate;
+  late TextEditingController _dateController;
 
   DateTime? get selectedBirthDate => _selectedDate;
   List<Map<String, String>> get selectedSongs =>
@@ -62,6 +63,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
   @override
   void initState() {
     super.initState();
+    _dateController = TextEditingController();
     if (widget.initialSongs != null) {
       for (int i = 0; i < widget.initialSongs!.length && i < 3; i++) {
         _selectedSongs[i] = {
@@ -71,6 +73,12 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
         };
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    super.dispose();
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -84,6 +92,8 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        // Actualizar el controlador de texto con la fecha seleccionada
+        _dateController.text = DateFormat('dd/MM/yyyy').format(picked);
       });
 
       if (_calculateAge(picked) < 18) {
@@ -173,9 +183,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
               borderSide: BorderSide(color: AppColors.yellow),
             ),
           ),
-          controller: TextEditingController(
-            text: _selectedDate == null ? '' : DateFormat('dd/MM/yyyy').format(_selectedDate!),
-          ),
+          controller: _dateController,
         ),
       ),
     );

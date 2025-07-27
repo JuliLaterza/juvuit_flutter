@@ -13,6 +13,9 @@ Future<void> saveUserProfile({
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
 
+  // Debug: Verificar que birthDate se está procesando correctamente
+  print('DEBUG: saveUserProfile - birthDate received: $birthDate');
+  
   final userData = {
     'name': name,
     'description': description,
@@ -23,6 +26,12 @@ Future<void> saveUserProfile({
     'isPremium': false, // ← nuevo campo
     if (birthDate != null) 'birthDate': Timestamp.fromDate(birthDate),
   };
+  
+  // Debug: Verificar el objeto userData final
+  print('DEBUG: saveUserProfile - userData keys: ${userData.keys.toList()}');
+  if (birthDate != null) {
+    print('DEBUG: saveUserProfile - birthDate in userData: ${userData['birthDate']}');
+  }
 
   await FirebaseFirestore.instance
       .collection('users')

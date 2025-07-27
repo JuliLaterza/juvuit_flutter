@@ -96,6 +96,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       return;
     }
 
+    // Debug: Verificar que la fecha se está obteniendo correctamente
+    print('DEBUG: birthDate from form: $birthDate');
+    if (birthDate != null) {
+      print('DEBUG: birthDate formatted: ${birthDate.toIso8601String()}');
+    }
+
     await saveUserProfile(
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
