@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:juvuit_flutter/features/matching/presentation/screens/match_animation_screen.dart';
 
 class MatchPopup extends StatefulWidget {
   final String currentUserPhoto;
   final String matchedUserPhoto;
   final String matchedUserName;
+  final String matchedUserId; // ID del usuario con quien se hizo match
   final VoidCallback onMessagePressed;
 
   const MatchPopup({
@@ -11,6 +13,7 @@ class MatchPopup extends StatefulWidget {
     required this.currentUserPhoto,
     required this.matchedUserPhoto,
     required this.matchedUserName,
+    required this.matchedUserId,
     required this.onMessagePressed,
   });
 
@@ -40,6 +43,22 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _navigateToMatchAnimation() {
+    Navigator.pop(context); // Cerrar el popup
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MatchAnimationScreen(
+          userImage: widget.currentUserPhoto,
+          matchImage: widget.matchedUserPhoto,
+          matchedUserId: widget.matchedUserId,
+          matchedUserName: widget.matchedUserName,
+          matchedUserPhotoUrl: widget.matchedUserPhoto,
+        ),
+      ),
+    );
   }
 
   @override
@@ -86,7 +105,7 @@ class _MatchPopupState extends State<MatchPopup> with SingleTickerProviderStateM
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
-                    onPressed: widget.onMessagePressed,
+                    onPressed: _navigateToMatchAnimation,
                     icon: const Icon(Icons.message),
                     label: const Text('Enviar un mensaje'),
                     style: ElevatedButton.styleFrom(

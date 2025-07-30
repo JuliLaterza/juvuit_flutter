@@ -60,9 +60,11 @@ class _EventCardState extends State<EventCard> {
 
     final eventSnapshot = await eventRef.get();
     if (!eventSnapshot.exists) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Este evento no existe')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Este evento no existe')),
+        );
+      }
       return;
     }
 
@@ -81,11 +83,11 @@ class _EventCardState extends State<EventCard> {
         setState(() {
           isAttending = false;
         });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('¡Has dejado de asistir a este evento!')),
+        );
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Has dejado de asistir a este evento!')),
-      );
     } else {
       // Si va a asistir, verificar si es evento tipo FIESTA
       if (widget.event.type.toLowerCase() == 'fiesta' || 
@@ -126,9 +128,11 @@ class _EventCardState extends State<EventCard> {
 
               if (!hasSongs || !hasDrink) {
                 print('DEBUG: Usuario aún no tiene canciones/trago completados');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Completá tus canciones y trago favoritos para poder asistir')),
-                );
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Completá tus canciones y trago favoritos para poder asistir')),
+                  );
+                }
                 return; // No asistir al evento
               }
             }
@@ -148,11 +152,11 @@ class _EventCardState extends State<EventCard> {
         setState(() {
           isAttending = true;
         });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('¡Estás asistiendo a este evento!')),
+        );
       }
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Estás asistiendo a este evento!')),
-      );
     }
   }
 
@@ -298,9 +302,11 @@ class _EventCardState extends State<EventCard> {
                 const SizedBox(width: 8),
                 OutlinedButton(
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Venta de entradas ${widget.event.title}')),
-                    );
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Venta de entradas ${widget.event.title}')),
+                      );
+                    }
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.black,

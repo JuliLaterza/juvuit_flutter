@@ -3,7 +3,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import '../widgets/match_popup.dart';
+import '../presentation/screens/match_animation_screen.dart';
 
 Future<bool> handleLikeAndMatch({
   required String currentUserId,
@@ -59,20 +59,21 @@ Future<bool> handleLikeAndMatch({
       'createdAt': FieldValue.serverTimestamp(),
     });
 
-    final result = await showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (_) => MatchPopup(
-        currentUserPhoto: currentUserPhoto,
-        matchedUserPhoto: matchedUserPhoto,
-        matchedUserName: matchedUserName,
-        onMessagePressed: () {
-          Navigator.pop(context, 'ok');
-        },
+    // Navegar directo al MatchAnimationScreen
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MatchAnimationScreen(
+          userImage: currentUserPhoto,
+          matchImage: matchedUserPhoto,
+          matchedUserId: likedUserId,
+          matchedUserName: matchedUserName,
+          matchedUserPhotoUrl: matchedUserPhoto,
+        ),
       ),
     );
 
-    return result != null;
+    return true;
   }
 
   return false;

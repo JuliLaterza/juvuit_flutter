@@ -80,9 +80,7 @@ class AppRoutes {
         ),
       );
       case profile:
-        return MaterialPageRoute(builder: (_) => const ProfileScreen());
-      case profiles:
-        return MaterialPageRoute(builder: (_) => const MatchingIgScreen()); // Agregado
+        return MaterialPageRoute(builder: (_) => const ProfileScreen());// Agregado
       case editProfile:
         return MaterialPageRoute(builder: (_) => const EditProfileScreen());
       case matchingPreferences:

@@ -1,7 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/features/matching/presentation/screens/match_animation_screen.dart';
-
+/*
 class Profile {
   final String id;
   final String name;
@@ -226,3 +226,4 @@ class _MatchingIgScreenState extends State<MatchingIgScreen> {
     );
   }
 }
+*/

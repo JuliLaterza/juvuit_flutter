@@ -1,14 +1,23 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:juvuit_flutter/core/utils/routes.dart';
 
 class MatchAnimationScreen extends StatefulWidget {
   final String userImage;
   final String matchImage;
+  final String matchedUserId; // ID del usuario con quien se hizo match
+  final String matchedUserName; // Nombre del usuario con quien se hizo match
+  final String matchedUserPhotoUrl; // URL de la foto del usuario con quien se hizo match
 
   const MatchAnimationScreen({
     super.key,
     required this.userImage,
     required this.matchImage,
+    required this.matchedUserId,
+    required this.matchedUserName,
+    required this.matchedUserPhotoUrl,
   });
 
   @override
@@ -21,6 +30,7 @@ class _MatchAnimationScreenState extends State<MatchAnimationScreen>
   late AnimationController _burstController;
   late AnimationController _textController;
   bool showText = false;
+  String? matchId;
 
   static const Color appYellow = Color(0xFFFFD600);
 
@@ -50,6 +60,56 @@ class _MatchAnimationScreenState extends State<MatchAnimationScreen>
       });
       _textController.forward();
     });
+
+    // Obtener el matchId
+    _getMatchId();
+  }
+
+  Future<void> _getMatchId() async {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return;
+
+    // Crear el matchId de la misma manera que en match_helper.dart
+    final userIds = [currentUserId, widget.matchedUserId]..sort();
+    final generatedMatchId = userIds.join('_');
+
+    // Verificar si el match existe en Firestore
+    final matchDoc = await FirebaseFirestore.instance
+        .collection('matches')
+        .doc(generatedMatchId)
+        .get();
+
+    if (matchDoc.exists) {
+      setState(() {
+        matchId = generatedMatchId;
+      });
+    }
+  }
+
+  void _navigateToChat() async {
+    if (matchId == null) {
+      // Si no hay matchId, mostrar un mensaje de error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Error: No se pudo encontrar el chat'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Navegar al chat
+    Navigator.pushNamed(
+      context,
+      AppRoutes.chat,
+      arguments: {
+        'matchId': matchId,
+        'personName': widget.matchedUserName,
+        'personPhotoUrl': widget.matchedUserPhotoUrl,
+      },
+    );
   }
 
   @override
@@ -74,6 +134,28 @@ class _MatchAnimationScreenState extends State<MatchAnimationScreen>
         child: Stack(
           alignment: Alignment.center,
           children: [
+            // Botón X en la esquina superior derecha
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              right: 20,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.3),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
+
             // Onda expansiva
             AnimatedBuilder(
               animation: _burstController,
@@ -152,7 +234,7 @@ class _MatchAnimationScreenState extends State<MatchAnimationScreen>
                         ),
                         const SizedBox(height: 24),
                         ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: _navigateToChat,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.black,
                             foregroundColor: Colors.white,
@@ -189,7 +271,9 @@ class _MatchAnimationScreenState extends State<MatchAnimationScreen>
       ),
       child: CircleAvatar(
         radius: 80,
-        backgroundImage: AssetImage(imagePath),
+        backgroundImage: imagePath.startsWith('http') 
+            ? NetworkImage(imagePath) 
+            : AssetImage(imagePath) as ImageProvider,
       ),
     );
   }
