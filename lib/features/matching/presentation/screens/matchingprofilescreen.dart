@@ -62,64 +62,119 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
     });
   }
 
+  // Función para mostrar animación de match retroactivo
+  void _showRetroactiveMatchAnimation(String otherUserId) async {
+    try {
+      // Obtener información del otro usuario
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(otherUserId)
+          .get();
+      
+      if (userDoc.exists) {
+        final userData = userDoc.data()!;
+        final otherUserName = userData['name'] ?? 'Usuario';
+        final otherUserPhotoUrl = (userData['photoUrls'] as List).isNotEmpty 
+            ? userData['photoUrls'][0] 
+            : 'https://via.placeholder.com/150';
+        
+        // Mostrar animación usando el controlador
+        _controller.showRetroactiveMatchAnimation(
+          context, 
+          '${FirebaseAuth.instance.currentUser?.uid}_$otherUserId', 
+          otherUserId, 
+          otherUserName, 
+          otherUserPhotoUrl
+        );
+      }
+    } catch (e) {
+      print('Error showing retroactive match animation: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Wit Ü', style: TextStyle(color: AppColors.black)),
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        elevation: 0,
-      ),
-      body: PageView.builder(
-        scrollDirection: Axis.vertical,
-        controller: _pageController,
-        itemCount: _profiles.length + 1,
-        itemBuilder: (context, index) {
-          if (index == _profiles.length) {
-            return NoMoreProfilesCard(onSeeEvents: () => Navigator.pop(context));
+    return StreamBuilder<QuerySnapshot>(
+      stream: _controller.matchesStream,
+      builder: (context, snapshot) {
+        // Procesar nuevos matches si los hay
+        if (snapshot.hasData) {
+          for (final doc in snapshot.data!.docs) {
+            final matchId = doc.id;
+            final data = doc.data() as Map<String, dynamic>;
+            final users = List<String>.from(data['users']);
+            final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+            
+            if (currentUserId != null && users.contains(currentUserId)) {
+              final otherUserId = users.firstWhere((uid) => uid != currentUserId);
+              
+              // Verificar si es un match nuevo (no anticipado)
+              if (_controller.isNewMatch(matchId)) {
+                // Obtener información del otro usuario
+                _showRetroactiveMatchAnimation(otherUserId);
+              }
+            }
           }
+        }
 
-          final profile = _profiles[index];
-          final currentIndex = _controller.currentCarouselIndex[index] ?? 0;
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Wit Ü', style: TextStyle(color: AppColors.black)),
+            backgroundColor: Colors.white,
+            centerTitle: true,
+            elevation: 0,
+          ),
+          body: PageView.builder(
+            scrollDirection: Axis.vertical,
+            controller: _pageController,
+            itemCount: _profiles.length + 1,
+            itemBuilder: (context, index) {
+              if (index == _profiles.length) {
+                return NoMoreProfilesCard(onSeeEvents: () => Navigator.pop(context));
+              }
 
-          if (reencounterUserIds.contains(profile.userId)) {
-            return ReencounterProfileCard(
-              profile: profile,
-              index: index,
-              currentImageIndex: currentIndex,
-              onDislike: () => _controller.onDislike(_profiles),
-              onCarouselChange: (imgIndex) {
-                setState(() {
-                  _controller.currentCarouselIndex[index] = imgIndex;
-                });
-              },
-            );
-          }
+              final profile = _profiles[index];
+              final currentIndex = _controller.currentCarouselIndex[index] ?? 0;
 
-          return ProfileCard(
-            profile: profile,
-            index: index,
-            currentImageIndex: currentIndex,
-            onLike: () => _controller.onLike(
-              context: context,
-              profiles: _profiles,
-              event: widget.event,
-            ),
-            onDislike: () => _controller.onDislike(_profiles),
-            onCarouselChange: (imgIndex) {
-              setState(() {
-                _controller.currentCarouselIndex[index] = imgIndex;
-              });
+              if (reencounterUserIds.contains(profile.userId)) {
+                return ReencounterProfileCard(
+                  profile: profile,
+                  index: index,
+                  currentImageIndex: currentIndex,
+                  onDislike: () => _controller.onDislike(_profiles),
+                  onCarouselChange: (imgIndex) {
+                    setState(() {
+                      _controller.currentCarouselIndex[index] = imgIndex;
+                    });
+                  },
+                );
+              }
+
+              return ProfileCard(
+                profile: profile,
+                index: index,
+                currentImageIndex: currentIndex,
+                onLike: () => _controller.onLike(
+                  context: context,
+                  profiles: _profiles,
+                  event: widget.event,
+                ),
+                onDislike: () => _controller.onDislike(_profiles),
+                onCarouselChange: (imgIndex) {
+                  setState(() {
+                    _controller.currentCarouselIndex[index] = imgIndex;
+                  });
+                },
+                showActions: true,
+              );
             },
-            showActions: true,
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

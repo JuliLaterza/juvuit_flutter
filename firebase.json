@@ -1,1 +1,47 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"juvuit-flutter","appId":"1:852726617261:android:d48d846ebca1e8cc68e224","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"juvuit-flutter","appId":"1:852726617261:ios:771a696093081dae68e224","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"juvuit-flutter","configurations":{"android":"1:852726617261:android:d48d846ebca1e8cc68e224","ios":"1:852726617261:ios:771a696093081dae68e224"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "juvuit-flutter",
+          "appId": "1:852726617261:android:d48d846ebca1e8cc68e224",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "juvuit-flutter",
+          "appId": "1:852726617261:ios:771a696093081dae68e224",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "juvuit-flutter",
+          "configurations": {
+            "android": "1:852726617261:android:d48d846ebca1e8cc68e224",
+            "ios": "1:852726617261:ios:771a696093081dae68e224"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "venv",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "python -m pip install -r functions/requirements.txt"
+      ],
+      "runtime": "python313"
+    }
+  ]
+}

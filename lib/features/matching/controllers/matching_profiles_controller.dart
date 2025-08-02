@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:juvuit_flutter/features/events/domain/models/event.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 import '../domain/match_helper.dart';
+import '../presentation/screens/match_animation_screen.dart';
 import 'package:juvuit_flutter/core/utils/routes.dart';
 
 class MatchingProfilesController {
@@ -14,7 +15,64 @@ class MatchingProfilesController {
   final Map<int, int> currentCarouselIndex = {};
   late UserProfile currentUserProfile;
   
-  MatchingProfilesController({required this.pageController});
+  // Mapa para almacenar hasLikedMe para cada perfil
+  final Map<String, bool> hasLikedMeMap = {};
+  
+  // Stream para escuchar matches
+  Stream<QuerySnapshot>? _matchesStream;
+  
+  MatchingProfilesController({required this.pageController}) {
+    _initializeMatchesStream();
+  }
+
+  void _initializeMatchesStream() {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId != null) {
+      _matchesStream = FirebaseFirestore.instance
+          .collection('matches')
+          .where('users', arrayContains: currentUserId)
+          .snapshots();
+    }
+  }
+
+  // Función para obtener el stream de matches
+  Stream<QuerySnapshot>? get matchesStream => _matchesStream;
+
+  // Función para verificar si un match es nuevo (no anticipado)
+  bool isNewMatch(String matchId) {
+    // Si el match no estaba en hasLikedMeMap, es nuevo
+    final users = matchId.split('_');
+    if (users.length == 2) {
+      final otherUserId = users.firstWhere((uid) => uid != FirebaseAuth.instance.currentUser?.uid);
+      return !(hasLikedMeMap[otherUserId] ?? false);
+    }
+    return false;
+  }
+
+  // Función para mostrar animación de match retroactivo
+  void showRetroactiveMatchAnimation(BuildContext context, String matchId, String otherUserId, String otherUserName, String otherUserPhotoUrl) {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return;
+
+    // Obtener foto del usuario actual
+    final currentUserPhoto = currentUserProfile.photoUrls.isNotEmpty 
+        ? currentUserProfile.photoUrls.first 
+        : 'https://via.placeholder.com/150';
+
+    // Mostrar animación
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MatchAnimationScreen(
+          userImage: currentUserPhoto,
+          matchImage: otherUserPhotoUrl,
+          matchedUserId: otherUserId,
+          matchedUserName: otherUserName,
+          matchedUserPhotoUrl: otherUserPhotoUrl,
+        ),
+      ),
+    );
+  }
 
   Future<UserProfile?> loadCurrentUserProfile() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -27,6 +85,26 @@ class MatchingProfilesController {
       return currentUserProfile;
     }
     return null;
+  }
+
+  // Función para verificar si un usuario ya dio like al usuario actual
+  Future<bool> checkIfUserLikedMe(String userId) async {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return false;
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('likesGiven')
+          .doc(currentUserId)
+          .get();
+      
+      return doc.exists;
+    } catch (e) {
+      print('Error checking if user liked me: $e');
+      return false;
+    }
   }
 
   Future<List<UserProfile>> loadProfiles(Event event) async {
@@ -71,10 +149,20 @@ class MatchingProfilesController {
         final data = doc.data()!;
         final profile = UserProfile.fromMap(doc.id, data);
         loaded.add(profile);
+        
+        // Preconsulta: verificar si este usuario ya dio like al usuario actual
+        final hasLikedMe = await checkIfUserLikedMe(uid);
+        hasLikedMeMap[uid] = hasLikedMe;
+        print('DEBUG: Perfil ${profile.name} - hasLikedMe: $hasLikedMe');
       }
     }
 
     return loaded;
+  }
+
+  // Función para obtener hasLikedMe de un perfil específico
+  bool getHasLikedMe(String userId) {
+    return hasLikedMeMap[userId] ?? false;
   }
 
   Future<void> onLike({
@@ -117,7 +205,11 @@ class MatchingProfilesController {
     final likedUser = profiles[currentPage];
     likedProfiles.add(likedUser.userId);
 
-    // Guardar también en likesGiven
+    // Verificar si ya recibí like de este usuario (preconsulta)
+    final hasLikedMe = getHasLikedMe(likedUser.userId);
+    print('DEBUG: hasLikedMe para ${likedUser.name}: $hasLikedMe');
+
+    // Guardar like en Firestore
     await FirebaseFirestore.instance
         .collection('users')
         .doc(currentUser.uid)
@@ -128,15 +220,35 @@ class MatchingProfilesController {
       'timestamp': FieldValue.serverTimestamp(),
     });
 
-    await handleLikeAndMatch(
-      currentUserId: currentUser.uid,
-      likedUserId: likedUser.userId,
-      eventId: event.id,
-      context: context,
-      currentUserPhoto: currentUserProfile.photoUrls.first,
-      matchedUserPhoto: likedUser.photoUrls.isNotEmpty ? likedUser.photoUrls.first : 'https://via.placeholder.com/150',
-      matchedUserName: likedUser.name,
-    );
+    // Si ya recibí like, mostrar animación instantánea
+    if (hasLikedMe) {
+      print('DEBUG: ¡MATCH INSTANTÁNEO! Mostrando animación...');
+      // Navegar directo al MatchAnimationScreen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MatchAnimationScreen(
+            userImage: currentUserProfile.photoUrls.first,
+            matchImage: likedUser.photoUrls.isNotEmpty ? likedUser.photoUrls.first : 'https://via.placeholder.com/150',
+            matchedUserId: likedUser.userId,
+            matchedUserName: likedUser.name,
+            matchedUserPhotoUrl: likedUser.photoUrls.isNotEmpty ? likedUser.photoUrls.first : 'https://via.placeholder.com/150',
+          ),
+        ),
+      );
+    } else {
+      print('DEBUG: No es match instantáneo, procesando normalmente...');
+      // Procesar normalmente (Cloud Function se encargará del match si corresponde)
+      await handleLikeAndMatch(
+        currentUserId: currentUser.uid,
+        likedUserId: likedUser.userId,
+        eventId: event.id,
+        context: context,
+        currentUserPhoto: currentUserProfile.photoUrls.first,
+        matchedUserPhoto: likedUser.photoUrls.isNotEmpty ? likedUser.photoUrls.first : 'https://via.placeholder.com/150',
+        matchedUserName: likedUser.name,
+      );
+    }
 
     avanzarPagina(currentPage);
   }
