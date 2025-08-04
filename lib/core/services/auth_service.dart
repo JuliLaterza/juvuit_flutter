@@ -46,6 +46,11 @@ class AuthService {
       // Sign in to Firebase with the credential
       return await _auth.signInWithCredential(credential);
     } catch (e) {
+      // Manejo específico para iOS
+      if (e.toString().contains('GoogleSignIn') || e.toString().contains('cancelled')) {
+        print('Google Sign-In cancelado o no disponible en este dispositivo');
+        return null;
+      }
       rethrow;
     }
   }

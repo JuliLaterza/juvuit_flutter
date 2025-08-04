@@ -73,10 +73,20 @@ class _LoginScreenState extends State<LoginScreen> {
           (route) => false,
         );
       } else {
-        _showMessage('Inicio de sesión cancelado');
+        _showMessage('Inicio de sesión cancelado o no disponible en este dispositivo');
       }
     } catch (e) {
-      _showMessage('Error al iniciar sesión con Google: ${e.toString()}');
+      String errorMessage = 'Error al iniciar sesión con Google';
+      
+      if (e.toString().contains('network')) {
+        errorMessage = 'Error de conexión. Verifica tu internet.';
+      } else if (e.toString().contains('cancelled')) {
+        errorMessage = 'Inicio de sesión cancelado';
+      } else if (e.toString().contains('GoogleSignIn')) {
+        errorMessage = 'Google Sign-In no está disponible en este dispositivo';
+      }
+      
+      _showMessage(errorMessage);
     } finally {
       setState(() {
         _isLoading = false;

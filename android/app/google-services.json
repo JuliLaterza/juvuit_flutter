@@ -12,7 +12,12 @@
           "package_name": "com.example.jflutter"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "852726617261-ev51a2c9bs47vd4qq2p0itcitn37er94.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyATBhEy7uvuMRwA1kGJHkcxtd0C3yMrZ4w"
@@ -20,7 +25,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "852726617261-cbb49dmfh3931polvfvlbv3rrll8int1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "852726617261-7ib25fb01g0migrp69m4upqh7b2ia4t8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "juvuit-flutter"
+              }
+            }
+          ]
         }
       }
     },
@@ -31,7 +48,20 @@
           "package_name": "com.example.juvuit_flutter"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "852726617261-rh69s420u6oqldf77h96cri3i8m1d5f7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.juvuit_flutter",
+            "certificate_hash": "a23666ce9695211097fb29daa5b63c449feeba34"
+          }
+        },
+        {
+          "client_id": "852726617261-ev51a2c9bs47vd4qq2p0itcitn37er94.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyATBhEy7uvuMRwA1kGJHkcxtd0C3yMrZ4w"
@@ -39,7 +69,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "852726617261-cbb49dmfh3931polvfvlbv3rrll8int1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "852726617261-7ib25fb01g0migrp69m4upqh7b2ia4t8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "juvuit-flutter"
+              }
+            }
+          ]
         }
       }
     }
