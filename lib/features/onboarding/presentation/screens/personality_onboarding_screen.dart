@@ -66,6 +66,7 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
     try {
       await saveUserPersonality(
         gender: _gender,
+        birthDate: _birthDate, // ← AGREGAR birthDate
         interests: _interests,
         lookingFor: _lookingFor,
         job: _job,

@@ -38,7 +38,12 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
     final currentUserProfile = await _controller.loadCurrentUserProfile();
     if (currentUserProfile == null) return;
 
-    final profiles = await _controller.loadProfiles(widget.event);
+    // Inicializar sistema de tracking de matches
+    await _controller.initializeMatchesTracking();
+
+    // Cargar primer lote de perfiles
+    await _controller.loadNextBatch(widget.event);
+    
     final matchesSnapshot = await FirebaseFirestore.instance
         .collection('matches')
         .where('users', arrayContains: currentUser.uid)
@@ -56,14 +61,14 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
     }
 
     setState(() {
-      _profiles = profiles;
+      _profiles = _controller.profiles;
       reencounterUserIds = seenButNotChatted;
       _isLoading = false;
     });
   }
 
   // Función para mostrar animación de match retroactivo
-  void _showRetroactiveMatchAnimation(String otherUserId) async {
+  void _showRetroactiveMatchAnimation(String otherUserId, String matchId) async {
     try {
       // Obtener información del otro usuario
       final userDoc = await FirebaseFirestore.instance
@@ -78,10 +83,13 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
             ? userData['photoUrls'][0] 
             : 'https://via.placeholder.com/150';
         
+        // Marcar match como mostrado
+        _controller.markMatchAsShown(matchId);
+        
         // Mostrar animación usando el controlador
         _controller.showRetroactiveMatchAnimation(
           context, 
-          '${FirebaseAuth.instance.currentUser?.uid}_$otherUserId', 
+          matchId, 
           otherUserId, 
           otherUserName, 
           otherUserPhotoUrl
@@ -114,8 +122,9 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
               
               // Verificar si es un match nuevo (no anticipado)
               if (_controller.isNewMatch(matchId)) {
-                // Obtener información del otro usuario
-                _showRetroactiveMatchAnimation(otherUserId);
+                print('DEBUG: Match nuevo detectado: $matchId');
+                // Obtener información del otro usuario y mostrar animación
+                _showRetroactiveMatchAnimation(otherUserId, matchId);
               }
             }
           }
@@ -145,7 +154,12 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
                   profile: profile,
                   index: index,
                   currentImageIndex: currentIndex,
-                  onDislike: () => _controller.onDislike(_profiles),
+                  onDislike: () {
+                    _controller.onDislike(_profiles);
+                    setState(() {
+                      _profiles = _controller.profiles;
+                    });
+                  },
                   onCarouselChange: (imgIndex) {
                     setState(() {
                       _controller.currentCarouselIndex[index] = imgIndex;
@@ -158,12 +172,22 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
                 profile: profile,
                 index: index,
                 currentImageIndex: currentIndex,
-                onLike: () => _controller.onLike(
-                  context: context,
-                  profiles: _profiles,
-                  event: widget.event,
-                ),
-                onDislike: () => _controller.onDislike(_profiles),
+                onLike: () async {
+                  await _controller.onLike(
+                    context: context,
+                    profiles: _profiles,
+                    event: widget.event,
+                  );
+                  setState(() {
+                    _profiles = _controller.profiles;
+                  });
+                },
+                onDislike: () {
+                  _controller.onDislike(_profiles);
+                  setState(() {
+                    _profiles = _controller.profiles;
+                  });
+                },
                 onCarouselChange: (imgIndex) {
                   setState(() {
                     _controller.currentCarouselIndex[index] = imgIndex;
