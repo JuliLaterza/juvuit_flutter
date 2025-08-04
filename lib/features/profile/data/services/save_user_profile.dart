@@ -59,6 +59,7 @@ Future<void> updateUserSongsAndDrink({
 
 Future<void> saveUserPersonality({
   String? gender,
+  DateTime? birthDate, // ← AGREGAR birthDate
   List<String>? interests,
   String? lookingFor,
   String? job,
@@ -75,6 +76,7 @@ Future<void> saveUserPersonality({
   final updateData = <String, dynamic>{};
   
   if (gender != null) updateData['gender'] = gender;
+  if (birthDate != null) updateData['birthDate'] = Timestamp.fromDate(birthDate); // ← AGREGAR birthDate
   if (interests != null) updateData['interests'] = interests;
   if (lookingFor != null) updateData['lookingFor'] = lookingFor;
   if (job != null) updateData['job'] = job;

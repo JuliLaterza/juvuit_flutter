@@ -4,6 +4,12 @@ import 'package:juvuit_flutter/features/matching/widgets/profile_card.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+// Función utilitaria para generar matchId de forma consistente
+String generateMatchId(String userId1, String userId2) {
+  final sortedIds = [userId1, userId2]..sort();
+  return sortedIds.join('_');
+}
+
 class PublicProfileScreen extends StatelessWidget {
   final UserProfile profile;
 
@@ -24,8 +30,7 @@ class PublicProfileScreen extends StatelessWidget {
           .doc(profile.userId)
           .set({'blockedAt': FieldValue.serverTimestamp()});
       // 2. Eliminar match
-      final ids = [currentUserId, profile.userId]..sort();
-      final matchId = ids.join('_');
+      final matchId = generateMatchId(currentUserId, profile.userId);
       await firestore.collection('matches').doc(matchId).delete();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Usuario bloqueado y match eliminado')),
@@ -35,8 +40,7 @@ class PublicProfileScreen extends StatelessWidget {
 
     Future<void> _deleteMatch() async {
       if (currentUserId == null) return;
-      final ids = [currentUserId, profile.userId]..sort();
-      final matchId = ids.join('_');
+      final matchId = generateMatchId(currentUserId, profile.userId);
       await firestore.collection('matches').doc(matchId).delete();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Match eliminado')),

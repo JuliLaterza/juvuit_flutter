@@ -5,6 +5,12 @@ import 'package:flutter/material.dart';
 
 import '../presentation/screens/match_animation_screen.dart';
 
+// Función utilitaria para generar matchId de forma consistente
+String _generateMatchId(String userId1, String userId2) {
+  final sortedIds = [userId1, userId2]..sort();
+  return sortedIds.join('_');
+}
+
 Future<bool> handleLikeAndMatch({
   required String currentUserId,
   required String likedUserId,
@@ -14,67 +20,79 @@ Future<bool> handleLikeAndMatch({
   required String matchedUserPhoto,
   required String matchedUserName,
 }) async {
-  final likesReceivedRef = FirebaseFirestore.instance
-      .collection('users')
-      .doc(likedUserId)
-      .collection('likesReceived')
-      .doc(currentUserId);
+  try {
+    // Guardar likes en paralelo
+    await Future.wait([
+      // Guardar en likesReceived del usuario destino
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(likedUserId)
+          .collection('likesReceived')
+          .doc(currentUserId)
+          .set({
+        'eventId': eventId,
+        'timestamp': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true)),
 
-  final currentUserLikesRef = FirebaseFirestore.instance
-      .collection('users')
-      .doc(currentUserId)
-      .collection('likesReceived')
-      .doc(likedUserId);
+      // Guardar en likesGiven del usuario actual
+      FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .collection('likesGiven')
+          .doc(likedUserId)
+          .set({
+        'eventId': eventId,
+        'timestamp': FieldValue.serverTimestamp(),
+      }),
+    ]);
 
-  // Guardar en likesReceived del usuario destino
-  await likesReceivedRef.set({
-    'eventId': eventId,
-    'timestamp': FieldValue.serverTimestamp(),
-  }, SetOptions(merge: true));
+    print("Se dio like correctamente");
 
-  // Guardar en likesGiven del usuario actual
-  await FirebaseFirestore.instance
-      .collection('users')
-      .doc(currentUserId)
-      .collection('likesGiven')
-      .doc(likedUserId)
-      .set({
-    'eventId': eventId,
-    'timestamp': FieldValue.serverTimestamp(),
-  });
+    // Verificar si hay match (ya sabemos que no es instantáneo, pero verificamos por si acaso)
+    final currentUserLikesRef = FirebaseFirestore.instance
+        .collection('users')
+        .doc(currentUserId)
+        .collection('likesReceived')
+        .doc(likedUserId);
 
-  print("Se dio like correctamente");
+    final snapshot = await currentUserLikesRef.get();
 
-  final snapshot = await currentUserLikesRef.get();
+    if (snapshot.exists) {
+      // ¡Hay match! Crear documento de match
+      final generatedMatchId = _generateMatchId(currentUserId, likedUserId);
+      
+      await FirebaseFirestore.instance
+          .collection('matches')
+          .doc(generatedMatchId)
+          .set({
+        'users': [currentUserId, likedUserId],
+        'eventId': eventId,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
 
-  if (snapshot.exists) {
-    final matchId = [currentUserId, likedUserId]..sort();
+      print('DEBUG: Match creado después de like: $generatedMatchId');
 
-    await FirebaseFirestore.instance
-        .collection('matches')
-        .doc(matchId.join('_'))
-        .set({
-      'users': [currentUserId, likedUserId],
-      'eventId': eventId,
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-
-    // Navegar directo al MatchAnimationScreen
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MatchAnimationScreen(
-          userImage: currentUserPhoto,
-          matchImage: matchedUserPhoto,
-          matchedUserId: likedUserId,
-          matchedUserName: matchedUserName,
-          matchedUserPhotoUrl: matchedUserPhoto,
+      // Navegar al MatchAnimationScreen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MatchAnimationScreen(
+            userImage: currentUserPhoto,
+            matchImage: matchedUserPhoto,
+            matchedUserId: likedUserId,
+            matchedUserName: matchedUserName,
+            matchedUserPhotoUrl: matchedUserPhoto,
+            matchId: generatedMatchId, // ← PASAR matchId DIRECTAMENTE
+          ),
         ),
-      ),
-    );
+      );
 
-    return true;
+      return true;
+    }
+
+    return false;
+  } catch (e) {
+    print('Error en handleLikeAndMatch: $e');
+    return false;
   }
-
-  return false;
 }

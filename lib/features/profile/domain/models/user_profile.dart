@@ -11,6 +11,7 @@ class UserProfile {
   final List<String> attendedEvents;
   final DateTime? birthDate;
   final bool isPremium;
+  final bool hasLikedMe; // Campo temporal en memoria
 
   UserProfile({
     required this.userId,
@@ -23,6 +24,7 @@ class UserProfile {
     required this.attendedEvents,
     this.birthDate,
     required this.isPremium,
+    this.hasLikedMe = false, // Valor por defecto
   });
 
   Map<String, dynamic> toMap() {
@@ -40,7 +42,7 @@ class UserProfile {
     };
   }
 
-  factory UserProfile.fromMap(String userId, Map<String, dynamic> map) {
+  factory UserProfile.fromMap(String userId, Map<String, dynamic> map, {bool hasLikedMe = false}) {
     final rawSongs = map['top_3canciones'];
     final List<Map<String, dynamic>> parsedSongs = [];
 
@@ -69,6 +71,7 @@ class UserProfile {
           ? (map['birthDate'] as Timestamp).toDate()
           : null,
       isPremium: map['isPremium'] ?? false,
+      hasLikedMe: hasLikedMe,
     );
   }
 }

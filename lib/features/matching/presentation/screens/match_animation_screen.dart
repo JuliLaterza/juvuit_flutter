@@ -4,12 +4,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/core/utils/routes.dart';
 
+// Función utilitaria para generar matchId de forma consistente
+String _generateMatchId(String userId1, String userId2) {
+  final sortedIds = [userId1, userId2]..sort();
+  return sortedIds.join('_');
+}
+
 class MatchAnimationScreen extends StatefulWidget {
   final String userImage;
   final String matchImage;
   final String matchedUserId; // ID del usuario con quien se hizo match
   final String matchedUserName; // Nombre del usuario con quien se hizo match
   final String matchedUserPhotoUrl; // URL de la foto del usuario con quien se hizo match
+  final String? matchId; // ← AGREGAR matchId como parámetro opcional
 
   const MatchAnimationScreen({
     super.key,
@@ -18,6 +25,7 @@ class MatchAnimationScreen extends StatefulWidget {
     required this.matchedUserId,
     required this.matchedUserName,
     required this.matchedUserPhotoUrl,
+    this.matchId, // ← AGREGAR matchId
   });
 
   @override
@@ -66,12 +74,21 @@ class _MatchAnimationScreenState extends State<MatchAnimationScreen>
   }
 
   Future<void> _getMatchId() async {
+    // Si ya tenemos el matchId, usarlo directamente
+    if (widget.matchId != null) {
+      setState(() {
+        matchId = widget.matchId;
+      });
+      print('DEBUG: Usando matchId pasado directamente: ${widget.matchId}');
+      return;
+    }
+
+    // Fallback: Obtener el matchId desde Firestore (método anterior)
     final currentUserId = FirebaseAuth.instance.currentUser?.uid;
     if (currentUserId == null) return;
 
     // Crear el matchId de la misma manera que en match_helper.dart
-    final userIds = [currentUserId, widget.matchedUserId]..sort();
-    final generatedMatchId = userIds.join('_');
+    final generatedMatchId = _generateMatchId(currentUserId, widget.matchedUserId);
 
     // Verificar si el match existe en Firestore
     final matchDoc = await FirebaseFirestore.instance
@@ -83,6 +100,9 @@ class _MatchAnimationScreenState extends State<MatchAnimationScreen>
       setState(() {
         matchId = generatedMatchId;
       });
+      print('DEBUG: MatchId obtenido desde Firestore: $generatedMatchId');
+    } else {
+      print('DEBUG: Match no encontrado en Firestore: $generatedMatchId');
     }
   }
 

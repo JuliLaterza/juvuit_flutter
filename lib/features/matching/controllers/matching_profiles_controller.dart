@@ -1,82 +1,297 @@
 // Archivo: features/matching/controllers/matching_profiles_controller.dart
 
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import 'package:juvuit_flutter/features/events/domain/models/event.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
-import '../domain/match_helper.dart';
-import 'package:juvuit_flutter/core/utils/routes.dart';
+import 'package:juvuit_flutter/features/events/domain/models/event.dart';
+import 'package:juvuit_flutter/features/matching/domain/match_helper.dart';
+import 'package:juvuit_flutter/features/matching/presentation/screens/match_animation_screen.dart';
+import 'dart:collection';
+import 'dart:math';
 
 class MatchingProfilesController {
-  late final PageController pageController;
-  final Set<String> likedProfiles = {};
-  final Map<int, int> currentCarouselIndex = {};
-  late UserProfile currentUserProfile;
+  final PageController pageController;
+  final Map<String, UserProfile> profileCache = {};
+  final Queue<String> recentlyViewed = Queue();
+  final int maxCacheSize = 50;
+  final int batchSize = 15;
   
+  List<UserProfile> profiles = [];
+  bool isLoading = false;
+  bool hasMoreProfiles = true;
+  int currentIndex = 0;
+  UserProfile? currentUserProfile;
+  Set<String> likedProfiles = {};
+  Map<int, int> currentCarouselIndex = {};
+  
+  // Sistema para trackear matches ya mostrados
+  final Set<String> shownMatches = {};
+  final Set<String> pendingMatches = {};
+  bool isInitialized = false;
+
   MatchingProfilesController({required this.pageController});
 
+  // Función utilitaria para generar matchId de forma consistente
+  static String generateMatchId(String userId1, String userId2) {
+    final sortedIds = [userId1, userId2]..sort();
+    return sortedIds.join('_');
+  }
+
+  // Inicializar el sistema de tracking de matches
+  Future<void> initializeMatchesTracking() async {
+    if (isInitialized) return;
+    
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return;
+
+    try {
+      // Obtener todos los matches existentes
+      final matchesSnapshot = await FirebaseFirestore.instance
+          .collection('matches')
+          .where('users', arrayContains: currentUserId)
+          .get();
+
+      // Marcar todos los matches existentes como ya mostrados
+      for (final doc in matchesSnapshot.docs) {
+        shownMatches.add(doc.id);
+      }
+      
+      isInitialized = true;
+      print('DEBUG: Sistema de tracking de matches inicializado. Matches existentes: ${shownMatches.length}');
+    } catch (e) {
+      print('Error inicializando tracking de matches: $e');
+    }
+  }
+
+  // Tinder-style lazy loading
+  Future<void> loadNextBatch(Event event) async {
+    if (isLoading || !hasMoreProfiles) return;
+    
+    isLoading = true;
+    print('DEBUG: Cargando siguiente lote de perfiles...');
+    
+    try {
+      final newProfiles = await fetchProfilesBatch(event, profiles.length, batchSize);
+      
+      if (newProfiles.length < batchSize) {
+        hasMoreProfiles = false;
+        print('DEBUG: No hay más perfiles disponibles');
+      }
+      
+      profiles.addAll(newProfiles);
+      print('DEBUG: Cargados ${newProfiles.length} nuevos perfiles. Total: ${profiles.length}');
+      
+      // Pre-cargar imágenes de los próximos perfiles
+      await preloadNextImages();
+      
+    } catch (e) {
+      print('Error cargando perfiles: $e');
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // Cache management
+  void addToCache(UserProfile profile) {
+    if (profileCache.length >= maxCacheSize) {
+      final oldest = recentlyViewed.removeFirst();
+      profileCache.remove(oldest);
+    }
+    
+    profileCache[profile.userId] = profile;
+    recentlyViewed.add(profile.userId);
+  }
+
+  UserProfile? getFromCache(String userId) {
+    return profileCache[userId];
+  }
+
+  // Pre-carga de imágenes
+  Future<void> preloadNextImages() async {
+    final nextProfiles = profiles.skip(currentIndex).take(3);
+    for (final profile in nextProfiles) {
+      for (final imageUrl in profile.photoUrls.take(2)) { // Solo primeras 2 imágenes
+        try {
+          // Pre-cargar imagen sin contexto (para evitar errores)
+          final image = NetworkImage(imageUrl);
+          await image.resolve(ImageConfiguration.empty);
+        } catch (e) {
+          print('Error pre-cargando imagen: $e');
+        }
+      }
+    }
+  }
+
+  // Obtener perfiles visibles (optimización de memoria)
+  List<UserProfile> get visibleProfiles {
+    final start = max(0, currentIndex - 1);
+    final end = min(profiles.length, currentIndex + 2);
+    return profiles.sublist(start, end);
+  }
+
+  // Cargar más perfiles si quedan pocos
+  Future<void> loadMoreIfNeeded() async {
+    if (profiles.length - currentIndex < 5 && hasMoreProfiles && !isLoading) {
+      await loadNextBatch(currentEvent!);
+    }
+  }
+
+  Event? currentEvent;
+
+  Future<List<UserProfile>> fetchProfilesBatch(Event event, int offset, int limit) async {
+    currentEvent = event;
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return [];
+
+    try {
+      // Obtener likes dados por el usuario en este evento
+      final likesGivenSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUserId)
+          .collection('likesGiven')
+          .get();
+
+      final likedUserIds = likesGivenSnapshot.docs
+          .where((doc) => doc.data()['eventId'] == event.id)
+          .map((doc) => doc.id)
+          .toSet();
+
+      // Obtener matches con chats ya iniciados
+      final matchesSnapshot = await FirebaseFirestore.instance
+          .collection('matches')
+          .where('users', arrayContains: currentUserId)
+          .get();
+
+      final Set<String> matchedAndChattedUserIds = {};
+      for (final doc in matchesSnapshot.docs) {
+        final data = doc.data();
+        final users = List<String>.from(data['users']);
+        final otherUserId = users.firstWhere((uid) => uid != currentUserId);
+        final lastMessage = data['lastMessage'];
+        if (lastMessage != null && lastMessage.toString().trim().isNotEmpty) {
+          matchedAndChattedUserIds.add(otherUserId);
+        }
+      }
+
+      // Obtener perfiles del evento
+      final attendeesSnapshot = await FirebaseFirestore.instance
+          .collection('events')
+          .doc(event.id)
+          .get();
+
+      if (!attendeesSnapshot.exists) return [];
+
+      final eventData = attendeesSnapshot.data()!;
+      final attendees = List<String>.from(eventData['attendees'] ?? []);
+
+      // Filtrar usuarios que no han sido vistos, no han dado like, y no son matches
+      final availableUserIds = attendees.where((userId) =>
+          userId != currentUserId &&
+          !likedUserIds.contains(userId) &&
+          !matchedAndChattedUserIds.contains(userId)).toList();
+
+      // Aplicar paginación
+      final paginatedUserIds = availableUserIds.skip(offset).take(limit).toList();
+
+      if (paginatedUserIds.isEmpty) return [];
+
+      // OPTIMIZACIÓN: Consulta batch para verificar hasLikedMe
+      final hasLikedMeMap = await _batchCheckHasLikedMe(paginatedUserIds, currentUserId);
+
+      // Cargar perfiles en paralelo
+      final profileFutures = paginatedUserIds.map((userId) async {
+        // Verificar cache primero
+        final cachedProfile = getFromCache(userId);
+        if (cachedProfile != null) {
+          return cachedProfile;
+        }
+
+        // Cargar desde Firestore
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .get();
+
+        if (userDoc.exists) {
+          final userData = userDoc.data()!;
+          final hasLikedMe = hasLikedMeMap[userId] ?? false;
+          final profile = UserProfile.fromMap(userId, userData, hasLikedMe: hasLikedMe);
+          
+          // Agregar al cache
+          addToCache(profile);
+          
+          return profile;
+        }
+        return null;
+      });
+
+      final profiles = await Future.wait(profileFutures);
+      return profiles.where((profile) => profile != null).cast<UserProfile>().toList();
+
+    } catch (e) {
+      print('Error fetching profiles batch: $e');
+      return [];
+    }
+  }
+
+  // Método optimizado para verificar hasLikedMe en batch
+  Future<Map<String, bool>> _batchCheckHasLikedMe(List<String> userIds, String currentUserId) async {
+    final Map<String, bool> hasLikedMeMap = {};
+    
+    try {
+      // Crear consultas batch para verificar si cada usuario ya dio like al usuario actual
+      final batchQueries = userIds.map((userId) async {
+        final doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userId)
+            .collection('likesGiven')
+            .doc(currentUserId)
+            .get();
+        
+        return {userId: doc.exists};
+      });
+
+      final results = await Future.wait(batchQueries);
+      
+      for (final result in results) {
+        hasLikedMeMap.addAll(result);
+      }
+      
+      print('DEBUG: Batch check hasLikedMe completado para ${userIds.length} usuarios');
+      return hasLikedMeMap;
+      
+    } catch (e) {
+      print('Error en batch check hasLikedMe: $e');
+      // En caso de error, asumir que no han dado like
+      for (final userId in userIds) {
+        hasLikedMeMap[userId] = false;
+      }
+      return hasLikedMeMap;
+    }
+  }
+
+
+
+  // Cargar perfil del usuario actual
   Future<UserProfile?> loadCurrentUserProfile() async {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) return null;
 
-    final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .get();
+
     if (doc.exists) {
       final data = doc.data()!;
-      currentUserProfile = UserProfile.fromMap(uid, data);
+      currentUserProfile = UserProfile.fromMap(uid, data, hasLikedMe: false);
       return currentUserProfile;
     }
     return null;
   }
 
-  Future<List<UserProfile>> loadProfiles(Event event) async {
-    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
-    if (currentUserId == null) return [];
-
-    // Obtener likes dados por el usuario en este evento
-    final likesGivenSnapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUserId)
-        .collection('likesGiven')
-        .get();
-
-    final likedUserIds = likesGivenSnapshot.docs
-        .where((doc) => doc.data()['eventId'] == event.id)
-        .map((doc) => doc.id)
-        .toSet();
-
-    // Obtener matches con chats ya iniciados
-    final matchesSnapshot = await FirebaseFirestore.instance
-        .collection('matches')
-        .where('users', arrayContains: currentUserId)
-        .get();
-
-    final Set<String> matchedAndChattedUserIds = {};
-    for (final doc in matchesSnapshot.docs) {
-      final data = doc.data();
-      final users = List<String>.from(data['users']);
-      final otherUserId = users.firstWhere((uid) => uid != currentUserId);
-      final lastMessage = data['lastMessage'];
-      if (lastMessage != null && lastMessage.toString().trim().isNotEmpty) {
-        matchedAndChattedUserIds.add(otherUserId);
-      }
-    }
-
-    final List<UserProfile> loaded = [];
-    for (final uid in event.attendees) {
-      if (uid == currentUserId || likedUserIds.contains(uid) || matchedAndChattedUserIds.contains(uid)) continue;
-
-      final doc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
-      if (doc.exists) {
-        final data = doc.data()!;
-        final profile = UserProfile.fromMap(doc.id, data);
-        loaded.add(profile);
-      }
-    }
-
-    return loaded;
-  }
-
+  // Optimizado: onLike con gestión de estado mejorada
   Future<void> onLike({
     required BuildContext context,
     required List<UserProfile> profiles,
@@ -86,138 +301,187 @@ class MatchingProfilesController {
     final currentPage = pageController.page!.toInt();
     if (currentUser == null || currentPage >= profiles.length) return;
 
-    // Verificar si es evento tipo "Fiesta" y si el usuario tiene canciones/trago completados
-    if (event.type.toLowerCase() == 'fiesta' || event.type.toLowerCase() == 'boliche' || event.type.toLowerCase() == 'party') {
-      print('DEBUG: Evento tipo fiesta detectado: ${event.type}');
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.uid)
-          .get();
-      
-      if (userDoc.exists) {
-        final userData = userDoc.data()!;
-        final hasSongs = userData['top_3canciones'] != null && 
-                        (userData['top_3canciones'] as List).isNotEmpty;
-        final hasDrink = userData['drink'] != null && 
-                        userData['drink'].toString().isNotEmpty;
-
-        print('DEBUG: Usuario tiene canciones: $hasSongs, trago: $hasDrink');
-
-        if (!hasSongs || !hasDrink) {
-          print('DEBUG: Mostrando modal obligatorio');
-          // Mostrar modal obligatorio
-          final shouldContinue = await _showSongsDrinkModal(context);
-          if (!shouldContinue) return;
-        }
-      }
-    } else {
-      print('DEBUG: Evento no es tipo fiesta: ${event.type}');
-    }
-
     final likedUser = profiles[currentPage];
     likedProfiles.add(likedUser.userId);
 
-    // Guardar también en likesGiven
-    await FirebaseFirestore.instance
-        .collection('users')
-        .doc(currentUser.uid)
-        .collection('likesGiven')
-        .doc(likedUser.userId)
-        .set({
-      'eventId': event.id,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+    // USAR CAMPO PRECARGADO en lugar de consultar Firestore
+    final hasLikedMe = likedUser.hasLikedMe;
+    print('DEBUG: hasLikedMe para ${likedUser.name}: $hasLikedMe (precargado)');
 
-    await handleLikeAndMatch(
-      currentUserId: currentUser.uid,
-      likedUserId: likedUser.userId,
-      eventId: event.id,
-      context: context,
-      currentUserPhoto: currentUserProfile.photoUrls.first,
-      matchedUserPhoto: likedUser.photoUrls.isNotEmpty ? likedUser.photoUrls.first : 'https://via.placeholder.com/150',
-      matchedUserName: likedUser.name,
-    );
+    // Si ya recibí like, mostrar animación instantánea
+    if (hasLikedMe) {
+      print('DEBUG: ¡MATCH INSTANTÁNEO! Mostrando animación...');
+      
+      // Crear matchId y marcarlo como mostrado
+      final generatedMatchId = generateMatchId(currentUser.uid, likedUser.userId);
+      markMatchAsShown(generatedMatchId);
+      
+      // Mostrar animación inmediatamente (UX instantánea)
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MatchAnimationScreen(
+            userImage: currentUserProfile?.photoUrls.first ?? 'https://via.placeholder.com/150',
+            matchImage: likedUser.photoUrls.isNotEmpty ? likedUser.photoUrls.first : 'https://via.placeholder.com/150',
+            matchedUserId: likedUser.userId,
+            matchedUserName: likedUser.name,
+            matchedUserPhotoUrl: likedUser.photoUrls.isNotEmpty ? likedUser.photoUrls.first : 'https://via.placeholder.com/150',
+            matchId: generatedMatchId, // ← PASAR matchId DIRECTAMENTE
+          ),
+        ),
+      );
+      
+      // Ejecutar backend en paralelo (sin bloquear UX)
+      _executeBackendMatch(generatedMatchId, currentUser.uid, likedUser.userId, event.id);
+      
+    } else {
+      print('DEBUG: No es match instantáneo, procesando normalmente...');
+      await handleLikeAndMatch(
+        currentUserId: currentUser.uid,
+        likedUserId: likedUser.userId,
+        eventId: event.id,
+        context: context,
+        currentUserPhoto: currentUserProfile?.photoUrls.first ?? 'https://via.placeholder.com/150',
+        matchedUserPhoto: likedUser.photoUrls.isNotEmpty ? likedUser.photoUrls.first : 'https://via.placeholder.com/150',
+        matchedUserName: likedUser.name,
+      );
+    }
 
-    avanzarPagina(currentPage);
+    // Remover perfil actual y avanzar (estilo Tinder)
+    profiles.removeAt(currentPage);
+    currentIndex = currentPage;
+    
+    // Cargar más perfiles si quedan pocos
+    await loadMoreIfNeeded();
+    
+    // Avanzar al siguiente perfil
+    if (currentPage < profiles.length) {
+      pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
-  Future<bool> _showSongsDrinkModal(BuildContext context) async {
-    return await showDialog<bool>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(Icons.music_note, color: Colors.yellow),
-              SizedBox(width: 8),
-              Text('¡Completá tu perfil!'),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Para conectar en eventos de fiesta, necesitás:',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 12),
-              Row(
-                children: [
-                  Icon(Icons.music_note, size: 16, color: Colors.grey[600]),
-                  SizedBox(width: 8),
-                  Text('Tus 3 canciones favoritas'),
-                ],
-              ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.local_bar, size: 16, color: Colors.grey[600]),
-                  SizedBox(width: 8),
-                  Text('Tu trago preferido'),
-                ],
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('Cancelar', style: TextStyle(color: Colors.grey[600])),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop(true);
-                // Navegar a la pantalla de completar perfil
-                Navigator.pushNamed(context, AppRoutes.completeSongsDrink);
-              },
-              child: Text('Completar perfil'),
-            ),
-          ],
-        );
-      },
-    ) ?? false;
+  // Ejecutar backend en paralelo para match instantáneo
+  Future<void> _executeBackendMatch(String matchId, String currentUserId, String likedUserId, String eventId) async {
+    try {
+      // Guardar likes en paralelo
+      await Future.wait([
+        // Guardar en likesReceived del usuario destino
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(likedUserId)
+            .collection('likesReceived')
+            .doc(currentUserId)
+            .set({
+          'eventId': eventId,
+          'timestamp': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true)),
+
+        // Guardar en likesGiven del usuario actual
+        FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUserId)
+            .collection('likesGiven')
+            .doc(likedUserId)
+            .set({
+          'eventId': eventId,
+          'timestamp': FieldValue.serverTimestamp(),
+        }),
+      ]);
+
+      // Crear documento de match
+      await FirebaseFirestore.instance
+          .collection('matches')
+          .doc(matchId)
+          .set({
+        'users': [currentUserId, likedUserId],
+        'eventId': eventId,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      print('DEBUG: Backend match completado: $matchId');
+      
+    } catch (e) {
+      print('Error ejecutando backend match: $e');
+      // No mostrar error al usuario para mantener UX fluida
+    }
   }
 
   void onDislike(List<UserProfile> profiles) {
     final currentPage = pageController.page!.toInt();
-    avanzarPagina(currentPage);
+    
+    // Remover perfil actual y avanzar
+    profiles.removeAt(currentPage);
+    currentIndex = currentPage;
+    
+    // Cargar más perfiles si quedan pocos
+    loadMoreIfNeeded();
+    
+    // Avanzar al siguiente perfil
+    if (currentPage < profiles.length) {
+      pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
-  void avanzarPagina(int currentPage) {
-    pageController.nextPage(
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
+  // Stream para matches en tiempo real
+  Stream<QuerySnapshot> get matchesStream {
+    final currentUserId = FirebaseAuth.instance.currentUser?.uid;
+    if (currentUserId == null) return Stream.empty();
+    
+    return FirebaseFirestore.instance
+        .collection('matches')
+        .where('users', arrayContains: currentUserId)
+        .snapshots();
+  }
+
+  // Verificar si es un match nuevo
+  bool isNewMatch(String matchId) {
+    // Si no está inicializado, no mostrar animaciones
+    if (!isInitialized) return false;
+    
+    // Si ya se mostró, no es nuevo
+    if (shownMatches.contains(matchId)) return false;
+    
+    // Si está pendiente de mostrar, no es nuevo
+    if (pendingMatches.contains(matchId)) return false;
+    
+    // Es un match nuevo
+    pendingMatches.add(matchId);
+    return true;
+  }
+
+  // Marcar match como mostrado
+  void markMatchAsShown(String matchId) {
+    shownMatches.add(matchId);
+    pendingMatches.remove(matchId);
+    print('DEBUG: Match marcado como mostrado: $matchId');
+  }
+
+  // Mostrar animación de match retroactivo
+  void showRetroactiveMatchAnimation(
+    BuildContext context,
+    String matchId,
+    String otherUserId,
+    String otherUserName,
+    String otherUserPhotoUrl,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MatchAnimationScreen(
+          userImage: currentUserProfile?.photoUrls.first ?? 'https://via.placeholder.com/150',
+          matchImage: otherUserPhotoUrl,
+          matchedUserId: otherUserId,
+          matchedUserName: otherUserName,
+          matchedUserPhotoUrl: otherUserPhotoUrl,
+          matchId: matchId, // ← PASAR matchId DIRECTAMENTE
+        ),
+      ),
     );
   }
 
