@@ -6,6 +6,7 @@ import 'package:juvuit_flutter/core/widgets/theme_aware_logo.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/features/auth/presentation/screens/complete_profile_screen.dart';
+import 'package:juvuit_flutter/core/services/auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  final AuthService _authService = AuthService();
   bool _isLoading = false;
 
   Future<void> _register() async {
@@ -43,9 +45,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+      await _authService.createUserWithEmailAndPassword(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
 
       _showMessage('Registro exitoso');
@@ -63,6 +65,60 @@ class _RegisterScreenState extends State<RegisterScreen> {
       } else {
         _showMessage('Error: ${e.message}');
       }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _registerWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userCredential = await _authService.signInWithGoogle();
+      
+      if (userCredential != null) {
+        _showMessage('Registro con Google exitoso');
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+          (route) => false,
+        );
+      } else {
+        _showMessage('Registro cancelado');
+      }
+    } catch (e) {
+      _showMessage('Error al registrarse con Google: ${e.toString()}');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _registerWithApple() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userCredential = await _authService.signInWithApple();
+      
+      if (userCredential != null) {
+        _showMessage('Registro con Apple exitoso');
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const CompleteProfileScreen()),
+          (route) => false,
+        );
+      } else {
+        _showMessage('Registro cancelado');
+      }
+    } catch (e) {
+      _showMessage('Error al registrarse con Apple: ${e.toString()}');
     } finally {
       setState(() {
         _isLoading = false;
@@ -187,17 +243,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
               SocialLoginButton(
                 icon: FontAwesomeIcons.google,
                 text: 'Registrarse con Google',
-                onPressed: () {
-                  print('Google');
-                },
+                onPressed: _isLoading ? () {} : () => _registerWithGoogle(),
               ),
               const SizedBox(height: 10),
               SocialLoginButton(
                 icon: FontAwesomeIcons.apple,
                 text: 'Registrarse con Apple',
-                onPressed: () {
-                  print('Apple');
-                },
+                onPressed: _isLoading ? () {} : () => _registerWithApple(),
               ),
             ],
           ),

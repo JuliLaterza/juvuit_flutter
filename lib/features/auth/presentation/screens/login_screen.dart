@@ -6,6 +6,7 @@ import 'package:juvuit_flutter/features/auth/presentation/screens/register_scree
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/features/events/presentation/screens/events_screen.dart';
+import 'package:juvuit_flutter/core/services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +18,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
   bool _isLoading = false;
 
   Future<void> _login() async {
@@ -30,9 +32,9 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+      await _authService.signInWithEmailAndPassword(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
       _showMessage('Inicio de sesión exitoso');
       Navigator.pushAndRemoveUntil(
@@ -48,6 +50,60 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         _showMessage('Error: ${e.message}');
       }
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loginWithGoogle() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userCredential = await _authService.signInWithGoogle();
+      
+      if (userCredential != null) {
+        _showMessage('Inicio de sesión con Google exitoso');
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const EventsScreen()),
+          (route) => false,
+        );
+      } else {
+        _showMessage('Inicio de sesión cancelado');
+      }
+    } catch (e) {
+      _showMessage('Error al iniciar sesión con Google: ${e.toString()}');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loginWithApple() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final userCredential = await _authService.signInWithApple();
+      
+      if (userCredential != null) {
+        _showMessage('Inicio de sesión con Apple exitoso');
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const EventsScreen()),
+          (route) => false,
+        );
+      } else {
+        _showMessage('Inicio de sesión cancelado');
+      }
+    } catch (e) {
+      _showMessage('Error al iniciar sesión con Apple: ${e.toString()}');
     } finally {
       setState(() {
         _isLoading = false;
@@ -172,17 +228,13 @@ class _LoginScreenState extends State<LoginScreen> {
               SocialLoginButton(
                 icon: FontAwesomeIcons.google,
                 text: 'Continuar con Google',
-                onPressed: () {
-                  print('Google Login');
-                },
+                onPressed: _isLoading ? () {} : () => _loginWithGoogle(),
               ),
               const SizedBox(height: 20),
               SocialLoginButton(
                 icon: FontAwesomeIcons.apple,
                 text: 'Continuar con Apple',
-                onPressed: () {
-                  print('Apple Login');
-                },
+                onPressed: _isLoading ? () {} : () => _loginWithApple(),
               ),
             ],
           ),

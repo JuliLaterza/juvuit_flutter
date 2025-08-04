@@ -30,6 +30,8 @@ dependencies:
   firebase_storage: ^12.4.0
   uuid: ^4.3.3
   flutter_image_compress: ^2.2.0
+  google_sign_in: ^6.2.1
+  sign_in_with_apple: ^6.0.0
 
 
 dev_dependencies:
