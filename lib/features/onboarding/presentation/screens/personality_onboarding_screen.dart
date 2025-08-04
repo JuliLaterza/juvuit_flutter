@@ -12,7 +12,7 @@ class PersonalityOnboardingScreen extends StatefulWidget {
 
 class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScreen> {
   String? _gender;
-  DateTime? _birthDate;
+  String? _selectedSign;
   List<String> _interests = [];
   String? _lookingFor;
   String? _job;
@@ -31,6 +31,20 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
   bool _isLoading = false;
 
   final List<String> _genders = ['Hombre', 'Mujer', 'Prefiero no decirlo'];
+  final List<Map<String, dynamic>> signosZodiacales = [
+    {'signo': 'Aries', 'icono': Icons.whatshot},
+    {'signo': 'Tauro', 'icono': Icons.grass},
+    {'signo': 'Géminis', 'icono': Icons.wb_twighlight},
+    {'signo': 'Cáncer', 'icono': Icons.nights_stay},
+    {'signo': 'Leo', 'icono': Icons.wb_sunny},
+    {'signo': 'Virgo', 'icono': Icons.eco},
+    {'signo': 'Libra', 'icono': Icons.balance},
+    {'signo': 'Escorpio', 'icono': Icons.water},
+    {'signo': 'Sagitario', 'icono': Icons.architecture},
+    {'signo': 'Capricornio', 'icono': Icons.terrain},
+    {'signo': 'Acuario', 'icono': Icons.bubble_chart},
+    {'signo': 'Piscis', 'icono': Icons.alarm},
+  ];
   final List<String> _interestOptions = [
     'Recitales',
     'Festivales',
@@ -39,17 +53,7 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
   ];
   final List<String> _lookingForOptions = ['Mujeres', 'Hombres', 'Ambos'];
 
-  void _selectBirthDate() async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 6570)),
-      firstDate: DateTime(1900),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() => _birthDate = picked);
-    }
-  }
+
 
   void _toggleInterest(String interest) {
     setState(() {
@@ -63,10 +67,11 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
 
   void _finishOnboarding() async {
     setState(() => _isLoading = true);
+    
     try {
       await saveUserPersonality(
         gender: _gender,
-        birthDate: _birthDate, // ← AGREGAR birthDate
+        sign: _selectedSign,
         interests: _interests,
         lookingFor: _lookingFor,
         job: _job,
@@ -122,6 +127,29 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
                   label: Text(g, style: TextStyle(color: _gender == g ? AppColors.black : Colors.grey[800], fontSize: 14)),
                   selected: _gender == g,
                   onSelected: (_) => setState(() => _gender = g),
+                  showCheckmark: false,
+                  selectedColor: AppColors.yellow,
+                  backgroundColor: Colors.grey[200],
+                  side: BorderSide.none,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                )).toList(),
+              ),
+              const SizedBox(height: 20),
+              _sectionTitle('¿Cuál es tu signo zodiacal?'),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 10,
+                children: signosZodiacales.map((signo) => ChoiceChip(
+                  label: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(signo['icono'], color: _selectedSign == signo['signo'] ? AppColors.black : Colors.grey[800], size: 16),
+                      const SizedBox(width: 4),
+                      Text(signo['signo'], style: TextStyle(color: _selectedSign == signo['signo'] ? AppColors.black : Colors.grey[800], fontSize: 14)),
+                    ],
+                  ),
+                  selected: _selectedSign == signo['signo'],
+                  onSelected: (_) => setState(() => _selectedSign = signo['signo']),
                   showCheckmark: false,
                   selectedColor: AppColors.yellow,
                   backgroundColor: Colors.grey[200],

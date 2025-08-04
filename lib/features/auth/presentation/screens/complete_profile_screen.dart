@@ -28,7 +28,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final List<String> _preloadedUrls = [];
   final ImagePicker _picker = ImagePicker();
 
-  String? _selectedSign;
   String? _selectedDrink;
 
   Future<void> _pickImage(int index, ImageSource source) async {
@@ -53,6 +52,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       );
       return false;
     }
+    
+    // Validar que la fecha de nacimiento sea obligatoria
+    final birthDate = _formKey.currentState?.selectedBirthDate;
+    if (birthDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('La fecha de nacimiento es obligatoria')),
+      );
+      return false;
+    }
+    
     return true;
   }
 
@@ -105,7 +114,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     await saveUserProfile(
       name: _nameController.text.trim(),
       description: _descriptionController.text.trim(),
-      sign: _selectedSign,
       birthDate: birthDate,
       photoUrls: photoUrls,
     );
@@ -164,7 +172,6 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
                   nameController: _nameController,
                   descriptionController: _descriptionController,
                   drinkController: _drinkController,
-                  onSignChanged: (value) => _selectedSign = value,
                   onDrinkChanged: (value) => _selectedDrink = value,
                 ),
                 const SizedBox(height: 24),

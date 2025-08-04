@@ -7,7 +7,6 @@ class CompleteProfileForm extends StatefulWidget {
   final TextEditingController nameController;
   final TextEditingController descriptionController;
   final TextEditingController drinkController;
-  final void Function(String?) onSignChanged;
   final void Function(String?) onDrinkChanged;
   final List<Map<String, dynamic>>? initialSongs;
 
@@ -16,7 +15,6 @@ class CompleteProfileForm extends StatefulWidget {
     required this.nameController,
     required this.descriptionController,
     required this.drinkController,
-    required this.onSignChanged,
     required this.onDrinkChanged,
     this.initialSongs,
   });
@@ -26,7 +24,6 @@ class CompleteProfileForm extends StatefulWidget {
 }
 
 class CompleteProfileFormState extends State<CompleteProfileForm> {
-  String? _selectedSign;
   String? _selectedDrink;
   DateTime? _selectedDate;
   late TextEditingController _dateController;
@@ -40,20 +37,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
   final List<List<Map<String, String>>> _suggestions = List.generate(3, (_) => []);
   final List<bool> _isSearching = List.generate(3, (_) => false);
 
-  final List<Map<String, dynamic>> signosZodiacales = [
-    {'signo': 'Aries', 'icono': Icons.whatshot},
-    {'signo': 'Tauro', 'icono': Icons.grass},
-    {'signo': 'Géminis', 'icono': Icons.wb_twighlight},
-    {'signo': 'Cáncer', 'icono': Icons.nights_stay},
-    {'signo': 'Leo', 'icono': Icons.wb_sunny},
-    {'signo': 'Virgo', 'icono': Icons.eco},
-    {'signo': 'Libra', 'icono': Icons.balance},
-    {'signo': 'Escorpio', 'icono': Icons.water},
-    {'signo': 'Sagitario', 'icono': Icons.architecture},
-    {'signo': 'Capricornio', 'icono': Icons.terrain},
-    {'signo': 'Acuario', 'icono': Icons.bubble_chart},
-    {'signo': 'Piscis', 'icono': Icons.alarm},
-  ];
+
 
   final List<String> _drinks = [
     'Cerveza', 'Fernet', 'WhisCola', 'Vino', 'Whisky', 'Ron',
@@ -161,11 +145,6 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
         _buildDatePicker(context),
         const SizedBox(height: 16),
         _buildTextArea(widget.descriptionController, 'Descripción', Icons.edit),
-        const SizedBox(height: 16),
-        _buildDropdownField('Signo Zodiacal', signosZodiacales, _selectedSign, (value) {
-          setState(() => _selectedSign = value);
-          widget.onSignChanged(value);
-        }),
       ],
     );
   }
@@ -218,31 +197,7 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
     );
   }
 
-  Widget _buildDropdownField(String label, List<Map<String, dynamic>> items, String? selectedValue, Function(String?) onChanged) {
-    return DropdownButtonFormField<String>(
-      value: selectedValue,
-      decoration: InputDecoration(
-        labelText: label,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.yellow),
-        ),
-      ),
-      items: items.map((item) {
-        return DropdownMenuItem<String>(
-          value: item['signo'],
-          child: Row(
-            children: [
-              Icon(item['icono'], color: AppColors.yellow),
-              const SizedBox(width: 8),
-              Text(item['signo']),
-            ],
-          ),
-        );
-      }).toList(),
-      onChanged: onChanged,
-    );
-  }
+
 
   Widget _buildDropdownList(String label, List<String> items, String? selectedValue, Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
