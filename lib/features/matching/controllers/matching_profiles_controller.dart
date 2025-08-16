@@ -21,6 +21,7 @@ class MatchingProfilesController {
   bool isLoading = false;
   bool hasMoreProfiles = true;
   int currentIndex = 0;
+  int totalProcessedProfiles = 0; // ✅ NUEVA VARIABLE para trackear perfiles procesados
   UserProfile? currentUserProfile;
   Set<String> likedProfiles = {};
   Map<int, int> currentCarouselIndex = {};
@@ -64,6 +65,16 @@ class MatchingProfilesController {
     }
   }
 
+  // Resetear contadores para nueva sesión de matcheo
+  void resetForNewSession() {
+    totalProcessedProfiles = 0;
+    currentIndex = 0;
+    profiles.clear();
+    hasMoreProfiles = true;
+    isLoading = false;
+    print('DEBUG: Contadores reseteados para nueva sesión de matcheo');
+  }
+
   // Tinder-style lazy loading
   Future<void> loadNextBatch(Event event) async {
     if (isLoading || !hasMoreProfiles) {
@@ -73,10 +84,10 @@ class MatchingProfilesController {
     
     isLoading = true;
     print('DEBUG: Cargando siguiente lote de perfiles...');
-    print('DEBUG: Perfiles actuales: ${profiles.length}, batchSize: $batchSize');
+    print('DEBUG: Perfiles actuales: ${profiles.length}, totalProcessedProfiles: $totalProcessedProfiles, batchSize: $batchSize');
     
     try {
-      final newProfiles = await fetchProfilesBatch(event, profiles.length, batchSize);
+      final newProfiles = await fetchProfilesBatch(event, totalProcessedProfiles, batchSize);
       
       print('DEBUG: Nuevos perfiles obtenidos: ${newProfiles.length}');
       
@@ -140,7 +151,7 @@ class MatchingProfilesController {
 
   // Cargar más perfiles si quedan pocos
   Future<void> loadMoreIfNeeded() async {
-    print('DEBUG: loadMoreIfNeeded - profiles.length: ${profiles.length}, currentIndex: $currentIndex, hasMoreProfiles: $hasMoreProfiles, isLoading: $isLoading');
+    print('DEBUG: loadMoreIfNeeded - profiles.length: ${profiles.length}, currentIndex: $currentIndex, totalProcessedProfiles: $totalProcessedProfiles, hasMoreProfiles: $hasMoreProfiles, isLoading: $isLoading');
     if (profiles.length - currentIndex < 5 && hasMoreProfiles && !isLoading) {
       print('DEBUG: Cargando más perfiles automáticamente...');
       await loadNextBatch(currentEvent!);
@@ -161,6 +172,7 @@ class MatchingProfilesController {
       print('DEBUG: Event ID: ${event.id}');
       print('DEBUG: Current User ID: $currentUserId');
       print('DEBUG: Offset: $offset, Limit: $limit');
+      print('DEBUG: Total de perfiles procesados hasta ahora: $totalProcessedProfiles');
 
       // Obtener likes dados por el usuario en este evento
       final likesGivenSnapshot = await FirebaseFirestore.instance
@@ -240,10 +252,12 @@ class MatchingProfilesController {
         // Verificar cache primero
         final cachedProfile = getFromCache(userId);
         if (cachedProfile != null) {
+          print('DEBUG: Perfil encontrado en cache - ID: $userId');
           return cachedProfile;
         }
 
         // Cargar desde Firestore
+        print('DEBUG: Cargando perfil desde Firestore - ID: $userId');
         final userDoc = await FirebaseFirestore.instance
             .collection('users')
             .doc(userId)
@@ -256,19 +270,39 @@ class MatchingProfilesController {
           
           // Agregar al cache
           addToCache(profile);
+          print('DEBUG: Perfil cargado exitosamente desde Firestore - ID: $userId, Nombre: ${profile.name}');
           
           return profile;
+        } else {
+          print('DEBUG: ❌ ERROR - Documento de usuario no existe en Firestore - ID: $userId');
+          return null;
         }
-        return null;
       });
 
       final profiles = await Future.wait(profileFutures);
       final validProfiles = profiles.where((profile) => profile != null).cast<UserProfile>().toList();
       
+      // Identificar usuarios que no se pudieron cargar
+      final loadedUserIds = validProfiles.map((p) => p.userId).toSet();
+      final failedUserIds = paginatedUserIds.where((id) => !loadedUserIds.contains(id)).toList();
+      
+      if (failedUserIds.isNotEmpty) {
+        print('DEBUG: ❌ USUARIOS QUE NO SE PUDIERON CARGAR: $failedUserIds');
+      }
+      
+      print('DEBUG: Lista de IDs de perfiles cargados: ${validProfiles.map((p) => p.userId).toList()}');
+      print('DEBUG: Usuarios faltantes: ${paginatedUserIds.where((id) => !validProfiles.map((p) => p.userId).contains(id)).toList()}');
+      
       print('DEBUG: Perfiles cargados exitosamente: ${validProfiles.length}');
       for (final profile in validProfiles) {
         print('DEBUG: Perfil cargado - ID: ${profile.userId}, Nombre: ${profile.name}');
       }
+      print('DEBUG: === RESUMEN fetchProfilesBatch ===');
+      print('DEBUG: Total asistentes al evento: ${attendees.length}');
+      print('DEBUG: Usuarios disponibles después de filtros: ${availableUserIds.length}');
+      print('DEBUG: Usuarios cargados en este batch: ${validProfiles.length}');
+      print('DEBUG: Diferencia (disponibles - cargados): ${availableUserIds.length - validProfiles.length}');
+      print('DEBUG: Offset usado: $offset, Limit usado: $limit');
       print('DEBUG: === FIN fetchProfilesBatch ===');
       
       return validProfiles;
@@ -392,19 +426,26 @@ class MatchingProfilesController {
     }
 
     // Remover perfil actual y avanzar (estilo Tinder)
+    print('DEBUG: === onLike - Removiendo perfil ===');
+    print('DEBUG: Página actual: $currentPage');
+    print('DEBUG: Perfiles antes de remover: ${profiles.length}');
+    print('DEBUG: Perfil a remover: ${profiles[currentPage].name} (ID: ${profiles[currentPage].userId})');
+    
     profiles.removeAt(currentPage);
     currentIndex = currentPage;
+    totalProcessedProfiles++;
+    
+    print('DEBUG: Perfiles después de remover: ${profiles.length}');
+    print('DEBUG: totalProcessedProfiles: $totalProcessedProfiles');
+    print('DEBUG: currentIndex: $currentIndex');
     
     // Cargar más perfiles si quedan pocos
     await loadMoreIfNeeded();
     
-    // Avanzar al siguiente perfil
-    if (currentPage < profiles.length) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+    // NO navegar automáticamente - quedarse en la página actual
+    // La página actual ahora tiene el siguiente perfil después de remover
+    print('DEBUG: No navegando automáticamente - quedándose en página actual');
+    print('DEBUG: === FIN onLike ===');
   }
 
   // Ejecutar backend en paralelo para match instantáneo
@@ -456,20 +497,27 @@ class MatchingProfilesController {
   void onDislike(List<UserProfile> profiles) {
     final currentPage = pageController.page!.toInt();
     
+    print('DEBUG: === onDislike ===');
+    print('DEBUG: Página actual: $currentPage');
+    print('DEBUG: Perfiles antes de remover: ${profiles.length}');
+    print('DEBUG: Perfil a remover: ${profiles[currentPage].name} (ID: ${profiles[currentPage].userId})');
+    
     // Remover perfil actual y avanzar
     profiles.removeAt(currentPage);
     currentIndex = currentPage;
+    totalProcessedProfiles++;
+    
+    print('DEBUG: Perfiles después de remover: ${profiles.length}');
+    print('DEBUG: totalProcessedProfiles: $totalProcessedProfiles');
+    print('DEBUG: currentIndex: $currentIndex');
     
     // Cargar más perfiles si quedan pocos
     loadMoreIfNeeded();
     
-    // Avanzar al siguiente perfil
-    if (currentPage < profiles.length) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+    // NO navegar automáticamente - quedarse en la página actual
+    // La página actual ahora tiene el siguiente perfil después de remover
+    print('DEBUG: No navegando automáticamente - quedándose en página actual');
+    print('DEBUG: === FIN onDislike ===');
   }
 
   // Stream para matches en tiempo real
@@ -538,5 +586,17 @@ class MatchingProfilesController {
       age--;
     }
     return age;
+  }
+
+  // Método de debug para imprimir estado actual
+  void printDebugState() {
+    print('=== DEBUG ESTADO ACTUAL ===');
+    print('Perfiles en memoria: ${profiles.length}');
+    print('Perfiles procesados: $totalProcessedProfiles');
+    print('Índice actual: $currentIndex');
+    print('Hay más perfiles: $hasMoreProfiles');
+    print('Está cargando: $isLoading');
+    print('Batch size: $batchSize');
+    print('==========================');
   }
 }

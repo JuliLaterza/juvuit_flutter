@@ -28,12 +28,23 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
   void initState() {
     super.initState();
     _controller = MatchingProfilesController(pageController: _pageController);
+    
+    // Agregar listener para rastrear cambios de página
+    _pageController.addListener(() {
+      final currentPage = _pageController.page?.toInt() ?? 0;
+      print('DEBUG: PageController cambió a página: $currentPage');
+      print('DEBUG: Total de perfiles disponibles: ${_profiles.length}');
+    });
+    
     _loadData();
   }
 
   Future<void> _loadData() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
+
+    // Resetear contadores para nueva sesión
+    _controller.resetForNewSession();
 
     final currentUserProfile = await _controller.loadCurrentUserProfile();
     if (currentUserProfile == null) return;
@@ -65,6 +76,9 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
       reencounterUserIds = seenButNotChatted;
       _isLoading = false;
     });
+
+    // Debug: imprimir estado actual
+    _controller.printDebugState();
   }
 
   // Función para mostrar animación de match retroactivo
@@ -142,12 +156,16 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
             controller: _pageController,
             itemCount: _profiles.length + 1,
             itemBuilder: (context, index) {
+              print('DEBUG: PageView itemBuilder - index: $index, total profiles: ${_profiles.length}');
+              
               if (index == _profiles.length) {
                 return NoMoreProfilesCard(onSeeEvents: () => Navigator.pop(context));
               }
 
               final profile = _profiles[index];
               final currentIndex = _controller.currentCarouselIndex[index] ?? 0;
+              
+              print('DEBUG: Mostrando perfil en índice $index: ${profile.name} (ID: ${profile.userId})');
 
               if (reencounterUserIds.contains(profile.userId)) {
                 return ReencounterProfileCard(
@@ -155,9 +173,12 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
                   index: index,
                   currentImageIndex: currentIndex,
                   onDislike: () {
+                    print('DEBUG: onDislike llamado desde ReencounterProfileCard');
                     _controller.onDislike(_profiles);
                     setState(() {
+                      print('DEBUG: setState después de onDislike (reencounter) - perfiles: ${_profiles.length}');
                       _profiles = _controller.profiles;
+                      print('DEBUG: setState después de onDislike (reencounter) - nuevos perfiles: ${_profiles.length}');
                     });
                   },
                   onCarouselChange: (imgIndex) {
@@ -173,13 +194,16 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
                 index: index,
                 currentImageIndex: currentIndex,
                 onLike: () async {
+                  print('DEBUG: onLike llamado desde ProfileCard');
                   await _controller.onLike(
                     context: context,
                     profiles: _profiles,
                     event: widget.event,
                   );
                   setState(() {
+                    print('DEBUG: setState después de onLike - perfiles: ${_profiles.length}');
                     _profiles = _controller.profiles;
+                    print('DEBUG: setState después de onLike - nuevos perfiles: ${_profiles.length}');
                   });
                 },
                 onDislike: () {

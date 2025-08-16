@@ -8,6 +8,7 @@ import 'package:juvuit_flutter/core/services/theme_provider.dart';
 import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -87,6 +88,144 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  void _showDeleteAccountConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Eliminar cuenta'),
+        content: const Text(
+          '¿Estás seguro que deseas eliminar tu cuenta? Esta acción no se puede deshacer y perderás todos tus datos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _deleteAccount(context);
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteAccount(BuildContext context) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    try {
+      // Mostrar indicador de carga
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 16),
+              Text('Eliminando cuenta...'),
+            ],
+          ),
+        ),
+      );
+
+      // Eliminar datos del usuario de Firestore
+      final batch = FirebaseFirestore.instance.batch();
+      
+      // Eliminar perfil del usuario
+      batch.delete(FirebaseFirestore.instance
+          .collection('users')
+          .doc(currentUser.uid));
+
+      // Eliminar likes recibidos
+      batch.delete(FirebaseFirestore.instance
+          .collection('likes_received')
+          .doc(currentUser.uid));
+
+      // Eliminar likes enviados
+      final likesSentQuery = await FirebaseFirestore.instance
+          .collection('likes_sent')
+          .where('fromUserId', isEqualTo: currentUser.uid)
+          .get();
+      
+      for (var doc in likesSentQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Eliminar matches
+      final matchesQuery = await FirebaseFirestore.instance
+          .collection('matches')
+          .where('participants', arrayContains: currentUser.uid)
+          .get();
+      
+      for (var doc in matchesQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Eliminar chats
+      final chatsQuery = await FirebaseFirestore.instance
+          .collection('chats')
+          .where('participants', arrayContains: currentUser.uid)
+          .get();
+      
+      for (var doc in chatsQuery.docs) {
+        batch.delete(doc.reference);
+      }
+
+      // Ejecutar todas las eliminaciones
+      await batch.commit();
+
+      // Eliminar el usuario de Firebase Auth
+      await currentUser.delete();
+
+      // Cerrar el diálogo de carga
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Mostrar mensaje de éxito
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Cuenta eliminada exitosamente'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      // Redirigir al login
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.login,
+          (_) => false,
+        );
+      }
+    } catch (e) {
+      // Cerrar el diálogo de carga
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Mostrar error
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al eliminar la cuenta: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
   /*
   void _showSongsModal(BuildContext context) {
@@ -299,24 +438,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         if (_userProfile!.description.isNotEmpty)
                           Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
+                            padding: const EdgeInsets.only(top: 12.0),
                             child: Column(
                               children: [
                                 Text(
                                   _userProfile!.description,
                                   textAlign: TextAlign.center,
-                                  style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                                  style: TextStyle(
+                                    fontSize: 16, 
+                                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                    height: 1.4,
+                                  ),
                                   maxLines: _isDescriptionExpanded ? null : 3,
                                   overflow: _isDescriptionExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
                                 ),
-                                if (_userProfile!.description.length > 65) // Puedes ajustar el umbral
+                                if (_userProfile!.description.length > 65)
                                   TextButton(
                                     onPressed: () {
                                       setState(() {
                                         _isDescriptionExpanded = !_isDescriptionExpanded;
                                       });
                                     },
-                                    child: Text(_isDescriptionExpanded ? 'Ver menos' : 'Ver más'),
+                                    child: Text(
+                                      _isDescriptionExpanded ? 'Ver menos' : 'Ver más',
+                                      style: TextStyle(
+                                        color: theme.colorScheme.primary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ),
                               ],
                             ),
@@ -324,150 +473,219 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 32),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withOpacity(0.2),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Perfil',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ListTile(
+                          leading: Icon(Icons.person, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                          title: const Text('Editar Perfil'),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            Navigator.pushNamed(context, AppRoutes.editProfile);
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.tune, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                          title: const Text('Preferencias'),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            Navigator.pushNamed(context, AppRoutes.matchingPreferences);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: () => _showSongsModal(context),
-                        child: Column(
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withOpacity(0.2),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Seguridad',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ListTile(
+                          leading: const Icon(Icons.emergency, color: Colors.red),
+                          title: const Text('Botón antipánico'),
+                          subtitle: const Text('Configurar contacto de emergencia'),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            Navigator.pushNamed(context, AppRoutes.emergencyContact);
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.health_and_safety, color: Colors.blue),
+                          title: const Text('Líneas de emergencia'),
+                          subtitle: const Text('Recursos de ayuda profesional'),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () async {
+                            const url = 'https://findahelpline.com/es-ES/countries/ar';
+                            try {
+                              await launchUrl(Uri.parse(url));
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('No se pudo abrir el enlace')),
+                              );
+                            }
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.lock, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                          title: const Text('Privacidad'),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withOpacity(0.2),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Notificaciones',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Icon(Icons.music_note, color: theme.colorScheme.primary),
-                            const SizedBox(height: 8),
-                            const Text('Canciones', style: TextStyle(fontSize: 14)),
+                            const Text('Recibir notificaciones'),
+                            Switch(
+                              value: _notificationsEnabled,
+                              activeColor: theme.colorScheme.primary,
+                              onChanged: (value) {
+                                setState(() {
+                                  _notificationsEnabled = value;
+                                });
+                              },
+                            ),
                           ],
                         ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withOpacity(0.2),
                       ),
-                      const SizedBox(width: 24),
-                      Column(
-                        children: [
-                          Icon(Icons.local_bar, color: theme.colorScheme.primary),
-                          const SizedBox(height: 8),
-                          Text(
-                            _userProfile!.favoriteDrink,
-                            style: const TextStyle(fontSize: 14),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Ayuda',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
                           ),
-                        ],
+                        ),
+                        const SizedBox(height: 12),
+                        ListTile(
+                          leading: Icon(Icons.help_outline, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                          title: const Text('Centro de ayuda'),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            Navigator.pushNamed(context, AppRoutes.helpCenter);
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.feedback_outlined, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                          title: const Text('Enviar feedback'),
+                          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                          onTap: () {
+                            Navigator.pushNamed(context, AppRoutes.feedback);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withOpacity(0.2),
                       ),
-                      const SizedBox(width: 24),
-                      Column(
-                        children: [
-                          Icon(Icons.star, color: theme.colorScheme.primary),
-                          const SizedBox(height: 8),
-                          Text(
-                            _userProfile!.sign ?? '—',
-                            style: const TextStyle(fontSize: 14),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Cuenta',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.onSurface,
                           ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const Divider(),
-                  const Text('Cuenta', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  ListTile(
-                    leading: Icon(Icons.person, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                    title: const Text('Editar Perfil'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.editProfile);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.tune, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                    title: const Text('Preferencias'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.matchingPreferences);
-                    },
-                  ),
-                  const Divider(),
-                  const Text('Seguridad', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  ListTile(
-                    leading: const Icon(Icons.emergency, color: Colors.red),
-                    title: const Text('Botón antipánico'),
-                    subtitle: const Text('Configurar contacto de emergencia'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.emergencyContact);
-                    },
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.health_and_safety, color: Colors.blue),
-                    title: const Text('Líneas de emergencia'),
-                    subtitle: const Text('Recursos de ayuda profesional'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () async {
-                      const url = 'https://findahelpline.com/es-ES/countries/ar';
-                      try {
-                        await launchUrl(Uri.parse(url));
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('No se pudo abrir el enlace')),
-                        );
-                      }
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.lock, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                    title: const Text('Privacidad'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {},
-                  ),
-                  const Divider(),
-                  const Text('Notificaciones', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Recibir notificaciones'),
-                      Switch(
-                        value: _notificationsEnabled,
-                        activeColor: theme.colorScheme.primary,
-                        onChanged: (value) {
-                          setState(() {
-                            _notificationsEnabled = value;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-
-                  const Divider(),
-                  const Text('Ayuda', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  ListTile(
-                    leading: Icon(Icons.help_outline, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                    title: const Text('Centro de ayuda'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.helpCenter);
-                    },
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.feedback_outlined, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                    title: const Text('Enviar feedback'),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.feedback);
-                    },
-                  ),
-                  const Divider(),
-                  const Text('Cuenta avanzada', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  ListTile(
-                    leading: Icon(Icons.logout, color: theme.colorScheme.onSurface.withOpacity(0.6)),
-                    title: const Text('Cerrar sesión'),
-                    onTap: () => _showLogoutConfirmationDialog(context),
-                  ),
-                  ListTile(
-                    leading: const Icon(Icons.delete_outline, color: Colors.red),
-                    title: const Text('Eliminar cuenta'),
-                    titleTextStyle: const TextStyle(color: Colors.red),
-                    onTap: () {
-                      // Lógica para eliminar cuenta
-                    },
+                        ),
+                        const SizedBox(height: 12),
+                        ListTile(
+                          leading: Icon(Icons.logout, color: theme.colorScheme.onSurface.withOpacity(0.6)),
+                          title: const Text('Cerrar sesión'),
+                          onTap: () => _showLogoutConfirmationDialog(context),
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.delete_outline, color: Colors.red),
+                          title: const Text('Eliminar cuenta'),
+                          titleTextStyle: const TextStyle(color: Colors.red, fontSize: 16),
+                          onTap: () => _showDeleteAccountConfirmationDialog(context),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
