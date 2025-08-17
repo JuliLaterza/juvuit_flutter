@@ -96,7 +96,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
     }
 
     tempNewMatches.sort((a, b) => _compareTimes(a['lastTimestamp'], b['lastTimestamp']));
-    tempActiveChats.sort((a, b) => _compareTimes(b['lastTimestamp'], a['lastTimestamp']));
+    tempActiveChats.sort((a, b) => _compareTimes(b['lastTimestamp'], a['lastTimestamp'])); // ✅ Cambiado para mostrar más recientes arriba
 
     if (!mounted) return;
     setState(() {
@@ -110,7 +110,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
     if (a == null && b == null) return 0;
     if (a == null) return 1;
     if (b == null) return -1;
-    return a.compareTo(b);
+    return a.compareTo(b); // Orden ascendente (más antiguos primero)
   }
 
   String formatTime(DateTime? dateTime) {

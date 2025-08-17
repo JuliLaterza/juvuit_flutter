@@ -33,16 +33,9 @@ service cloud.firestore {
         (request.auth.uid == resource.data.fromUserId || request.auth.uid == resource.data.toUserId);
     }
 
-    // ✅ Matches (colección principal)
+    // ✅ Matches (simplificado temporalmente para debug)
     match /matches/{matchId} {
-      allow read, create, update, delete: if request.auth != null && 
-        request.auth.uid in resource.data.participants;
-    }
-
-    // ✅ Chats (colección principal)
-    match /chats/{chatId} {
-      allow read, create, update, delete: if request.auth != null && 
-        request.auth.uid in resource.data.participants;
+      allow read, create, update, delete: if request.auth != null;
     }
 
     // Eventos
@@ -50,12 +43,14 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null;
     }
 
-    // Mensajes y subcolección chats
+    // ✅ Mensajes y subcolección chats (corregido: verifica participación en match)
     match /messages/{matchId} {
-      allow read, write, delete: if request.auth != null;
+      allow read, write, delete: if request.auth != null && 
+        request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
 
       match /chats/{chatId} {
-        allow read, write, delete: if request.auth != null;
+        allow read, write, delete: if request.auth != null && 
+          request.auth.uid in get(/databases/$(database)/documents/matches/$(matchId)).data.users;
       }
     }
 

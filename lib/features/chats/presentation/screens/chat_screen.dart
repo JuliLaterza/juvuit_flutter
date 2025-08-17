@@ -24,11 +24,37 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  // Función para verificar permisos del match
+  Future<void> _verifyMatchPermissions() async {
+    try {
+      final matchDoc = await FirebaseFirestore.instance
+          .collection('matches')
+          .doc(widget.matchId)
+          .get();
+      
+      if (matchDoc.exists) {
+        final matchData = matchDoc.data()!;
+        final users = List<String>.from(matchData['users'] ?? []);
+        
+        if (!users.contains(currentUserId)) {
+          throw Exception('Usuario no es participante del match');
+        }
+      } else {
+        throw Exception('Match no existe');
+      }
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   void _sendMessage() async {
     final text = _controller.text.trim();
     if (text.isEmpty || currentUserId == null) return;
-
-    //await Future.delayed(const Duration(milliseconds: 500));
 
     final messageData = {
       'text': text,
@@ -38,12 +64,15 @@ class _ChatScreenState extends State<ChatScreen> {
     };
 
     try {
+      await _verifyMatchPermissions();
+      
       await FirebaseFirestore.instance
           .collection('messages')
           .doc(widget.matchId)
           .collection('chats')
           .add(messageData);
 
+      // Actualizar match con información del último mensaje
       await FirebaseFirestore.instance
           .collection('matches')
           .doc(widget.matchId)
@@ -111,6 +140,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   .orderBy('timestamp')
                   .snapshots(),
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                }
+                
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
