@@ -171,8 +171,8 @@ class _EventCardState extends State<EventCard> {
           ),
           title: Row(
             children: [
-              Icon(Icons.music_note, color: AppColors.darkmedium),
-              SizedBox(width: 8),
+              //Icon(Icons.music_note, color: AppColors.darkmedium),
+              //SizedBox(width: 8),
               Text('¡Completá tu perfil!'),
             ],
           ),
@@ -181,23 +181,35 @@ class _EventCardState extends State<EventCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Para asistir a eventos de fiesta, necesitás:',
+                'Siempre vamos a priorizar tu experiencia en el evento, porque vos sos parte.',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 12),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.music_note, size: 16, color: Colors.grey[600]),
                   SizedBox(width: 8),
-                  Text('Tus 3 canciones favoritas'),
+                  Expanded(
+                    child: Text(
+                      '¿Qué canciones te gustarían que pasen?',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: 8),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.local_bar, size: 16, color: Colors.grey[600]),
                   SizedBox(width: 8),
-                  Text('Tu trago preferido'),
+                  Expanded(
+                    child: Text(
+                      'Tu trago preferido',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                  ),
                 ],
               ),
             ],

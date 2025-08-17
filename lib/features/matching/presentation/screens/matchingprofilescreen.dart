@@ -28,12 +28,18 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
   void initState() {
     super.initState();
     _controller = MatchingProfilesController(pageController: _pageController);
+    
+
+    
     _loadData();
   }
 
   Future<void> _loadData() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser == null) return;
+
+    // Resetear contadores para nueva sesión
+    _controller.resetForNewSession();
 
     final currentUserProfile = await _controller.loadCurrentUserProfile();
     if (currentUserProfile == null) return;
@@ -65,6 +71,8 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
       reencounterUserIds = seenButNotChatted;
       _isLoading = false;
     });
+
+
   }
 
   // Función para mostrar animación de match retroactivo
@@ -122,7 +130,7 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
               
               // Verificar si es un match nuevo (no anticipado)
               if (_controller.isNewMatch(matchId)) {
-                print('DEBUG: Match nuevo detectado: $matchId');
+
                 // Obtener información del otro usuario y mostrar animación
                 _showRetroactiveMatchAnimation(otherUserId, matchId);
               }

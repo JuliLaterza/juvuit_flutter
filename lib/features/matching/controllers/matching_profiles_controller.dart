@@ -21,6 +21,7 @@ class MatchingProfilesController {
   bool isLoading = false;
   bool hasMoreProfiles = true;
   int currentIndex = 0;
+  int totalProcessedProfiles = 0; // ✅ NUEVA VARIABLE para trackear perfiles procesados
   UserProfile? currentUserProfile;
   Set<String> likedProfiles = {};
   Map<int, int> currentCarouselIndex = {};
@@ -58,37 +59,39 @@ class MatchingProfilesController {
       }
       
       isInitialized = true;
-      print('DEBUG: Sistema de tracking de matches inicializado. Matches existentes: ${shownMatches.length}');
+
     } catch (e) {
       print('Error inicializando tracking de matches: $e');
     }
   }
 
+  // Resetear contadores para nueva sesión de matcheo
+  void resetForNewSession() {
+    totalProcessedProfiles = 0;
+    currentIndex = 0;
+    profiles.clear();
+    hasMoreProfiles = true;
+    isLoading = false;
+  }
+
   // Tinder-style lazy loading
   Future<void> loadNextBatch(Event event) async {
     if (isLoading || !hasMoreProfiles) {
-      print('DEBUG: loadNextBatch - isLoading: $isLoading, hasMoreProfiles: $hasMoreProfiles');
       return;
     }
     
     isLoading = true;
-    print('DEBUG: Cargando siguiente lote de perfiles...');
-    print('DEBUG: Perfiles actuales: ${profiles.length}, batchSize: $batchSize');
     
     try {
-      final newProfiles = await fetchProfilesBatch(event, profiles.length, batchSize);
-      
-      print('DEBUG: Nuevos perfiles obtenidos: ${newProfiles.length}');
+      final newProfiles = await fetchProfilesBatch(event, totalProcessedProfiles, batchSize);
       
       if (newProfiles.length < batchSize) {
         hasMoreProfiles = false;
-        print('DEBUG: No hay más perfiles disponibles (${newProfiles.length} < $batchSize)');
       } else {
-        print('DEBUG: Aún hay más perfiles disponibles (${newProfiles.length} >= $batchSize)');
+        // hasMoreProfiles = true; // This line was removed from the original file, so it's removed here.
       }
       
       profiles.addAll(newProfiles);
-      print('DEBUG: Cargados ${newProfiles.length} nuevos perfiles. Total: ${profiles.length}');
       
       // Pre-cargar imágenes de los próximos perfiles
       await preloadNextImages();
@@ -140,12 +143,8 @@ class MatchingProfilesController {
 
   // Cargar más perfiles si quedan pocos
   Future<void> loadMoreIfNeeded() async {
-    print('DEBUG: loadMoreIfNeeded - profiles.length: ${profiles.length}, currentIndex: $currentIndex, hasMoreProfiles: $hasMoreProfiles, isLoading: $isLoading');
     if (profiles.length - currentIndex < 5 && hasMoreProfiles && !isLoading) {
-      print('DEBUG: Cargando más perfiles automáticamente...');
       await loadNextBatch(currentEvent!);
-    } else {
-      print('DEBUG: No se cargan más perfiles automáticamente');
     }
   }
 
@@ -157,11 +156,7 @@ class MatchingProfilesController {
     if (currentUserId == null) return [];
 
     try {
-      print('DEBUG: === INICIO fetchProfilesBatch ===');
-      print('DEBUG: Event ID: ${event.id}');
-      print('DEBUG: Current User ID: $currentUserId');
-      print('DEBUG: Offset: $offset, Limit: $limit');
-
+      
       // Obtener likes dados por el usuario en este evento
       final likesGivenSnapshot = await FirebaseFirestore.instance
           .collection('users')
@@ -173,8 +168,6 @@ class MatchingProfilesController {
           .where((doc) => doc.data()['eventId'] == event.id)
           .map((doc) => doc.id)
           .toSet();
-
-      print('DEBUG: Usuarios a los que ya di like: ${likedUserIds.toList()}');
 
       // Obtener matches con chats ya iniciados
       final matchesSnapshot = await FirebaseFirestore.instance
@@ -193,8 +186,6 @@ class MatchingProfilesController {
         }
       }
 
-      print('DEBUG: Usuarios con matches y chats: ${matchedAndChattedUserIds.toList()}');
-
       // Obtener perfiles del evento
       final attendeesSnapshot = await FirebaseFirestore.instance
           .collection('events')
@@ -202,15 +193,11 @@ class MatchingProfilesController {
           .get();
 
       if (!attendeesSnapshot.exists) {
-        print('DEBUG: Evento no existe en Firestore');
         return [];
       }
 
       final eventData = attendeesSnapshot.data()!;
       final attendees = List<String>.from(eventData['attendees'] ?? []);
-
-      print('DEBUG: Total de asistentes al evento: ${attendees.length}');
-      print('DEBUG: Lista completa de asistentes: $attendees');
 
       // Filtrar usuarios que no han sido vistos, no han dado like, y no son matches
       final availableUserIds = attendees.where((userId) =>
@@ -218,17 +205,10 @@ class MatchingProfilesController {
           !likedUserIds.contains(userId) &&
           !matchedAndChattedUserIds.contains(userId)).toList();
 
-      print('DEBUG: Usuarios disponibles después del filtrado: ${availableUserIds.length}');
-      print('DEBUG: Lista de usuarios disponibles: $availableUserIds');
-
       // Aplicar paginación
       final paginatedUserIds = availableUserIds.skip(offset).take(limit).toList();
 
-      print('DEBUG: Usuarios después de paginación: ${paginatedUserIds.length}');
-      print('DEBUG: Lista paginada: $paginatedUserIds');
-
       if (paginatedUserIds.isEmpty) {
-        print('DEBUG: No hay usuarios después de paginación');
         return [];
       }
 
@@ -258,18 +238,20 @@ class MatchingProfilesController {
           addToCache(profile);
           
           return profile;
+        } else {
+          return null;
         }
-        return null;
       });
 
       final profiles = await Future.wait(profileFutures);
       final validProfiles = profiles.where((profile) => profile != null).cast<UserProfile>().toList();
       
-      print('DEBUG: Perfiles cargados exitosamente: ${validProfiles.length}');
-      for (final profile in validProfiles) {
-        print('DEBUG: Perfil cargado - ID: ${profile.userId}, Nombre: ${profile.name}');
+      // Identificar usuarios que no se pudieron cargar
+      final loadedUserIds = validProfiles.map((p) => p.userId).toSet();
+      final failedUserIds = paginatedUserIds.where((id) => !loadedUserIds.contains(id)).toList();
+      
+      if (failedUserIds.isNotEmpty) {
       }
-      print('DEBUG: === FIN fetchProfilesBatch ===');
       
       return validProfiles;
 
@@ -302,7 +284,6 @@ class MatchingProfilesController {
         hasLikedMeMap.addAll(result);
       }
       
-      print('DEBUG: Batch check hasLikedMe completado para ${userIds.length} usuarios');
       return hasLikedMeMap;
       
     } catch (e) {
@@ -350,11 +331,9 @@ class MatchingProfilesController {
 
     // USAR CAMPO PRECARGADO en lugar de consultar Firestore
     final hasLikedMe = likedUser.hasLikedMe;
-    print('DEBUG: hasLikedMe para ${likedUser.name}: $hasLikedMe (precargado)');
 
     // Si ya recibí like, mostrar animación instantánea
     if (hasLikedMe) {
-      print('DEBUG: ¡MATCH INSTANTÁNEO! Mostrando animación...');
       
       // Crear matchId y marcarlo como mostrado
       final generatedMatchId = generateMatchId(currentUser.uid, likedUser.userId);
@@ -379,7 +358,6 @@ class MatchingProfilesController {
       _executeBackendMatch(generatedMatchId, currentUser.uid, likedUser.userId, event.id);
       
     } else {
-      print('DEBUG: No es match instantáneo, procesando normalmente...');
       await handleLikeAndMatch(
         currentUserId: currentUser.uid,
         likedUserId: likedUser.userId,
@@ -394,17 +372,13 @@ class MatchingProfilesController {
     // Remover perfil actual y avanzar (estilo Tinder)
     profiles.removeAt(currentPage);
     currentIndex = currentPage;
+    totalProcessedProfiles++;
     
     // Cargar más perfiles si quedan pocos
     await loadMoreIfNeeded();
     
-    // Avanzar al siguiente perfil
-    if (currentPage < profiles.length) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+    // NO navegar automáticamente - quedarse en la página actual
+    // La página actual ahora tiene el siguiente perfil después de remover
   }
 
   // Ejecutar backend en paralelo para match instantáneo
@@ -445,8 +419,6 @@ class MatchingProfilesController {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      print('DEBUG: Backend match completado: $matchId');
-      
     } catch (e) {
       print('Error ejecutando backend match: $e');
       // No mostrar error al usuario para mantener UX fluida
@@ -459,17 +431,13 @@ class MatchingProfilesController {
     // Remover perfil actual y avanzar
     profiles.removeAt(currentPage);
     currentIndex = currentPage;
+    totalProcessedProfiles++;
     
     // Cargar más perfiles si quedan pocos
     loadMoreIfNeeded();
     
-    // Avanzar al siguiente perfil
-    if (currentPage < profiles.length) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
+    // NO navegar automáticamente - quedarse en la página actual
+    // La página actual ahora tiene el siguiente perfil después de remover
   }
 
   // Stream para matches en tiempo real
@@ -503,7 +471,6 @@ class MatchingProfilesController {
   void markMatchAsShown(String matchId) {
     shownMatches.add(matchId);
     pendingMatches.remove(matchId);
-    print('DEBUG: Match marcado como mostrado: $matchId');
   }
 
   // Mostrar animación de match retroactivo
@@ -539,4 +506,6 @@ class MatchingProfilesController {
     }
     return age;
   }
+
+
 }
