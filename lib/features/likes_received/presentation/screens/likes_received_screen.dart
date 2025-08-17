@@ -246,5 +246,35 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
   );
   Widget _loading() => const Center(child: CircularProgressIndicator());
   Widget _error()   => const Center(child: Text('Error al cargar'));
-  Widget _empty()   => const Center(child: Text('No hay likes recibidos'));
+  Widget _empty() {
+    return Container(
+      color: Colors.white.withOpacity(0.6),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.lock, size: 48, color: Colors.black54),
+              const SizedBox(height: 16),
+              const Text(
+                'Descubrí quiénes te quieren conocer!',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {}, // futura navegación a premium
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: const Text('Activar Premium', style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
