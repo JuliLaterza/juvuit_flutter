@@ -454,8 +454,9 @@ class _CompleteSongsDrinkScreenState extends State<CompleteSongsDrinkScreen> {
                 decoration: InputDecoration(
                   labelText: 'Trago favorito',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  focusedBorder: const OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.yellow),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.gray),
                   ),
                 ),
                 items: _drinks.map((drink) => DropdownMenuItem(
