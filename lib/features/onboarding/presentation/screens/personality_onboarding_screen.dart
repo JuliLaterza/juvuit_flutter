@@ -324,7 +324,7 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.yellow),
+          borderSide: BorderSide(color: AppColors.gray),
         ),
       ),
       style: const TextStyle(fontSize: 14),

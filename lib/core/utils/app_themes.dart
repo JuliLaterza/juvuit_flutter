@@ -63,7 +63,7 @@ class AppThemes {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: ThemeColors.light.primary),
+        borderSide: BorderSide(color: AppColors.gray),
       ),
       labelStyle: TextStyle(color: ThemeColors.light.onSurface),
       hintStyle: TextStyle(color: ThemeColors.light.onSurface.withOpacity(0.6)),
@@ -149,7 +149,7 @@ class AppThemes {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: ThemeColors.dark.primary),
+        borderSide: BorderSide(color: AppColors.gray),
       ),
       labelStyle: TextStyle(color: ThemeColors.dark.onSurface),
       hintStyle: TextStyle(color: ThemeColors.dark.onSurface.withOpacity(0.6)),

@@ -171,7 +171,7 @@ class _ChatsScreenState extends State<ChatsScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.yellow),
+                          borderSide: const BorderSide(color: AppColors.gray),
                         ),
                       ),
                     ),

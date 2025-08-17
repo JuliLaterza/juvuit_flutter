@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
+import 'package:intl/intl.dart';
 //import 'dart:async';
 
 class ChatScreen extends StatefulWidget {
@@ -22,11 +23,29 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
   final String? currentUserId = FirebaseAuth.instance.currentUser?.uid;
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // Función para hacer scroll hacia abajo
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   // Función para verificar permisos del match
@@ -59,10 +78,12 @@ class _ChatScreenState extends State<ChatScreen> {
     // Limpiar el input inmediatamente
     _controller.clear();
 
+    final now = DateTime.now();
     final messageData = {
       'text': text,
       'senderId': currentUserId,
       'timestamp': FieldValue.serverTimestamp(),
+      'localTimestamp': now.millisecondsSinceEpoch,
       'seenBy': [currentUserId],
     };
 
@@ -83,6 +104,13 @@ class _ChatScreenState extends State<ChatScreen> {
         'senderId': currentUserId,
         'lastMessage': text,
         'lastTimestamp': FieldValue.serverTimestamp(),
+      });
+
+      // Hacer scroll hacia abajo después de que el mensaje se haya agregado
+      Future.delayed(const Duration(milliseconds: 100), () {
+        if (mounted) {
+          _scrollToBottom();
+        }
       });
 
     } catch (e) {
@@ -131,81 +159,138 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
-                  .collection('messages')
-                  .doc(widget.matchId)
-                  .collection('chats')
-                  .orderBy('timestamp')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.hasError) {
-                }
-                
-                if (!snapshot.hasData) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final messages = snapshot.data!.docs;
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = messages[index];
-                    final isMe = msg['senderId'] == currentUserId;
-                    return Align(
-                      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: isMe ? Colors.amber : Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(12),
+      body: GestureDetector(
+        onTap: () {
+          // Ocultar teclado al hacer clic en cualquier parte
+          FocusScope.of(context).unfocus();
+        },
+        child: Column(
+          children: [
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('messages')
+                    .doc(widget.matchId)
+                    .collection('chats')
+                    .orderBy('timestamp')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                  }
+                  
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final messages = snapshot.data!.docs;
+                  return ListView.builder(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = messages[index];
+                      final isMe = msg['senderId'] == currentUserId;
+                      
+                      // Usar timestamp local si está disponible, sino el del servidor
+                      DateTime messageTime;
+                      final data = msg.data() as Map<String, dynamic>;
+                      
+                      if (data.containsKey('localTimestamp') && data['localTimestamp'] != null) {
+                        messageTime = DateTime.fromMillisecondsSinceEpoch(data['localTimestamp']);
+                      } else if (data.containsKey('timestamp') && data['timestamp'] != null) {
+                        messageTime = (data['timestamp'] as Timestamp).toDate();
+                      } else {
+                        messageTime = DateTime.now();
+                      }
+                      
+                      final timeString = DateFormat('HH:mm').format(messageTime);
+                      
+                      return Align(
+                        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: isMe ? Colors.amber : Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                msg['text'] ?? '',
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                timeString,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: isMe ? Colors.black54 : Colors.grey.shade600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        child: Text(msg['text'] ?? ''),
-                      ),
-                    );
-                  },
-                );
-              },
+                      );
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 24.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: TextField(
-                      controller: _controller,
-                      decoration: const InputDecoration(
-                        hintText: 'Escribí tu mensaje...',
-                        border: InputBorder.none,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 4.0, 16.0, 40.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      //decoration: BoxDecoration(
+                        //color: Colors.grey[50],
+                        //borderRadius: BorderRadius.circular(25),
+                        //border: Border.all(color: Colors.grey[500]!),
+                      //),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _controller,
+                              maxLines: null,
+                              textCapitalization: TextCapitalization.none,
+                              decoration: const InputDecoration(
+                                hintText: 'Escribí tu mensaje...',
+                                hintStyle: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 16,
+                                ),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: _sendMessage,
+                            child: Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD600),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Icon(
+                                Icons.send_rounded,
+                                color: Colors.black87,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                GestureDetector(
-                  onTap: _sendMessage,
-                  child: CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Color(0xFFFFD600),
-                    child: const Icon(Icons.send, color: Colors.black),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

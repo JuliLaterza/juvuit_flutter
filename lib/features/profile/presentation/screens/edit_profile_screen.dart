@@ -307,8 +307,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: Icon(icon, color: AppColors.yellow),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.yellow),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.gray),
         ),
       ),
     );
@@ -322,8 +323,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: Icon(icon, color: AppColors.yellow),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.yellow),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.gray),
         ),
       ),
     );
@@ -335,8 +337,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.yellow),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.gray),
         ),
       ),
       items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),

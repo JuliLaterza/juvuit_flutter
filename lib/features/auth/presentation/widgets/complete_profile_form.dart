@@ -158,8 +158,9 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
             labelText: 'Fecha de nacimiento',
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             prefixIcon: const Icon(Icons.calendar_today, color: AppColors.yellow),
-            focusedBorder: const OutlineInputBorder(
-              borderSide: BorderSide(color: AppColors.yellow),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.gray),
             ),
           ),
           controller: _dateController,
@@ -175,8 +176,9 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: Icon(icon, color: AppColors.yellow),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.yellow),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.gray),
         ),
       ),
     );
@@ -190,8 +192,9 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         prefixIcon: Icon(icon, color: AppColors.yellow),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.yellow),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.gray),
         ),
       ),
     );
@@ -205,8 +208,9 @@ class CompleteProfileFormState extends State<CompleteProfileForm> {
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: const OutlineInputBorder(
-          borderSide: BorderSide(color: AppColors.yellow),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.gray),
         ),
       ),
       items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
