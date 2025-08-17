@@ -56,6 +56,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _controller.text.trim();
     if (text.isEmpty || currentUserId == null) return;
 
+    // Limpiar el input inmediatamente
+    _controller.clear();
+
     final messageData = {
       'text': text,
       'senderId': currentUserId,
@@ -82,7 +85,6 @@ class _ChatScreenState extends State<ChatScreen> {
         'lastTimestamp': FieldValue.serverTimestamp(),
       });
 
-      _controller.clear();
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
