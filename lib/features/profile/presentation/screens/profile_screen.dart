@@ -69,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('No'),
+            child: const Text('No', style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold)),
           ),
           TextButton(
             onPressed: () async {
@@ -83,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               }
             },
-            child: const Text('Sí'),
+            child: const Text('Sí', style: TextStyle(color: Colors.red,fontWeight: FontWeight.bold)),
           ),
         ],
       ),
