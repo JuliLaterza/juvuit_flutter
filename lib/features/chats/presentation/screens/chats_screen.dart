@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
+import 'package:juvuit_flutter/core/widgets/theme_aware_logo.dart';
 import 'package:juvuit_flutter/core/utils/routes.dart';
 import 'package:juvuit_flutter/core/utils/colors.dart';
 import 'package:intl/intl.dart';
@@ -69,18 +70,16 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final normalizedQuery = normalize(_searchQuery);
 
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(52),
         child: AppBar(
-          backgroundColor: AppColors.white,
+          backgroundColor: theme.colorScheme.surface,
           elevation: 0,
-          title: Image.asset(
-            'assets/images/homescreen/logo_witu.png',
-            height: 32,
-          ),
+          title: const HeaderLogo(),
           centerTitle: false,
         ),
       ),
@@ -164,12 +163,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
                       return RichText(
                         text: TextSpan(
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground),
                           children: [
-                            const TextSpan(text: 'Nuevos matches '),
+                            TextSpan(text: 'Nuevos matches '),
                             TextSpan(
                               text: '(${newMatchesCount})',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: theme.colorScheme.onBackground),
                             ),
                           ],
                         ),
@@ -362,12 +361,12 @@ class _ChatsScreenState extends State<ChatsScreen> {
 
                       return RichText(
                         text: TextSpan(
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground),
                           children: [
-                            const TextSpan(text: 'Chats '),
+                            TextSpan(text: 'Chats '),
                             TextSpan(
                               text: '(${activeChatsCount})',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: Colors.black),
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.normal, color: theme.colorScheme.onBackground),
                             ),
                           ],
                         ),

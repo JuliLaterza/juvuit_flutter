@@ -58,11 +58,13 @@ class _MatchingPreferencesScreenState extends State<MatchingPreferencesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Preferencias'),
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.black,
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.onSurface,
         elevation: 0,
       ),
       body: SafeArea(
@@ -76,14 +78,14 @@ class _MatchingPreferencesScreenState extends State<MatchingPreferencesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Rango de edad',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       '${_ageRange.start.round()} - ${_ageRange.end.round()} años',
-                      style: const TextStyle(fontSize: 16, color: AppColors.gray),
+                      style: TextStyle(fontSize: 16, color: theme.colorScheme.onSurface.withOpacity(0.7)),
                     ),
                     const SizedBox(height: 16),
                     RangeSlider(
@@ -91,7 +93,7 @@ class _MatchingPreferencesScreenState extends State<MatchingPreferencesScreen> {
                       min: 18,
                       max: 65,
                       divisions: 47,
-                      activeColor: AppColors.yellow,
+                      activeColor: theme.colorScheme.primary,
                       labels: RangeLabels(
                         _ageRange.start.round().toString(),
                         _ageRange.end.round().toString(),

@@ -38,6 +38,7 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final photoCount = profile.photoUrls.length;
 
     return SafeArea(
@@ -67,7 +68,7 @@ class ProfileCard extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 3),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: currentImageIndex == i ? Colors.black : Colors.grey,
+                    color: currentImageIndex == i ? theme.colorScheme.primary : theme.colorScheme.onSurface.withOpacity(0.3),
                   ),
                 )),
               ),
@@ -82,7 +83,7 @@ class ProfileCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 40),
                   IconButton(
-                    icon: const Icon(Icons.favorite_border, size: 36, color: AppColors.black),
+                    icon: Icon(Icons.favorite_border, size: 36, color: theme.colorScheme.onSurface),
                     onPressed: onLike,
                   ),
                 ],
@@ -94,10 +95,10 @@ class ProfileCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('${profile.name}, ${_calculateAge(profile.birthDate)}',
-                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold)),
+                        style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground)),
                     const SizedBox(height: 10),
                     Text(profile.description,
-                        style: const TextStyle(fontSize: 16, color: Colors.black87)),
+                        style: TextStyle(fontSize: 16, color: theme.colorScheme.onBackground.withOpacity(0.7))),
                     const SizedBox(height: 16),
                     Row(children: [
                       const Text('🥂 ', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
@@ -110,8 +111,8 @@ class ProfileCard extends StatelessWidget {
                       Text(profile.sign ?? '-', style: const TextStyle(fontSize: 16))
                     ]),
                     const SizedBox(height: 16),
-                    const Text('Canciones favoritas',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('Canciones favoritas',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground)),
                     const SizedBox(height: 10),
                     for (final song in profile.topSongs)
                       Padding(

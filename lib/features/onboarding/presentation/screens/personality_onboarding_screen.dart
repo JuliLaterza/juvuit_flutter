@@ -101,10 +101,14 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sobre vos'),
         centerTitle: true,
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.onSurface,
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
@@ -116,26 +120,26 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
                 padding: const EdgeInsets.only(bottom: 18.0),
                 child: Text(
                   '¡Cuantos más datos completes, más personalizado será tu perfil y tus recomendaciones!',
-                  style: TextStyle(fontSize: 14, color: Colors.grey[800]),
+                  style: TextStyle(fontSize: 14, color: theme.colorScheme.onBackground.withOpacity(0.7)),
                 ),
               ),
-              _sectionTitle('¿Con qué género te identificás?'),
+              _sectionTitle('¿Con qué género te identificás?', theme),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 10,
                 children: _genders.map((g) => ChoiceChip(
-                  label: Text(g, style: TextStyle(color: _gender == g ? AppColors.black : Colors.grey[800], fontSize: 14)),
+                  label: Text(g, style: TextStyle(color: _gender == g ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface, fontSize: 14)),
                   selected: _gender == g,
                   onSelected: (_) => setState(() => _gender = g),
                   showCheckmark: false,
-                  selectedColor: AppColors.yellow,
-                  backgroundColor: Colors.grey[200],
+                  selectedColor: theme.colorScheme.primary,
+                  backgroundColor: theme.colorScheme.surface,
                   side: BorderSide.none,
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                 )).toList(),
               ),
               const SizedBox(height: 20),
-              _sectionTitle('¿Cuál es tu signo zodiacal?'),
+              _sectionTitle('¿Cuál es tu signo zodiacal?', theme),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 10,
@@ -143,93 +147,96 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
                   label: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(signo['icono'], color: _selectedSign == signo['signo'] ? AppColors.black : Colors.grey[800], size: 16),
+                      Icon(signo['icono'], color: _selectedSign == signo['signo'] ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface, size: 16),
                       const SizedBox(width: 4),
-                      Text(signo['signo'], style: TextStyle(color: _selectedSign == signo['signo'] ? AppColors.black : Colors.grey[800], fontSize: 14)),
+                      Text(signo['signo'], style: TextStyle(color: _selectedSign == signo['signo'] ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface, fontSize: 14)),
                     ],
                   ),
                   selected: _selectedSign == signo['signo'],
                   onSelected: (_) => setState(() => _selectedSign = signo['signo']),
                   showCheckmark: false,
-                  selectedColor: AppColors.yellow,
-                  backgroundColor: Colors.grey[200],
+                  selectedColor: theme.colorScheme.primary,
+                  backgroundColor: theme.colorScheme.surface,
                   side: BorderSide.none,
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                 )).toList(),
               ),
               const SizedBox(height: 20),
-              _sectionTitle('¿Cuáles son tus intereses sociales?'),
+              _sectionTitle('¿Cuáles son tus intereses sociales?', theme),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 10,
                 children: _interestOptions.map((interest) => FilterChip(
-                  label: Text(interest, style: TextStyle(color: _interests.contains(interest) ? AppColors.black : Colors.grey[800], fontSize: 14)),
+                  label: Text(interest, style: TextStyle(color: _interests.contains(interest) ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface, fontSize: 14)),
                   selected: _interests.contains(interest),
                   onSelected: (_) => _toggleInterest(interest),
                   showCheckmark: false,
-                  selectedColor: AppColors.yellow,
-                  backgroundColor: Colors.grey[200],
+                  selectedColor: theme.colorScheme.primary,
+                  backgroundColor: theme.colorScheme.surface,
                   side: BorderSide.none,
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                 )).toList(),
               ),
               const SizedBox(height: 20),
-              _sectionTitle('¿A quién te gustaría conocer?'),
+              _sectionTitle('¿A quién te gustaría conocer?', theme),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 10,
                 children: _lookingForOptions.map((opt) => ChoiceChip(
-                  label: Text(opt, style: TextStyle(color: _lookingFor == opt ? AppColors.black : Colors.grey[800], fontSize: 14)),
+                  label: Text(opt, style: TextStyle(color: _lookingFor == opt ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface, fontSize: 14)),
                   selected: _lookingFor == opt,
                   onSelected: (_) => setState(() => _lookingFor = opt),
                   showCheckmark: false,
-                  selectedColor: AppColors.yellow,
-                  backgroundColor: Colors.grey[200],
+                  selectedColor: theme.colorScheme.primary,
+                  backgroundColor: theme.colorScheme.surface,
                   side: BorderSide.none,
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                 )).toList(),
               ),
               const SizedBox(height: 20),
-              _sectionTitle('¿A qué te dedicás?'),
+              _sectionTitle('¿A qué te dedicás?', theme),
               const SizedBox(height: 8),
               _minimalTextField(
                 hint: 'Ej: Desarrollador, estudiante, artista... (opcional)',
                 onChanged: (v) => setState(() => _job = v),
+                theme: theme,
               ),
               const SizedBox(height: 20),
-              _sectionTitle('¿Qué estudiaste o estudiás?'),
+              _sectionTitle('¿Qué estudiaste o estudiás?', theme),
               const SizedBox(height: 8),
               _minimalTextField(
                 hint: 'Ej: Ingeniería, Marketing, Derecho... (opcional)',
                 onChanged: (v) => setState(() => _studies = v),
+                theme: theme,
               ),
               const SizedBox(height: 20),
-              _sectionTitle('Universidad'),
+              _sectionTitle('Universidad', theme),
               const SizedBox(height: 8),
               _minimalTextField(
                 hint: 'Ej: UBA, UTN, UNSAM... (opcional)',
                 onChanged: (v) => setState(() => _university = v),
+                theme: theme,
               ),
               const SizedBox(height: 20),
-              _sectionTitle('¿Fumás?'),
+              _sectionTitle('¿Fumás?', theme),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 10,
                 children: _smokeOptions.map((opt) => ChoiceChip(
-                  label: Text(opt, style: TextStyle(color: _smoke == opt ? AppColors.black : Colors.grey[800], fontSize: 14)),
+                  label: Text(opt, style: TextStyle(color: _smoke == opt ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface, fontSize: 14)),
                   selected: _smoke == opt,
                   onSelected: (_) => setState(() => _smoke = opt),
                   showCheckmark: false,
-                  selectedColor: AppColors.yellow,
-                  backgroundColor: Colors.grey[200],
+                  selectedColor: theme.colorScheme.primary,
+                  backgroundColor: theme.colorScheme.surface,
                   side: BorderSide.none,
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                 )).toList(),
               ),
               const SizedBox(height: 24),
-              _sectionTitle('¿Qué te representa más?'),
+              _sectionTitle('¿Qué te representa más?', theme),
               const SizedBox(height: 8),
-              Text('Completá todas las que quieras!', style: TextStyle(fontSize: 14, color: Colors.grey[800])),
+              Text('Completá todas las que quieras!', style: TextStyle(fontSize: 14, color: theme.colorScheme.onBackground.withOpacity(0.7))),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -238,7 +245,7 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
                   label: Text(
                     trait,
                     style: TextStyle(
-                      color: _selectedTraits.contains(trait) ? AppColors.black : Colors.grey[800],
+                      color: _selectedTraits.contains(trait) ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
                       fontSize: 13,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -254,8 +261,8 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
                     });
                   },
                   showCheckmark: false,
-                  selectedColor: AppColors.yellow,
-                  backgroundColor: Colors.grey[200],
+                  selectedColor: theme.colorScheme.primary,
+                  backgroundColor: theme.colorScheme.surface,
                   side: BorderSide.none,
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -266,8 +273,8 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.yellow,
-                    foregroundColor: AppColors.black,
+                    backgroundColor: theme.colorScheme.primary,
+                    foregroundColor: theme.colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -290,7 +297,7 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
     );
   }
 
-  Widget _sectionTitle(String text) {
+  Widget _sectionTitle(String text, ThemeData theme) {
     return Row(
       children: [
         Container(
@@ -298,36 +305,36 @@ class _PersonalityOnboardingScreenState extends State<PersonalityOnboardingScree
           height: 18,
           margin: const EdgeInsets.only(right: 8),
           decoration: BoxDecoration(
-            color: AppColors.yellow,
+            color: theme.colorScheme.primary,
             borderRadius: BorderRadius.circular(2),
           ),
         ),
         Text(
           text,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: theme.colorScheme.onBackground),
         ),
       ],
     );
   }
 
-  Widget _minimalTextField({required String hint, required Function(String) onChanged}) {
+  Widget _minimalTextField({required String hint, required Function(String) onChanged, required ThemeData theme}) {
     return TextField(
       decoration: InputDecoration(
         hintText: hint,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: theme.colorScheme.surface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey[300]!),
+          borderSide: BorderSide(color: theme.colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.gray),
+          borderSide: BorderSide(color: theme.colorScheme.primary),
         ),
       ),
-      style: const TextStyle(fontSize: 14),
+      style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface),
       onChanged: onChanged,
     );
   }

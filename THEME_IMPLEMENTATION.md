@@ -30,12 +30,33 @@ Se ha implementado un sistema completo de temas para la aplicación Flutter que 
 - Integrado `ChangeNotifierProvider` para el tema
 - Configurado para usar temas dinámicos
 
-### 6. Widgets Actualizados
-- `custom_bottom_nav_bar.dart`
-- `email_input_field.dart`
-- `password_input_field.dart`
-- `settings_screen.dart`
-- `events_screen.dart`
+### 6. Pantallas y Widgets Actualizados
+
+#### Pantallas Principales:
+- ✅ `events_screen.dart` - Agregado botón de toggle del tema
+- ✅ `event_info.dart` - Colores del tema dinámico
+- ✅ `chats_screen_v1.dart` - Agregado botón de toggle del tema
+- ✅ `chats_screen.dart` - Agregado HeaderLogo y colores del tema
+- ✅ `likes_received_screen.dart` - Agregado botón de toggle del tema y colores dinámicos
+- ✅ `splash_screen.dart` - Color de fondo dinámico
+- ✅ `intro_slides_screen.dart` - Colores del tema dinámico
+- ✅ `emergency_contact_screen.dart` - Colores del tema dinámico
+- ✅ `feedback_screen.dart` - Colores del tema dinámico
+- ✅ `personality_onboarding_screen.dart` - Colores del tema dinámico
+- ✅ `matching_preferences_screen.dart` - Colores del tema dinámico
+- ✅ `edit_profile_screen.dart` - Colores del tema dinámico
+- ✅ `matchingprofilescreen.dart` - Colores del tema dinámico
+
+#### Widgets:
+- ✅ `custom_bottom_nav_bar.dart`
+- ✅ `email_input_field.dart`
+- ✅ `password_input_field.dart`
+- ✅ `settings_screen.dart`
+- ✅ `eventCard.dart` - Colores del tema dinámico
+- ✅ `EventFilterButtons.dart` - Colores del tema dinámico
+- ✅ `theme_aware_logo.dart` - Logo que cambia según el tema
+- ✅ `app_logo_header.dart` - Logo que cambia según el tema
+- ✅ `profile_card.dart` - Colores del tema dinámico
 
 ## Cómo Usar
 

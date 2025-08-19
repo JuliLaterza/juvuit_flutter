@@ -114,6 +114,8 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final theme = Theme.of(context);
+
     return StreamBuilder<QuerySnapshot>(
       stream: _controller.matchesStream,
       builder: (context, snapshot) {
@@ -140,8 +142,8 @@ class _MatchingProfilesScreenState extends State<MatchingProfilesScreen> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Wit Ü', style: TextStyle(color: AppColors.black)),
-            backgroundColor: Colors.white,
+            title: Text('Wit Ü', style: TextStyle(color: theme.colorScheme.onSurface)),
+            backgroundColor: theme.colorScheme.surface,
             centerTitle: true,
             elevation: 0,
           ),

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
+import 'package:juvuit_flutter/core/widgets/theme_aware_logo.dart';
+import 'package:juvuit_flutter/core/services/theme_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:juvuit_flutter/features/likes_received/data/likes_repository.dart';
 import 'package:juvuit_flutter/features/likes_received/presentation/widgets/swipe_card.dart';
 import 'package:juvuit_flutter/features/matching/domain/match_helper.dart';
@@ -41,6 +44,8 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     if (_myId == null) return _notAuth();
     if (_isLoadingProfile) return _loading();
 
@@ -48,13 +53,26 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(52),
         child: AppBar(
-          backgroundColor: Colors.white,
+          backgroundColor: theme.colorScheme.surface,
           elevation: 0,
-          title: Image.asset(
-            'assets/images/homescreen/logo_witu.png',
-            height: 32,
-          ),
+          title: const HeaderLogo(),
           centerTitle: false,
+          actions: [
+            Consumer<ThemeProvider>(
+              builder: (context, themeProvider, child) {
+                return IconButton(
+                  onPressed: () {
+                    themeProvider.toggleTheme();
+                  },
+                  icon: Icon(
+                    themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(width: 8),
+          ],
         ),
       ),
       bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
@@ -198,21 +216,30 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.lock, size: 48, color: Colors.black54),
+                              Icon(
+                                Icons.lock, 
+                                size: 48, 
+                                color: theme.colorScheme.onBackground.withOpacity(0.5),
+                              ),
                               const SizedBox(height: 16),
-                              const Text(
+                              Text(
                                 'Descubrí quiénes te quieren conocer!',
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 18, 
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.onBackground,
+                                ),
                               ),
                               const SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: () {}, // futura navegación a premium
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.black,
+                                  backgroundColor: theme.colorScheme.primary,
+                                  foregroundColor: theme.colorScheme.onPrimary,
                                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                                 ),
-                                child: const Text('Activar Premium', style: TextStyle(color: Colors.white)),
+                                child: const Text('Activar Premium'),
                               ),
                             ],
                           ),
@@ -228,48 +255,65 @@ class _LikesReceivedScreenState extends State<LikesReceivedScreen> {
     );
   }
 
-  Widget _notAuth() => Scaffold(
-    appBar: PreferredSize(
-      preferredSize: const Size.fromHeight(52),
-      child: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: Image.asset(
-          'assets/images/homescreen/logo_witu.png',
-          height: 32,
+  Widget _notAuth() {
+    final theme = Theme.of(context);
+    
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(52),
+        child: AppBar(
+          backgroundColor: theme.colorScheme.surface,
+          elevation: 0,
+          title: const HeaderLogo(),
+          centerTitle: false,
         ),
-        centerTitle: false,
       ),
-    ),
-    bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
-    body: const Center(child: Text('Usuario no autenticado')),
-  );
+      bottomNavigationBar: const CustomBottomNavBar(currentIndex: 2),
+      body: Center(
+        child: Text(
+          'Usuario no autenticado',
+          style: TextStyle(color: theme.colorScheme.onBackground),
+        ),
+      ),
+    );
+  }
   Widget _loading() => const Center(child: CircularProgressIndicator());
   Widget _error()   => const Center(child: Text('Error al cargar'));
   Widget _empty() {
+    final theme = Theme.of(context);
+    
     return Container(
-      color: Colors.white.withOpacity(0.6),
+      color: theme.colorScheme.surface.withOpacity(0.6),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.lock, size: 48, color: Colors.black54),
+              Icon(
+                Icons.lock, 
+                size: 48, 
+                color: theme.colorScheme.onBackground.withOpacity(0.5),
+              ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Descubrí quiénes te quieren conocer!',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 18, 
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onBackground,
+                ),
               ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {}, // futura navegación a premium
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 ),
-                child: const Text('Activar Premium', style: TextStyle(color: Colors.white)),
+                child: const Text('Activar Premium'),
               ),
             ],
           ),
