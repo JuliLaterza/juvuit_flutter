@@ -16,6 +16,12 @@ class AppColors {
   static const Color darkWhite = Color.fromARGB(255, 228, 228, 228);
   static const Color darkmedium = Color.fromARGB(255, 32, 31, 34);
 
+  // Colores específicos para modo oscuro
+  static const Color darkCardBackground = Color(0xFF2A2A2A);
+  static const Color darkCardSurface = Color(0xFF1E1E1E);
+  static const Color darkTextPrimary = Color(0xFFFFFFFF);
+  static const Color darkTextSecondary = Color(0xFFB0B0B0);
+  static const Color darkBorder = Color(0xFF404040);
 
   // Amarillos
   static const Color yellow = Color(0xFFFFD600); // Primario

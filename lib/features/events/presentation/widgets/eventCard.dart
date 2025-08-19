@@ -242,8 +242,11 @@ class _EventCardState extends State<EventCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Card(
-      color: AppColors.white,
+      color: isDark ? AppColors.darkCardBackground : AppColors.white,
       elevation: 3,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Column(
@@ -264,21 +267,21 @@ class _EventCardState extends State<EventCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(widget.event.title,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.black)),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: isDark ? AppColors.darkTextPrimary : AppColors.black)),
                 const SizedBox(height: 4),
                 Text(widget.event.subtitle,
-                    style: const TextStyle(fontSize: 12, color: AppColors.black)),
+                    style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextPrimary : AppColors.black)),
                 const SizedBox(height: 4),
                 Row(
                   children: [
                     Text(
                       'Fecha: ${widget.event.date.day}/${widget.event.date.month}/${widget.event.date.year}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
+                      style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextSecondary : AppColors.darkGray),
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Asistentes: ${widget.event.attendeesCount}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.darkGray),
+                      style: TextStyle(fontSize: 12, color: isDark ? AppColors.darkTextSecondary : AppColors.darkGray),
                     ),
                   ],
                 ),
@@ -293,8 +296,8 @@ class _EventCardState extends State<EventCard> {
                 OutlinedButton(
                   onPressed: widget.onTap,
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.black,
-                    side: const BorderSide(color: AppColors.darkYellow),
+                    foregroundColor: isDark ? AppColors.darkTextPrimary : AppColors.black,
+                    side: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.darkYellow),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                   ),
@@ -321,8 +324,8 @@ class _EventCardState extends State<EventCard> {
                     }
                   },
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.black,
-                    side: const BorderSide(color: AppColors.darkYellow),
+                    foregroundColor: isDark ? AppColors.darkTextPrimary : AppColors.black,
+                    side: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.darkYellow),
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     textStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                   ),

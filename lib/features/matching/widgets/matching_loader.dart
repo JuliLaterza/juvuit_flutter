@@ -136,18 +136,20 @@ class _MatchingLoaderState extends State<MatchingLoader> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
+            const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(AppColors.yellow),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'Cargando eventos...',
               style: TextStyle(
-                color: AppColors.gray,
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? AppColors.darkTextSecondary 
+                    : AppColors.gray,
                 fontSize: 16,
               ),
             ),
@@ -157,6 +159,7 @@ class _MatchingLoaderState extends State<MatchingLoader> {
     }
 
     if (_events.isEmpty) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -164,7 +167,7 @@ class _MatchingLoaderState extends State<MatchingLoader> {
             Icon(
               widget.searchQuery.isNotEmpty ? Icons.search_off : Icons.event_busy,
               size: 64,
-              color: AppColors.gray,
+              color: isDark ? AppColors.darkTextSecondary : AppColors.gray,
             ),
             const SizedBox(height: 16),
             Text(
@@ -172,8 +175,8 @@ class _MatchingLoaderState extends State<MatchingLoader> {
                 ? 'No se encontraron eventos que coincidan con "${widget.searchQuery}"'
                 : 'Todavía no te anotaste a ningún evento',
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.gray,
+              style: TextStyle(
+                color: isDark ? AppColors.darkTextSecondary : AppColors.gray,
                 fontSize: 16,
               ),
             ),
@@ -193,14 +196,19 @@ class _MatchingLoaderState extends State<MatchingLoader> {
   }
 
   Widget _buildEventCard(BuildContext context, Event event) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: isDark ? AppColors.darkCardBackground : AppColors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: isDark 
+                ? Colors.black.withOpacity(0.3)
+                : Colors.black.withOpacity(0.05),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -221,11 +229,11 @@ class _MatchingLoaderState extends State<MatchingLoader> {
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      color: AppColors.darkWhite,
-                      child: const Icon(
+                      color: isDark ? AppColors.darkCardSurface : AppColors.darkWhite,
+                      child: Icon(
                         Icons.image_not_supported,
                         size: 24,
-                        color: AppColors.gray,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.gray,
                       ),
                     );
                   },
@@ -243,10 +251,10 @@ class _MatchingLoaderState extends State<MatchingLoader> {
                   // Título
                   Text(
                     event.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.black,
+                      color: isDark ? AppColors.darkTextPrimary : AppColors.black,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -263,14 +271,14 @@ class _MatchingLoaderState extends State<MatchingLoader> {
                           Icon(
                             Icons.calendar_today,
                             size: 14,
-                            color: AppColors.gray,
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.gray,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '${event.date.day}/${event.date.month}/${event.date.year}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.gray,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.gray,
                             ),
                           ),
                         ],
@@ -284,14 +292,14 @@ class _MatchingLoaderState extends State<MatchingLoader> {
                           Icon(
                             Icons.people,
                             size: 14,
-                            color: AppColors.gray,
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.gray,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '${event.attendees.length}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: AppColors.gray,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.gray,
                             ),
                           ),
                         ],
