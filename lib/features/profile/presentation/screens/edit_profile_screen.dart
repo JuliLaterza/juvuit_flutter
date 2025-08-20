@@ -133,17 +133,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _onSearchChanged(String query, int index) async {
     if (query.length < 2) {
-      setState(() => _suggestions[index] = []);
+      if (mounted) {
+        setState(() => _suggestions[index] = []);
+      }
       return;
     }
-    setState(() => _isSearching[index] = true);
+    if (mounted) {
+      setState(() => _isSearching[index] = true);
+    }
     try {
       final results = await SpotifyService.searchSongs(query);
-      setState(() => _suggestions[index] = results);
+      if (mounted) {
+        setState(() => _suggestions[index] = results);
+      }
     } catch (e) {
       print('Error buscando canciones: $e');
     }
-    setState(() => _isSearching[index] = false);
+    if (mounted) {
+      setState(() => _isSearching[index] = false);
+    }
   }
 
   void _selectSong(Map<String, String> song, int index) {
