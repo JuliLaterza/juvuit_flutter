@@ -3,13 +3,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:juvuit_flutter/features/testing/screens/debug_screen_spotify.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/utils/routes.dart';
 import 'core/services/theme_provider.dart';
 import 'core/utils/app_themes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Cargar variables de entorno
+  await dotenv.load(fileName: ".env");
+  
   await Firebase.initializeApp(); // Inicializa Firebase
   runApp(const MyApp());
 }

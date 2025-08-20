@@ -1,0 +1,14 @@
+# Spotify API Credentials
+SPOTIFY_CLIENT_ID=43019c4f95e94a1daf3372b6b14baf52
+SPOTIFY_CLIENT_SECRET=68dd1d3c4240455ea02f5aa88b6ece8b
+
+# Firebase Configuration (opcional - ya están en firebase_options.dart)
+# FIREBASE_API_KEY_ANDROID=AIzaSyATBhEy7uvuMRwA1kGJHkcxtd0C3yMrZ4w
+# FIREBASE_API_KEY_IOS=AIzaSyBFV21b19QaUO5mjI8Xma-cNHfRkUWPqYA
+
+# App Configuration
+APP_NAME=WIT Ü
+APP_VERSION=0.1.0
+
+# Environment
+ENVIRONMENT=development

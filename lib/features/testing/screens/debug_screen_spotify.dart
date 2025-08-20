@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:juvuit_flutter/core/config/env_config.dart';
 
 class DebugSpotifyScreen extends StatefulWidget {
   const DebugSpotifyScreen({super.key});
@@ -16,8 +17,9 @@ class _DebugSpotifyScreenState extends State<DebugSpotifyScreen> {
   String? _accessToken;
   bool _isLoading = false;
 
-  final String clientId = '43019c4f95e94a1daf3372b6b14baf52';
-  final String clientSecret = '68dd1d3c4240455ea02f5aa88b6ece8b';
+  // Obtener credenciales desde la configuración centralizada
+  String get clientId => EnvConfig.spotifyClientId;
+  String get clientSecret => EnvConfig.spotifyClientSecret;
 
   @override
   void initState() {
@@ -38,6 +40,11 @@ class _DebugSpotifyScreenState extends State<DebugSpotifyScreen> {
   }
 
   Future<void> _getAccessToken() async {
+    if (!EnvConfig.hasValidSpotifyCredentials) {
+      print('Error: Credenciales de Spotify no configuradas en .env');
+      return;
+    }
+
     final response = await http.post(
       Uri.parse('https://accounts.spotify.com/api/token'),
       headers: {

@@ -1,14 +1,24 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:juvuit_flutter/core/config/env_config.dart';
 
 class SpotifyService {
-  static const String _clientId = '43019c4f95e94a1daf3372b6b14baf52';
-  static const String _clientSecret = '68dd1d3c4240455ea02f5aa88b6ece8b';
   static String? _accessToken;
+
+  /// Obtiene las credenciales desde la configuración centralizada
+  static String get _clientId => EnvConfig.spotifyClientId;
+  static String get _clientSecret => EnvConfig.spotifyClientSecret;
+
+  /// Valida que las credenciales estén configuradas
+  static bool get _hasValidCredentials => EnvConfig.hasValidSpotifyCredentials;
 
   /// Obtiene un nuevo token (o reutiliza el existente si ya existe)
   static Future<void> _ensureAccessToken() async {
     if (_accessToken != null) return;
+
+    if (!_hasValidCredentials) {
+      throw Exception('Credenciales de Spotify no configuradas. Verifica tu archivo .env');
+    }
 
     final response = await http.post(
       Uri.parse('https://accounts.spotify.com/api/token'),
