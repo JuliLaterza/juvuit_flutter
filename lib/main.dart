@@ -6,15 +6,20 @@ import 'package:provider/provider.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'core/utils/routes.dart';
 import 'core/services/theme_provider.dart';
+import 'core/services/notification_service.dart';
 import 'core/utils/app_themes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Cargar variables de entorno
+  // Cargar variables de entorno 
   await dotenv.load(fileName: ".env");
   
   await Firebase.initializeApp(); // Inicializa Firebase
+  
+  // Inicializar servicio de notificaciones
+  await NotificationService().initialize();
+  
   runApp(const MyApp());
 }
 

@@ -5,7 +5,10 @@ import 'package:juvuit_flutter/core/widgets/custom_bottom_nav_bar.dart';
 import 'package:juvuit_flutter/core/utils/routes.dart';
 import 'package:juvuit_flutter/core/widgets/theme_aware_logo.dart';
 import 'package:juvuit_flutter/core/services/theme_provider.dart';
+import 'package:juvuit_flutter/core/services/notification_service.dart';
+import 'package:juvuit_flutter/core/services/push_notification_service.dart';
 import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
+import 'debug_notifications.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -29,6 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _pageController = PageController(viewportFraction: 0.85);
     _loadProfile();
+    _loadNotificationSettings();
   }
 
   @override
@@ -47,6 +51,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       _userProfile = profile;
       _isLoading = false;
+    });
+  }
+
+  Future<void> _loadNotificationSettings() async {
+    final enabled = await _notificationService.areNotificationsEnabled();
+    setState(() {
+      _notificationsEnabled = enabled;
     });
   }
 
@@ -293,6 +304,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
   bool _notificationsEnabled = true;
+  final NotificationService _notificationService = NotificationService();
+  final PushNotificationService _pushNotificationService = PushNotificationService();
 
   @override
   Widget build(BuildContext context) {
@@ -599,14 +612,139 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Switch(
                               value: _notificationsEnabled,
                               activeColor: theme.colorScheme.primary,
-                              onChanged: (value) {
+                              onChanged: (value) async {
                                 setState(() {
                                   _notificationsEnabled = value;
                                 });
+                                
+                                try {
+                                  await _notificationService.setNotificationsEnabled(value);
+                                  
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          value 
+                                            ? 'Notificaciones habilitadas' 
+                                            : 'Notificaciones deshabilitadas'
+                                        ),
+                                        backgroundColor: value ? Colors.green : Colors.orange,
+                                      ),
+                                    );
+                                  }
+                                } catch (e) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error al cambiar configuración: ${e.toString()}'),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
                               },
                             ),
                           ],
                         ),
+                        if (_notificationsEnabled) ...[
+                          const SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    try {
+                                      await _notificationService.sendTestNotification();
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Notificación local enviada'),
+                                            backgroundColor: Colors.green,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Error al enviar notificación: ${e.toString()}'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  icon: const Icon(Icons.notifications, size: 16),
+                                  label: const Text('Probar local'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.primary,
+                                    foregroundColor: theme.colorScheme.onPrimary,
+                                    minimumSize: const Size(double.infinity, 36),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: () async {
+                                    try {
+                                      final success = await _pushNotificationService.sendTestNotification();
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              success 
+                                                ? 'Notificación push enviada desde Firebase' 
+                                                : 'Error al enviar notificación push'
+                                            ),
+                                            backgroundColor: success ? Colors.green : Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Error: ${e.toString()}'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  icon: const Icon(Icons.cloud_upload, size: 16),
+                                  label: const Text('Probar push'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: theme.colorScheme.secondary,
+                                    foregroundColor: theme.colorScheme.onSecondary,
+                                    minimumSize: const Size(double.infinity, 36),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              await NotificationDebugger.debugNotifications();
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Diagnóstico ejecutado - Revisa los logs'),
+                                    backgroundColor: Colors.blue,
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.bug_report, size: 16),
+                            label: const Text('Diagnosticar Notificaciones'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange,
+                              foregroundColor: Colors.white,
+                              minimumSize: const Size(double.infinity, 36),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

@@ -94,7 +94,6 @@ def send_test_notification(req: https_fn.Request) -> https_fn.Response:
         # Obtener datos del request
         request_data = req.get_json()
         if not request_data:
-            logger.error("No se recibieron datos en el request")
             return https_fn.Response(
                 "Datos requeridos: userId, title, body",
                 status=400
@@ -104,12 +103,7 @@ def send_test_notification(req: https_fn.Request) -> https_fn.Response:
         title = request_data.get("title", "Notificación de prueba")
         body = request_data.get("body", "Esta es una notificación de prueba")
         
-        logger.info(f"Enviando notificación de prueba para usuario: {user_id}")
-        logger.info(f"Título: {title}")
-        logger.info(f"Cuerpo: {body}")
-        
         if not user_id:
-            logger.error("userId no proporcionado")
             return https_fn.Response(
                 "userId es requerido",
                 status=400
@@ -120,9 +114,8 @@ def send_test_notification(req: https_fn.Request) -> https_fn.Response:
         user_doc = db.collection("users").document(user_id).get()
         
         if not user_doc.exists:
-            logger.warning(f"Usuario {user_id} no encontrado en Firestore")
             return https_fn.Response(
-                f"Usuario {user_id} no encontrado en Firestore. Asegúrate de que el usuario esté autenticado y tenga un perfil creado.",
+                "Usuario no encontrado",
                 status=404
             )
         
@@ -130,20 +123,15 @@ def send_test_notification(req: https_fn.Request) -> https_fn.Response:
         fcm_token = user_data.get("fcmToken")
         notifications_enabled = user_data.get("notificationsEnabled", True)
         
-        logger.info(f"Token FCM encontrado: {fcm_token is not None}")
-        logger.info(f"Notificaciones habilitadas: {notifications_enabled}")
-        
         if not fcm_token:
-            logger.error(f"Usuario {user_id} no tiene token FCM registrado")
             return https_fn.Response(
-                f"Usuario {user_id} no tiene token FCM registrado. Activa las notificaciones en la app.",
+                "Usuario no tiene token FCM registrado",
                 status=400
             )
         
         if not notifications_enabled:
-            logger.warning(f"Usuario {user_id} tiene las notificaciones deshabilitadas")
             return https_fn.Response(
-                f"Usuario {user_id} tiene las notificaciones deshabilitadas. Habilita las notificaciones en la app.",
+                "Usuario tiene las notificaciones deshabilitadas",
                 status=400
             )
         
@@ -157,25 +145,22 @@ def send_test_notification(req: https_fn.Request) -> https_fn.Response:
             data={
                 "type": "test_notification",
                 "userId": user_id,
-                "timestamp": str(int(time.time())),
-                "title": title,
-                "body": body
+                "timestamp": str(int(time.time()))
             }
         )
         
-        logger.info(f"Enviando mensaje FCM a token: {fcm_token[:20]}...")
         response = messaging.send(message)
-        logger.info(f"✅ Notificación enviada exitosamente: {response}")
+        logger.info(f"Notificación enviada exitosamente: {response}")
         
         return https_fn.Response(
-            f"✅ Notificación enviada exitosamente: {response}",
+            f"Notificación enviada exitosamente: {response}",
             status=200
         )
         
     except Exception as e:
-        logger.error(f"❌ Error enviando notificación: {str(e)}")
+        logger.error(f"Error enviando notificación: {str(e)}")
         return https_fn.Response(
-            f"❌ Error enviando notificación: {str(e)}",
+            f"Error enviando notificación: {str(e)}",
             status=500
         )
 
@@ -188,7 +173,6 @@ def send_match_notification(req: https_fn.Request) -> https_fn.Response:
         # Obtener datos del request
         request_data = req.get_json()
         if not request_data:
-            logger.error("No se recibieron datos en el request")
             return https_fn.Response(
                 "Datos requeridos: userId, matchUserId, eventName",
                 status=400
@@ -198,12 +182,7 @@ def send_match_notification(req: https_fn.Request) -> https_fn.Response:
         match_user_id = request_data.get("matchUserId")
         event_name = request_data.get("eventName", "un evento")
         
-        logger.info(f"Enviando notificación de match para usuario: {user_id}")
-        logger.info(f"Match con usuario: {match_user_id}")
-        logger.info(f"Evento: {event_name}")
-        
         if not user_id or not match_user_id:
-            logger.error("userId o matchUserId no proporcionados")
             return https_fn.Response(
                 "userId y matchUserId son requeridos",
                 status=400
@@ -214,9 +193,8 @@ def send_match_notification(req: https_fn.Request) -> https_fn.Response:
         user_doc = db.collection("users").document(user_id).get()
         
         if not user_doc.exists:
-            logger.warning(f"Usuario {user_id} no encontrado en Firestore")
             return https_fn.Response(
-                f"Usuario {user_id} no encontrado en Firestore. Asegúrate de que el usuario esté autenticado y tenga un perfil creado.",
+                "Usuario no encontrado",
                 status=404
             )
         
@@ -224,20 +202,15 @@ def send_match_notification(req: https_fn.Request) -> https_fn.Response:
         fcm_token = user_data.get("fcmToken")
         notifications_enabled = user_data.get("notificationsEnabled", True)
         
-        logger.info(f"Token FCM encontrado: {fcm_token is not None}")
-        logger.info(f"Notificaciones habilitadas: {notifications_enabled}")
-        
         if not fcm_token:
-            logger.error(f"Usuario {user_id} no tiene token FCM registrado")
             return https_fn.Response(
-                f"Usuario {user_id} no tiene token FCM registrado. Activa las notificaciones en la app.",
+                "Usuario no tiene token FCM registrado",
                 status=400
             )
         
         if not notifications_enabled:
-            logger.warning(f"Usuario {user_id} tiene las notificaciones deshabilitadas")
             return https_fn.Response(
-                f"Usuario {user_id} tiene las notificaciones deshabilitadas. Habilita las notificaciones en la app.",
+                "Usuario tiene las notificaciones deshabilitadas",
                 status=400
             )
         
@@ -264,18 +237,17 @@ def send_match_notification(req: https_fn.Request) -> https_fn.Response:
             }
         )
         
-        logger.info(f"Enviando mensaje FCM de match a token: {fcm_token[:20]}...")
         response = messaging.send(message)
-        logger.info(f"✅ Notificación de match enviada exitosamente: {response}")
+        logger.info(f"Notificación de match enviada exitosamente: {response}")
         
         return https_fn.Response(
-            f"✅ Notificación de match enviada exitosamente: {response}",
+            f"Notificación de match enviada exitosamente: {response}",
             status=200
         )
         
     except Exception as e:
-        logger.error(f"❌ Error enviando notificación de match: {str(e)}")
+        logger.error(f"Error enviando notificación de match: {str(e)}")
         return https_fn.Response(
-            f"❌ Error enviando notificación de match: {str(e)}",
+            f"Error enviando notificación de match: {str(e)}",
             status=500
         )
