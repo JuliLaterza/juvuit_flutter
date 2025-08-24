@@ -49,6 +49,23 @@ class NotificationService {
       initializationSettings,
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
+
+    // Configurar canales de notificación para Android
+    await _createNotificationChannels();
+  }
+
+  // Crear canales de notificación para Android
+  Future<void> _createNotificationChannels() async {
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'high_importance_channel', // id
+      'High Importance Notifications', // title
+      description: 'This channel is used for important notifications.', // description
+      importance: Importance.high,
+    );
+
+    await _localNotifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
   }
 
   // Inicializar Firebase Messaging
@@ -66,25 +83,44 @@ class NotificationService {
 
     print('User granted permission: ${settings.authorizationStatus}');
 
-    // Obtener token FCM
-    String? token = await _firebaseMessaging.getToken();
-    if (token != null) {
-      await _saveFCMToken(token);
-      await _updateFCMTokenInFirebase(token);
-    }
-
-    // Escuchar cambios en el token
-    _firebaseMessaging.onTokenRefresh.listen((token) async {
-      await _saveFCMToken(token);
-      await _updateFCMTokenInFirebase(token);
-    });
-
     // Configuración específica para iOS
     await _firebaseMessaging.setForegroundNotificationPresentationOptions(
       alert: true,
       badge: true,
       sound: true,
     );
+
+    // Esperar un poco para que el token APNS esté disponible en iOS
+    await Future.delayed(Duration(seconds: 2));
+
+    // Obtener token FCM con manejo de errores
+    try {
+      String? token = await _firebaseMessaging.getToken();
+      if (token != null) {
+        print('FCM Token obtained: ${token.substring(0, 20)}...');
+        await _saveFCMToken(token);
+        await _updateFCMTokenInFirebase(token);
+      } else {
+        print('FCM Token is null, will retry later');
+        // Programar un reintento después de un tiempo
+        Future.delayed(Duration(seconds: 5), () async {
+          await _retryGetToken();
+        });
+      }
+    } catch (e) {
+      print('Error getting FCM token: $e');
+      // Programar un reintento después de un tiempo
+      Future.delayed(Duration(seconds: 5), () async {
+        await _retryGetToken();
+      });
+    }
+
+    // Escuchar cambios en el token
+    _firebaseMessaging.onTokenRefresh.listen((token) async {
+      print('FCM Token refreshed: ${token.substring(0, 20)}...');
+      await _saveFCMToken(token);
+      await _updateFCMTokenInFirebase(token);
+    });
   }
 
   // Configurar handlers de notificaciones
@@ -186,11 +222,27 @@ class NotificationService {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      // Obtener y guardar token FCM
-      String? token = await _firebaseMessaging.getToken();
-      if (token != null) {
-        await _saveFCMToken(token);
-        await _updateFCMTokenInFirebase(token);
+      // Esperar un poco para que el token APNS esté disponible en iOS
+      await Future.delayed(Duration(seconds: 2));
+      
+      // Obtener y guardar token FCM con manejo de errores
+      try {
+        String? token = await _firebaseMessaging.getToken();
+        if (token != null) {
+          print('FCM Token obtained in enable: ${token.substring(0, 20)}...');
+          await _saveFCMToken(token);
+          await _updateFCMTokenInFirebase(token);
+        } else {
+          print('FCM Token is null in enable, will retry later');
+          Future.delayed(Duration(seconds: 5), () async {
+            await _retryGetToken();
+          });
+        }
+      } catch (e) {
+        print('Error getting FCM token in enable: $e');
+        Future.delayed(Duration(seconds: 5), () async {
+          await _retryGetToken();
+        });
       }
     }
   }
@@ -279,5 +331,21 @@ class NotificationService {
   // Obtener estado de permisos
   Future<AuthorizationStatus> getPermissionStatus() async {
     return await _firebaseMessaging.getNotificationSettings().then((settings) => settings.authorizationStatus);
+  }
+
+  // Reintentar obtener token FCM
+  Future<void> _retryGetToken() async {
+    try {
+      String? token = await _firebaseMessaging.getToken();
+      if (token != null) {
+        print('FCM Token obtained on retry: ${token.substring(0, 20)}...');
+        await _saveFCMToken(token);
+        await _updateFCMTokenInFirebase(token);
+      } else {
+        print('FCM Token still null on retry');
+      }
+    } catch (e) {
+      print('Error getting FCM token on retry: $e');
+    }
   }
 }

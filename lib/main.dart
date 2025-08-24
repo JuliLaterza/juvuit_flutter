@@ -12,7 +12,7 @@ import 'core/utils/app_themes.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Cargar variables de entorno
+  // Cargar variables de entorno 
   await dotenv.load(fileName: ".env");
   
   await Firebase.initializeApp(); // Inicializa Firebase
