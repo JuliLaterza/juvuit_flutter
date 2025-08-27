@@ -171,19 +171,28 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
   }
 
   Future<bool> _showSongsDrinkModal() async {
+    final theme = Theme.of(context);
+    
     return await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: theme.colorScheme.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
           title: Row(
             children: [
-              Icon(Icons.music_note, color: AppColors.darkmedium),
-              SizedBox(width: 8),
-              Text('¡Completá tu perfil!'),
+              Icon(Icons.music_note, color: theme.colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                '¡Completá tu perfil!',
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           content: Column(
@@ -192,22 +201,31 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
             children: [
               Text(
                 'Para asistir a eventos de fiesta, necesitás:',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(Icons.music_note, size: 16, color: Colors.grey[600]),
-                  SizedBox(width: 8),
-                  Text('Tus 3 canciones favoritas'),
+                  Icon(Icons.music_note, size: 16, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Tus 3 canciones favoritas',
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
                 ],
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.local_bar, size: 16, color: Colors.grey[600]),
-                  SizedBox(width: 8),
-                  Text('Tu trago preferido'),
+                  Icon(Icons.local_bar, size: 16, color: theme.colorScheme.primary),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Tu trago preferido',
+                    style: TextStyle(color: theme.colorScheme.onSurface),
+                  ),
                 ],
               ),
             ],
@@ -215,12 +233,15 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: Text('Cancelar', style: TextStyle(color: Colors.grey[600])),
+              child: Text(
+                'Cancelar', 
+                style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.darkmedium,
-                foregroundColor: Colors.white,
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: theme.colorScheme.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -230,7 +251,10 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
                 // Navegar a la pantalla de completar perfil
                 Navigator.pushNamed(context, AppRoutes.completeSongsDrink);
               },
-              child: Text('Completar perfil'),
+              child: const Text(
+                'Completar perfil',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
           ],
         );
@@ -269,14 +293,22 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
   @override
   Widget build(BuildContext context) {
     final event = widget.event;
+    final theme = Theme.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(event.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: AppColors.white,
-        foregroundColor: AppColors.black,
+        title: Text(
+          event.title, 
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: theme.colorScheme.onSurface,
+          )
+        ),
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.onSurface,
+        elevation: 0,
       ),
-      backgroundColor: AppColors.white,
+      backgroundColor: theme.colorScheme.background,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -288,22 +320,88 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(event.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-                    Text(event.subtitle, style: const TextStyle(color: AppColors.gray)),
-                    Text('📅 ${DateFormat('dd/MM/yyyy').format(event.date)}'),
-                    Text('🧑‍🤝‍🧑 ${event.attendeesCount} personas asistirán'),
-                    const Text('📍 Costanera Norte'),
-                    const Text('💰 Costo: 170000 - 250000'),
+                    Text(
+                      event.title, 
+                      style: TextStyle(
+                        fontSize: 22, 
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      )
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      event.subtitle, 
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        fontSize: 16,
+                      )
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(Icons.calendar_today, size: 16, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          DateFormat('dd/MM/yyyy').format(event.date),
+                          style: TextStyle(color: theme.colorScheme.onSurface),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.people, size: 16, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${event.attendeesCount} personas asistirán',
+                          style: TextStyle(color: theme.colorScheme.onSurface),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on, size: 16, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Costanera Norte',
+                          style: TextStyle(color: theme.colorScheme.onSurface),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(Icons.attach_money, size: 16, color: theme.colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Costo: 170000 - 250000',
+                          style: TextStyle(color: theme.colorScheme.onSurface),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 16),
-                    Text(event.description),
+                    Text(
+                      event.description,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
+                        fontSize: 16,
+                        height: 1.5,
+                      )
+                    ),
                     const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () => _openExternalMap(_appleLocation.latitude, _appleLocation.longitude),
                       child: AbsorbPointer(
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: SizedBox(
+                          child: Container(
                             height: 200,
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: theme.colorScheme.outline.withOpacity(0.3),
+                              ),
+                            ),
                             child: _buildPlatformMap(),
                           ),
                         ),
@@ -316,12 +414,19 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
                           child: ElevatedButton(
                             onPressed: _handleAttendOrLeave,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: isAttending ? Colors.redAccent : AppColors.yellow,
-                              foregroundColor: AppColors.black,
+                              backgroundColor: isAttending 
+                                  ? Colors.redAccent 
+                                  : theme.colorScheme.primary,
+                              foregroundColor: isAttending 
+                                  ? Colors.white 
+                                  : theme.colorScheme.onPrimary,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: Text(isAttending ? 'Dejar de asistir' : 'Asistir'),
+                            child: Text(
+                              isAttending ? 'Dejar de asistir' : 'Asistir',
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -331,12 +436,15 @@ class _EventInfoScreenState extends State<EventInfoScreen> {
                               print("Compartir evento");
                             },
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: AppColors.black,
-                              side: const BorderSide(color: AppColors.darkYellow),
+                              foregroundColor: theme.colorScheme.primary,
+                              side: BorderSide(color: theme.colorScheme.primary),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                            child: const Text('Compartir'),
+                            child: const Text(
+                              'Compartir',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
                           ),
                         ),
                       ],
