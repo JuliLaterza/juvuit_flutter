@@ -111,21 +111,23 @@ class ProfileCard extends StatelessWidget {
                       Text(profile.sign ?? '-', style: const TextStyle(fontSize: 16))
                     ]),
                     const SizedBox(height: 16),
-                    Text('Canciones favoritas',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground)),
-                    const SizedBox(height: 10),
-                    for (final song in profile.topSongs)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(song['imageUrl'], width: 46, height: 46, fit: BoxFit.cover),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(child: Text('${song['title']} - ${song['artist']}')),
-                        ]),
-                      ),
+                    if (profile.topSongs.isNotEmpty) ...[
+                      Text('Canciones favoritas',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: theme.colorScheme.onBackground)),
+                      const SizedBox(height: 10),
+                      for (final song in profile.topSongs)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(song['imageUrl'], width: 46, height: 46, fit: BoxFit.cover),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text('${song['title']} - ${song['artist']}')),
+                          ]),
+                        ),
+                    ],
                   ],
                 ),
               )

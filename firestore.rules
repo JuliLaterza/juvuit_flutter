@@ -38,6 +38,16 @@ service cloud.firestore {
       allow read, create, update, delete: if request.auth != null;
     }
 
+    // ✅ Reportes (nuevo)
+    match /reports/{reportId} {
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.reporterUserId;
+      allow read: if request.auth != null && 
+        (request.auth.uid == resource.data.reporterUserId || 
+         request.auth.uid == resource.data.reportedUserId);
+      allow update, delete: if false; // Solo admins pueden modificar/eliminar
+    }
+
     // Eventos
     match /events/{eventId} {
       allow read, update, delete: if request.auth != null;

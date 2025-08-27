@@ -57,11 +57,17 @@ class PublicProfileScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Eliminar'),
+              child: const Text(
+                'Eliminar',
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         ),
@@ -80,11 +86,17 @@ class PublicProfileScreen extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancelar'),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('Bloquear'),
+              child: const Text(
+                'Bloquear',
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         ),
@@ -94,33 +106,279 @@ class PublicProfileScreen extends StatelessWidget {
       }
     }
 
-    void _showReportDialog() {
-      showDialog(
+
+
+    void _showSecurityMenu() {
+      final theme = Theme.of(context);
+      
+      showModalBottomSheet(
         context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Reportar usuario'),
-          content: const Text('¿Por qué quieres reportar a este usuario?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Usuario reportado (demo)')),
-                );
-              },
-              child: const Text('Reportar'),
-            ),
-          ],
+        backgroundColor: theme.colorScheme.surface,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) => Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Indicador de arrastre
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Título
+              Text(
+                'Opciones de seguridad',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Opción Eliminar match
+              ListTile(
+                leading: Icon(
+                  Icons.person_off,
+                  color: Colors.red,
+                  size: 24,
+                ),
+                title: Text(
+                  'Eliminar match',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                subtitle: Text(
+                  'Eliminar la conexión con este usuario',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmAndDeleteMatch();
+                },
+              ),
+              // Opción Reportar
+              ListTile(
+                leading: Icon(
+                  Icons.report,
+                  color: Colors.orange,
+                  size: 24,
+                ),
+                title: Text(
+                  'Reportar perfil',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                subtitle: Text(
+                  'Reportar contenido inapropiado',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Mostrar diálogo de reporte directamente
+                  final theme = Theme.of(context);
+                  String selectedReason = 'Contenido inapropiado';
+                  
+                  final List<String> reportReasons = [
+                    'Contenido inapropiado',
+                    'Perfil falso o spam',
+                    'Acoso o comportamiento abusivo',
+                    'Información personal falsa',
+                    'Contenido ofensivo',
+                    'Menor de edad',
+                    'Otro motivo',
+                  ];
+
+                  showDialog(
+                    context: context,
+                    builder: (context) => StatefulBuilder(
+                      builder: (context, setState) => AlertDialog(
+                        title: Text(
+                          'Reportar perfil',
+                          style: TextStyle(color: theme.colorScheme.onSurface),
+                        ),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Selecciona el motivo del reporte:',
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Container(
+                              width: double.infinity,
+                              child: DropdownButtonFormField<String>(
+                                value: selectedReason,
+                                isExpanded: true,
+                                decoration: InputDecoration(
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(color: theme.colorScheme.primary),
+                                  ),
+                                  hintText: 'Seleccionar motivo',
+                                ),
+                                dropdownColor: theme.colorScheme.surface,
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface,
+                                  fontSize: 14,
+                                ),
+                                items: reportReasons.map((String reason) {
+                                  return DropdownMenuItem<String>(
+                                    value: reason,
+                                    child: Text(
+                                      reason,
+                                      style: TextStyle(
+                                        color: theme.colorScheme.onSurface,
+                                        fontSize: 14,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  );
+                                }).toList(),
+                                onChanged: (String? newValue) {
+                                  setState(() {
+                                    selectedReason = newValue!;
+                                  });
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Tu reporte nos ayuda a mantener la comunidad segura.',
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              'Cancelar',
+                              style: TextStyle(color: theme.colorScheme.onSurface),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              try {
+                                // Aquí podrías guardar el reporte en Firebase
+                                // await _saveReport(profile.userId, selectedReason);
+                                
+                                Navigator.pop(context);
+                                
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Perfil reportado por: $selectedReason'),
+                                    backgroundColor: Colors.orange,
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                              } catch (e) {
+                                Navigator.pop(context);
+                                
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error al reportar: ${e.toString()}'),
+                                    backgroundColor: Colors.red,
+                                    duration: const Duration(seconds: 3),
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text(
+                              'Reportar',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // Opción Bloquear
+              ListTile(
+                leading: Icon(
+                  Icons.block,
+                  color: Colors.red,
+                  size: 24,
+                ),
+                title: Text(
+                  'Bloquear usuario',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                ),
+                subtitle: Text(
+                  'Dejar de ver este perfil',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  ),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmAndBlockUser();
+                },
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       );
     }
 
+
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Perfil")),
+      appBar: AppBar(
+        title: const Text("Perfil"),
+        actions: [
+          // Botón de seguridad
+          IconButton(
+            icon: Icon(
+              Icons.security,
+              color: Theme.of(context).colorScheme.onSurface,
+              size: 24,
+            ),
+            onPressed: () => _showSecurityMenu(),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -134,51 +392,7 @@ class PublicProfileScreen extends StatelessWidget {
                 onLike: () {},
                 showActions: false,
               ),
-              const Divider(),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        minimumSize: const Size.fromHeight(48),
-                      ),
-                      icon: const Icon(Icons.person_off),
-                      label: const Text('Eliminar match'),
-                      onPressed: () async {
-                        await _confirmAndDeleteMatch();
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        minimumSize: const Size.fromHeight(48),
-                      ),
-                      icon: const Icon(Icons.flag_outlined),
-                      label: const Text('Reportar usuario'),
-                      onPressed: () {
-                        _showReportDialog();
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                    FilledButton.icon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.grey.shade700,
-                        minimumSize: const Size.fromHeight(48),
-                      ),
-                      icon: const Icon(Icons.block),
-                      label: const Text('Bloquear usuario'),
-                      onPressed: () async {
-                        await _confirmAndBlockUser();
-                      },
-                    ),
-                    
-                    const SizedBox(height: 30),
-                  ],
-                ),
-              ),
+
             ],
           ),
         ),
