@@ -1,123 +1,98 @@
-# Configuración de Google y Apple Sign-In
+# Configuración de Google y Apple Sign In para iOS
 
-## ✅ Lo que ya está implementado
+## ✅ Lo que ya está configurado
 
-1. **Dependencias agregadas** al `pubspec.yaml`:
-   - `google_sign_in: ^6.2.1`
-   - `sign_in_with_apple: ^6.0.0`
+- ✅ Dependencias instaladas (`google_sign_in` y `sign_in_with_apple`)
+- ✅ Servicio de autenticación implementado
+- ✅ Botones de login conectados en la UI
+- ✅ URL schemes configurados en Info.plist
+- ✅ GoogleService-Info.plist configurado
 
-2. **Servicio de autenticación** creado en `lib/core/services/auth_service.dart` con métodos para:
-   - Login con email/password
-   - Registro con email/password
-   - Login con Google
-   - Login con Apple
-   - Cerrar sesión
+## 🔧 Configuraciones pendientes
 
-3. **Pantallas actualizadas**:
-   - `login_screen.dart` - Botones de Google y Apple funcionales
-   - `register_screen.dart` - Botones de Google y Apple funcionales
+### 1. Firebase Console
 
-## 🔧 Configuración necesaria
+1. Ve a [Firebase Console](https://console.firebase.google.com/)
+2. Selecciona tu proyecto `juvuit-flutter`
+3. Ve a **Authentication** > **Sign-in method**
+4. Habilita **Google** como proveedor:
+   - Agrega tu email como usuario autorizado
+   - Guarda los cambios
+5. Habilita **Apple** como proveedor:
+   - Agrega tu email como usuario autorizado
+   - Guarda los cambios
 
-### Para Google Sign-In (Android)
+### 2. Apple Developer Console
 
-1. **Obtener SHA-1 fingerprint** (ya tienes el tuyo):
-   ```
-   SHA1: A2:36:66:CE:96:95:21:10:97:FB:29:DA:A5:B6:3C:44:9F:EE:BA:34
-   ```
+1. Ve a [Apple Developer Console](https://developer.apple.com/)
+2. En **Certificates, Identifiers & Profiles**
+3. Selecciona tu **App ID** (`com.example.juvuitFlutter`)
+4. Habilita **Sign In with Apple**
+5. Guarda los cambios
 
-2. **Ir a Firebase Console**:
-   - Ve a https://console.firebase.google.com
-   - Selecciona tu proyecto `juvuit-flutter`
-   - Ve a Project Settings (⚙️)
-   - En la pestaña "General", busca la sección "Your apps"
-   - Selecciona tu app de Android
-   - Haz clic en "Add fingerprint"
-   - Agrega el SHA-1: `A2:36:66:CE:96:95:21:10:97:FB:29:DA:A5:B6:3C:44:9F:EE:BA:34`
+### 3. Crear Service ID para Apple Sign In
 
-3. **Descargar el archivo google-services.json actualizado** y reemplazar el existente en `android/app/google-services.json`
+1. En Apple Developer Console, ve a **Identifiers**
+2. Crea un nuevo **Service ID**
+3. Bundle ID: `com.example.juvuitFlutter`
+4. Habilita **Sign In with Apple**
+5. Configura los dominios de redirección:
+   - `https://juvuit-flutter.firebaseapp.com/__/auth/handler`
 
-### Para Google Sign-In (iOS)
+### 4. Configurar Xcode (si es necesario)
 
-1. **En Firebase Console**:
-   - Ve a Project Settings
-   - En la pestaña "General", selecciona tu app de iOS
-   - Copia el "Bundle ID": `com.example.juvuitFlutter`
-
-2. **En Xcode**:
-   - Abre `ios/Runner.xcworkspace`
-   - Selecciona el target "Runner"
-   - Ve a "Signing & Capabilities"
-   - Asegúrate de que el Bundle Identifier coincida con el de Firebase
-
-### Para Apple Sign-In (iOS)
-
-1. **En Xcode**:
-   - Abre `ios/Runner.xcworkspace`
-   - Selecciona el target "Runner"
-   - Ve a "Signing & Capabilities"
-   - Haz clic en "+ Capability"
-   - Agrega "Sign in with Apple"
-
-2. **En Firebase Console**:
-   - Ve a Authentication > Sign-in method
-   - Habilita "Apple"
-   - Configura el Service ID (opcional)
+1. Abre el proyecto en Xcode: `ios/Runner.xcworkspace`
+2. Selecciona el target **Runner**
+3. Ve a **Signing & Capabilities**
+4. Asegúrate de que **Sign In with Apple** esté habilitado
+5. Verifica que el **Bundle Identifier** sea `com.example.juvuitFlutter`
 
 ## 🧪 Probar la implementación
 
-1. **Ejecutar la app**:
-   ```bash
-   flutter run
-   ```
+### Para Google Sign In:
+1. Ejecuta la app en un dispositivo iOS físico
+2. Ve a la pantalla de login
+3. Toca "Continuar con Google"
+4. Debería abrirse el selector de cuentas de Google
 
-2. **Probar en Android**:
-   - Los botones de Google deberían abrir el selector de cuentas de Google
-   - El botón de Apple solo funcionará en dispositivos iOS
+### Para Apple Sign In:
+1. Ejecuta la app en un dispositivo iOS físico
+2. Ve a la pantalla de login
+3. Toca "Continuar con Apple"
+4. Debería aparecer el diálogo de Apple Sign In
 
-3. **Probar en iOS**:
-   - Los botones de Google y Apple deberían funcionar correctamente
+## 🚨 Solución de problemas comunes
 
-## 🔍 Solución de problemas comunes
+### Error: "Google Sign-In no está disponible"
+- Verifica que estés probando en un dispositivo físico (no simulador)
+- Asegúrate de que Google Sign In esté habilitado en Firebase Console
 
-### Error: "Google Sign In not available"
-- Verifica que el SHA-1 esté correctamente configurado en Firebase
-- Asegúrate de que el archivo `google-services.json` esté actualizado
+### Error: "Apple Sign In no está disponible"
+- Verifica que estés probando en un dispositivo físico con iOS 13+
+- Asegúrate de que Sign In with Apple esté habilitado en Apple Developer Console
 
-### Error: "Apple Sign In not available"
-- Verifica que la capacidad "Sign in with Apple" esté agregada en Xcode
-- Solo funciona en dispositivos iOS reales (no en simulador)
+### Error de URL schemes
+- Verifica que el `REVERSED_CLIENT_ID` en Info.plist coincida con el de GoogleService-Info.plist
+- Asegúrate de que el Bundle ID sea consistente en todos los lugares
 
-### Error: "Network error"
-- Verifica tu conexión a internet
-- Asegúrate de que las APIs de Google estén habilitadas en Google Cloud Console
+## 📱 Datos que necesitas para completar la configuración
 
-## 📱 Flujo de usuario
+1. **Apple Developer Account** (ya tienes)
+2. **Bundle ID de tu app** (actualmente `com.example.juvuitFlutter`)
+3. **Firebase Project ID** (ya configurado: `juvuit-flutter`)
+4. **Google OAuth Client ID** (ya configurado en GoogleService-Info.plist)
 
-1. **Usuario hace clic en "Continuar con Google"**:
-   - Se abre el selector de cuentas de Google
-   - Usuario selecciona su cuenta
-   - Se autentica con Firebase
-   - Se redirige a EventsScreen
+## 🔄 Próximos pasos
 
-2. **Usuario hace clic en "Continuar con Apple"**:
-   - Se abre el diálogo de Apple Sign In
-   - Usuario se autentica con Face ID/Touch ID
-   - Se autentica con Firebase
-   - Se redirige a EventsScreen
+Una vez que hayas completado las configuraciones de Firebase Console y Apple Developer Console:
 
-## 🎯 Próximos pasos
+1. Prueba la funcionalidad en un dispositivo físico
+2. Verifica que los usuarios se creen correctamente en Firebase Auth
+3. Asegúrate de que los datos del usuario se guarden en Firestore después del login
 
-1. **Configurar el SHA-1 en Firebase Console**
-2. **Agregar la capacidad de Apple Sign In en Xcode**
-3. **Probar en dispositivos reales**
-4. **Manejar casos de error específicos**
-5. **Implementar logout funcional**
+## 📞 Soporte
 
-## 📝 Notas importantes
-
-- **Google Sign-In**: Funciona en Android e iOS
-- **Apple Sign-In**: Solo funciona en iOS (requerido por Apple)
-- **Firebase Auth**: Ya está configurado y funcionando
-- **Navegación**: Los usuarios son redirigidos a EventsScreen después del login exitoso
-- **Manejo de errores**: Se muestran mensajes de error apropiados al usuario 
+Si encuentras problemas:
+1. Verifica los logs de la consola para errores específicos
+2. Asegúrate de que todas las configuraciones estén completas
+3. Prueba en un dispositivo físico, no en simulador 

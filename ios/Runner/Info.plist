@@ -57,5 +57,27 @@
 	</array>
 	<key>NSUserNotificationUsageDescription</key>
 	<string>Necesitamos enviarte notificaciones para mantenerte informado sobre matches y eventos.</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>REVERSED_CLIENT_ID</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.852726617261-9pnr1v14frbrvvscssls0ar0a175ssb6</string>
+			</array>
+		</dict>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Apple Sign In</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.example.juvuitFlutter.signin</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

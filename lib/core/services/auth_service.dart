@@ -1,10 +1,13 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'apple_auth_config.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+  );
 
   // Login con email y contraseña
   Future<UserCredential?> signInWithEmailAndPassword(String email, String password) async {
@@ -59,19 +62,18 @@ class AuthService {
   Future<UserCredential?> signInWithApple() async {
     try {
       // Check if Apple Sign In is available
-      final isAvailable = await SignInWithApple.isAvailable();
+      final isAvailable = await AppleAuthConfig.isAvailable();
       
       if (!isAvailable) {
         throw Exception('Apple Sign In no está disponible en este dispositivo');
       }
 
       // Request credential for the currently signed in Apple account
-      final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
+      final appleCredential = await AppleAuthConfig.signIn();
+      
+      if (appleCredential == null) {
+        return null; // Usuario canceló el login
+      }
 
       // Create an `OAuthCredential` from the credential returned by Apple
       final oauthCredential = OAuthProvider("apple.com").credential(
@@ -82,6 +84,7 @@ class AuthService {
       // Sign in the user with Firebase
       return await _auth.signInWithCredential(oauthCredential);
     } catch (e) {
+      print('Apple Sign In error: $e');
       rethrow;
     }
   }
