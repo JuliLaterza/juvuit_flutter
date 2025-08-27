@@ -21,7 +21,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(milliseconds: 2000));
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('onboarding_seen'); // Remove onboarding seen flag SOLO PARA DESARROLLO.
+    //await prefs.remove('onboarding_seen'); // Remove onboarding seen flag SOLO PARA DESARROLLO.
     final onboardingSeen = prefs.getBool('onboarding_seen') ?? false;
 
     if (!mounted) return;
