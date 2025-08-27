@@ -82,15 +82,27 @@ class _EventsScreenState extends State<EventsScreen> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(52),
-        child: AppBar(
-          backgroundColor: theme.colorScheme.surface,
-          elevation: 0,
-          automaticallyImplyLeading: false, // Evitar botón de volver automático
-          title: const HeaderLogo(),
-          centerTitle: false,
-          actions: [
-            const SizedBox(width: 8),
-          ],
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.onBackground.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: AppBar(
+            backgroundColor: theme.colorScheme.surface,
+            elevation: 0,
+            automaticallyImplyLeading: false, // Evitar botón de volver automático
+            title: const HeaderLogo(),
+            centerTitle: false,
+            actions: [
+              const SizedBox(width: 8),
+            ],
+          ),
         ),
       ),
       body: SafeArea(

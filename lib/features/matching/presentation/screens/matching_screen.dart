@@ -28,7 +28,7 @@ class _MatchingScreenState extends State<MatchingScreen> {
     return Scaffold(
       backgroundColor: theme.colorScheme.background,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
+        preferredSize: const Size.fromHeight(52),
         child: Container(
           decoration: BoxDecoration(
             color: theme.colorScheme.surface,
@@ -53,19 +53,8 @@ class _MatchingScreenState extends State<MatchingScreen> {
         child: Column(
           children: [
             // Buscador
-            Container(
-              margin: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: theme.colorScheme.onBackground.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
+            Padding(
+              padding: const EdgeInsets.all(12),
               child: TextField(
                 controller: _searchController,
                 onChanged: (value) {
@@ -75,19 +64,23 @@ class _MatchingScreenState extends State<MatchingScreen> {
                 },
                 decoration: InputDecoration(
                   hintText: 'Buscar eventos...',
-                  hintStyle: TextStyle(
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    fontSize: 16,
+                  prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurface),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: Icon(Icons.clear, color: theme.colorScheme.onSurface),
+                          onPressed: () {
+                            _searchController.clear();
+                            FocusScope.of(context).unfocus();
+                          },
+                        )
+                      : null,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
                   ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    size: 24,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
                   ),
                 ),
               ),

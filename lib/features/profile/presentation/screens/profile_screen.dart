@@ -326,27 +326,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(52),
-        child: AppBar(
-          backgroundColor: theme.colorScheme.surface,
-          elevation: 0,
-          title: const HeaderLogo(),
-          centerTitle: false,
-          actions: [
-            Consumer<ThemeProvider>(
-              builder: (context, themeProvider, child) {
-                return IconButton(
-                  onPressed: () {
-                    themeProvider.toggleTheme();
-                  },
-                  icon: Icon(
-                    themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                    color: theme.colorScheme.onSurface,
-                  ),
-                );
-              },
-            ),
-            const SizedBox(width: 8),
-          ],
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.onBackground.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: AppBar(
+            backgroundColor: theme.colorScheme.surface,
+            elevation: 0,
+            title: const HeaderLogo(),
+            centerTitle: false,
+            actions: [
+              Consumer<ThemeProvider>(
+                builder: (context, themeProvider, child) {
+                  return IconButton(
+                    onPressed: () {
+                      themeProvider.toggleTheme();
+                    },
+                    icon: Icon(
+                      themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
         ),
       ),
       body: Column(

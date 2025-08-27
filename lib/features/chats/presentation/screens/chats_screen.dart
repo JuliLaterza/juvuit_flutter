@@ -76,11 +76,23 @@ class _ChatsScreenState extends State<ChatsScreen> {
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(52),
-        child: AppBar(
-          backgroundColor: theme.colorScheme.surface,
-          elevation: 0,
-          title: const HeaderLogo(),
-          centerTitle: false,
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.onBackground.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: AppBar(
+            backgroundColor: theme.colorScheme.surface,
+            elevation: 0,
+            title: const HeaderLogo(),
+            centerTitle: false,
+          ),
         ),
       ),
       body: SafeArea(
@@ -93,10 +105,10 @@ class _ChatsScreenState extends State<ChatsScreen> {
                 controller: _searchController,
                 decoration: InputDecoration(
                   hintText: 'Buscar persona',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search, color: theme.colorScheme.onSurface),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear),
+                          icon: Icon(Icons.clear, color: theme.colorScheme.onSurface),
                           onPressed: () {
                             _searchController.clear();
                             FocusScope.of(context).unfocus();
@@ -105,11 +117,11 @@ class _ChatsScreenState extends State<ChatsScreen> {
                       : null,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.lightGray),
+                    borderSide: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.gray),
+                    borderSide: BorderSide(color: theme.colorScheme.primary),
                   ),
                 ),
               ),
