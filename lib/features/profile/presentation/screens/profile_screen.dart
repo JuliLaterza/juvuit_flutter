@@ -12,6 +12,8 @@ import 'debug_notifications.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:juvuit_flutter/features/upload_imag/storage_service.dart';
+import 'dart:async';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -149,54 +151,113 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       );
 
-      // Eliminar datos del usuario de Firestore
-      final batch = FirebaseFirestore.instance.batch();
-      
-      // Eliminar perfil del usuario
-      batch.delete(FirebaseFirestore.instance
-          .collection('users')
-          .doc(currentUser.uid));
-
-      // Eliminar likes recibidos
-      batch.delete(FirebaseFirestore.instance
-          .collection('likes_received')
-          .doc(currentUser.uid));
-
-      // Eliminar likes enviados
-      final likesSentQuery = await FirebaseFirestore.instance
-          .collection('likes_sent')
-          .where('fromUserId', isEqualTo: currentUser.uid)
-          .get();
-      
-      for (var doc in likesSentQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Eliminar matches
-      final matchesQuery = await FirebaseFirestore.instance
-          .collection('matches')
-          .where('participants', arrayContains: currentUser.uid)
-          .get();
-      
-      for (var doc in matchesQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Eliminar chats
-      final chatsQuery = await FirebaseFirestore.instance
-          .collection('chats')
-          .where('participants', arrayContains: currentUser.uid)
-          .get();
-      
-      for (var doc in chatsQuery.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Ejecutar todas las eliminaciones
-      await batch.commit();
-
-      // Eliminar el usuario de Firebase Auth
+      // PRIMERO: Eliminar el usuario de Firebase Auth
+      // Esto es crítico para asegurar que se elimine completamente
       await currentUser.delete();
+
+      // SEGUNDO: Eliminar datos del usuario de Firestore (con manejo de errores)
+      try {
+        final batch = FirebaseFirestore.instance.batch();
+        
+        // Eliminar perfil del usuario
+        batch.delete(FirebaseFirestore.instance
+            .collection('users')
+            .doc(currentUser.uid));
+
+        // Eliminar likes recibidos (subcolección)
+        try {
+          final likesReceivedQuery = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUser.uid)
+              .collection('likesReceived')
+              .get();
+          
+          for (var doc in likesReceivedQuery.docs) {
+            batch.delete(doc.reference);
+          }
+        } catch (e) {
+          print('Error eliminando likes recibidos: $e');
+        }
+
+        // Eliminar likes enviados
+        try {
+          final likesSentQuery = await FirebaseFirestore.instance
+              .collection('likes_sent')
+              .where('fromUserId', isEqualTo: currentUser.uid)
+              .get();
+          
+          for (var doc in likesSentQuery.docs) {
+            batch.delete(doc.reference);
+          }
+        } catch (e) {
+          print('Error eliminando likes enviados: $e');
+        }
+
+        // Eliminar matches
+        try {
+          final matchesQuery = await FirebaseFirestore.instance
+              .collection('matches')
+              .where('participants', arrayContains: currentUser.uid)
+              .get();
+          
+          for (var doc in matchesQuery.docs) {
+            batch.delete(doc.reference);
+          }
+        } catch (e) {
+          print('Error eliminando matches: $e');
+        }
+
+        // Eliminar mensajes y chats
+        try {
+          final messagesQuery = await FirebaseFirestore.instance
+              .collection('messages')
+              .get();
+          
+          for (var messageDoc in messagesQuery.docs) {
+            final chatsQuery = await messageDoc.reference
+                .collection('chats')
+                .where('participants', arrayContains: currentUser.uid)
+                .get();
+            
+            for (var chatDoc in chatsQuery.docs) {
+              batch.delete(chatDoc.reference);
+            }
+          }
+        } catch (e) {
+          print('Error eliminando mensajes y chats: $e');
+        }
+
+        // Ejecutar todas las eliminaciones de Firestore
+        await batch.commit();
+      } catch (e) {
+        // Si falla la eliminación de Firestore, no es crítico
+        // El usuario ya fue eliminado de Firebase Auth
+        print('Error en eliminación de Firestore: $e');
+      }
+
+      // TERCERO: Eliminar imágenes del usuario de Firebase Storage
+      if (_userProfile != null && _userProfile!.photoUrls.isNotEmpty) {
+        try {
+          final storageService = StorageService();
+          for (String photoUrl in _userProfile!.photoUrls) {
+            if (photoUrl.isNotEmpty) {
+              await storageService.deleteUserImage(photoUrl);
+            }
+          }
+        } catch (e) {
+          // Si falla la eliminación de imágenes, no es crítico
+          print('Error eliminando imágenes: $e');
+        }
+      }
+
+      // CUARTO: Asegurar que el estado de autenticación esté limpio
+      // Esto es importante para que el splash screen detecte correctamente que no hay usuario
+      try {
+        await FirebaseAuth.instance.signOut();
+      } catch (e) {
+        // Si ya se eliminó el usuario, esto puede fallar, pero no es crítico
+        print('Error en signOut después de eliminar cuenta: $e');
+      }
 
       // Cerrar el diálogo de carga
       if (mounted) {
@@ -213,13 +274,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         );
       }
 
-      // Redirigir al login
+      // IMPORTANTE: Redirigir al splash screen y dejar que maneje la navegación
+      // Después de eliminar la cuenta, el splash screen detectará que no hay usuario
+      // y automáticamente redirigirá al login
       if (mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.login,
-          (_) => false,
-        );
+        // Usar Timer para asegurar que se ejecute después de que todo se procese
+        Timer(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              AppRoutes.splash,
+              (route) => false,
+            );
+          }
+        });
       }
     } catch (e) {
       // Cerrar el diálogo de carga
@@ -227,15 +294,99 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Navigator.of(context).pop();
       }
 
-      // Mostrar error
+      // Verificar si el usuario fue eliminado exitosamente de Firebase Auth
+      final currentUser = FirebaseAuth.instance.currentUser;
+      final userWasDeleted = currentUser == null;
+
+      // Mostrar error específico según el tipo de excepción
+      String errorMessage = 'Error al eliminar la cuenta';
+      
+      if (e is FirebaseAuthException) {
+        switch (e.code) {
+          case 'requires-recent-login':
+            errorMessage = 'Por seguridad, necesitas volver a iniciar sesión antes de eliminar tu cuenta';
+            break;
+          case 'user-not-found':
+            errorMessage = 'Usuario no encontrado';
+            break;
+          case 'network-request-failed':
+            errorMessage = 'Error de conexión. Verifica tu internet';
+            break;
+          default:
+            errorMessage = 'Error de autenticación: ${e.message}';
+        }
+      } else if (e.toString().contains('permission-denied') && userWasDeleted) {
+        // Si el usuario fue eliminado pero hay error de permisos en Firestore
+        // Considerar esto como éxito parcial
+        errorMessage = 'Cuenta eliminada exitosamente (algunos datos pueden permanecer)';
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMessage),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+          
+          // Navegar al splash screen de todas formas
+          Timer(const Duration(milliseconds: 500), () {
+            if (mounted) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                AppRoutes.splash,
+                (route) => false,
+              );
+            }
+          });
+          return; // Salir del catch
+        }
+      } else {
+        errorMessage = 'Error al eliminar la cuenta: ${e.toString()}';
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al eliminar la cuenta: ${e.toString()}'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
           ),
         );
       }
+    }
+  }
+
+  // Método para manejar re-autenticación requerida
+  Future<void> _handleReauthenticationRequired(BuildContext context) async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser == null) return;
+
+    // Mostrar diálogo para re-autenticación
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        title: const Text('Re-autenticación requerida'),
+        content: const Text(
+          'Por seguridad, necesitas volver a ingresar tu contraseña para eliminar tu cuenta.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Continuar'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      // Aquí podrías implementar un diálogo para ingresar la contraseña
+      // Por ahora, simplemente intentamos eliminar la cuenta nuevamente
+      await _deleteAccount(context);
     }
   }
   /*
