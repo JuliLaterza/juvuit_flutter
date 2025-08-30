@@ -7,6 +7,7 @@ import 'package:juvuit_flutter/core/widgets/theme_aware_logo.dart';
 import 'package:juvuit_flutter/core/services/theme_provider.dart';
 import 'package:juvuit_flutter/core/services/notification_service.dart';
 import 'package:juvuit_flutter/core/services/push_notification_service.dart';
+import 'package:juvuit_flutter/core/services/auth_service.dart';
 import 'package:juvuit_flutter/features/profile/data/services/user_profile_service.dart';
 import 'debug_notifications.dart';
 import 'package:juvuit_flutter/features/profile/domain/models/user_profile.dart';
@@ -28,6 +29,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late final PageController _pageController;
   int _currentPage = 0;
   bool _isDescriptionExpanded = false;
+  final AuthService _authService = AuthService();
 
   @override
   void initState() {
@@ -87,7 +89,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(
             onPressed: () async {
               Navigator.of(context).pop();
-              await FirebaseAuth.instance.signOut();
+              // Usar AuthService para forzar la desconexión completa de Google
+              await _authService.clearGoogleSession();
               if (mounted) {
                 Navigator.pushNamedAndRemoveUntil(
                   context,
@@ -253,7 +256,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       // CUARTO: Asegurar que el estado de autenticación esté limpio
       // Esto es importante para que el splash screen detecte correctamente que no hay usuario
       try {
-        await FirebaseAuth.instance.signOut();
+        await _authService.signOutForAccountDeletion();
       } catch (e) {
         // Si ya se eliminó el usuario, esto puede fallar, pero no es crítico
         print('Error en signOut después de eliminar cuenta: $e');

@@ -30,6 +30,9 @@ class AuthService {
   // Login con Google
   Future<UserCredential?> signInWithGoogle() async {
     try {
+      // Forzar la limpieza completa para mostrar el selector de cuentas
+      await forceGoogleAccountSelector();
+      
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       
@@ -93,6 +96,82 @@ class AuthService {
   Future<void> signOut() async {
     try {
       await _googleSignIn.signOut();
+      await _auth.signOut();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Forzar desconexión completa de Google (incluye limpieza de caché)
+  Future<void> forceGoogleSignOut() async {
+    try {
+      // Desconectar completamente de Google
+      await _googleSignIn.disconnect();
+      await _googleSignIn.signOut();
+      await _auth.signOut();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Método más agresivo para limpiar la sesión de Google
+  Future<void> clearGoogleSession() async {
+    try {
+      // Intentar desconectar completamente
+      await _googleSignIn.disconnect();
+    } catch (e) {
+      // Si falla disconnect, continuar con signOut
+      print('Disconnect failed, continuing with signOut: $e');
+    }
+    
+    try {
+      await _googleSignIn.signOut();
+    } catch (e) {
+      print('Google signOut failed: $e');
+    }
+    
+    try {
+      await _auth.signOut();
+    } catch (e) {
+      print('Firebase signOut failed: $e');
+    }
+  }
+
+  // Método específico para forzar el selector de cuentas de Google
+  Future<void> forceGoogleAccountSelector() async {
+    try {
+      // Limpiar completamente la sesión actual
+      await clearGoogleSession();
+      
+      // Crear una nueva instancia de GoogleSignIn para forzar la limpieza
+      final newGoogleSignIn = GoogleSignIn(
+        scopes: ['email', 'profile'],
+      );
+      
+      // Intentar signOut con la nueva instancia también
+      try {
+        await newGoogleSignIn.signOut();
+      } catch (e) {
+        print('New GoogleSignIn signOut failed: $e');
+      }
+    } catch (e) {
+      print('Error in forceGoogleAccountSelector: $e');
+    }
+  }
+
+  // Verificar si hay una sesión activa de Google
+  Future<bool> isGoogleSignedIn() async {
+    try {
+      final account = await _googleSignIn.signInSilently();
+      return account != null;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Método específico para eliminar cuenta (no desconecta de Google porque el usuario se elimina)
+  Future<void> signOutForAccountDeletion() async {
+    try {
       await _auth.signOut();
     } catch (e) {
       rethrow;
