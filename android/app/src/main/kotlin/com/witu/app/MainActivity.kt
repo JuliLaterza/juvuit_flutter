@@ -1,4 +1,4 @@
-package com.example.juvuit_flutter
+package com.witu.app
 
 import io.flutter.embedding.android.FlutterActivity
 
