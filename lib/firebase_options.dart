@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyATBhEy7uvuMRwA1kGJHkcxtd0C3yMrZ4w',
-    appId: '1:852726617261:android:d48d846ebca1e8cc68e224',
+    appId: '1:852726617261:android:2eb543bf73d9714168e224',
     messagingSenderId: '852726617261',
     projectId: 'juvuit-flutter',
     storageBucket: 'juvuit-flutter.firebasestorage.app',
@@ -59,10 +59,13 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBFV21b19QaUO5mjI8Xma-cNHfRkUWPqYA',
-    appId: '1:852726617261:ios:771a696093081dae68e224',
+    appId: '1:852726617261:ios:131fcc6be2c780ad68e224',
     messagingSenderId: '852726617261',
     projectId: 'juvuit-flutter',
     storageBucket: 'juvuit-flutter.firebasestorage.app',
-    iosBundleId: 'com.example.juvuitFlutter',
+    androidClientId: '852726617261-67rvaa4fs4af3vjr2pc0916p0ul4c57k.apps.googleusercontent.com',
+    iosClientId: '852726617261-3ruqqs4hotn7846cp6t322a5ahq6ciif.apps.googleusercontent.com',
+    iosBundleId: 'com.witu.app',
   );
+
 }
