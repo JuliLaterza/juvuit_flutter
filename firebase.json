@@ -8,14 +8,14 @@
       "android": {
         "default": {
           "projectId": "juvuit-flutter",
-          "appId": "1:852726617261:android:d48d846ebca1e8cc68e224",
+          "appId": "1:852726617261:android:2eb543bf73d9714168e224",
           "fileOutput": "android/app/google-services.json"
         }
       },
       "ios": {
         "default": {
           "projectId": "juvuit-flutter",
-          "appId": "1:852726617261:ios:771a696093081dae68e224",
+          "appId": "1:852726617261:ios:131fcc6be2c780ad68e224",
           "uploadDebugSymbols": false,
           "fileOutput": "ios/Runner/GoogleService-Info.plist"
         }
@@ -24,8 +24,8 @@
         "lib/firebase_options.dart": {
           "projectId": "juvuit-flutter",
           "configurations": {
-            "android": "1:852726617261:android:d48d846ebca1e8cc68e224",
-            "ios": "1:852726617261:ios:771a696093081dae68e224"
+            "android": "1:852726617261:android:2eb543bf73d9714168e224",
+            "ios": "1:852726617261:ios:131fcc6be2c780ad68e224"
           }
         }
       }

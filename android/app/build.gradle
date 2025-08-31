@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.juvuit_flutter"
+    namespace = "com.witu.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -24,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.juvuit_flutter"
+        applicationId = "com.witu.app"
         minSdk = 23  // <-- Se ha fijado en 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

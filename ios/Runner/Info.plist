@@ -64,7 +64,7 @@
 			<string>REVERSED_CLIENT_ID</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.852726617261-9pnr1v14frbrvvscssls0ar0a175ssb6</string>
+				<string>com.googleusercontent.apps.852726617261-3ruqqs4hotn7846cp6t322a5ahq6ciif</string>
 			</array>
 		</dict>
 	</array>
@@ -75,7 +75,7 @@
 			<string>Apple Sign In</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.example.juvuitFlutter.signin</string>
+				<string>com.witu.app.signin</string>
 			</array>
 		</dict>
 	</array>
