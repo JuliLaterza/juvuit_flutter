@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import Firebase
 import FirebaseMessaging
+import GoogleSignIn
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -29,6 +30,11 @@ import FirebaseMessaging
     
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+  
+  // Manejar URL schemes para Google Sign-In
+  override func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+    return GIDSignIn.sharedInstance.handle(url)
   }
   
   // Manejar notificaciones cuando la app está en background

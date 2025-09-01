@@ -39,8 +39,11 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
 
+# Configuraciones de optimización
 flutter:
   uses-material-design: true
+  
+  # Optimización de assets
   assets:
     - assets/images/homescreen/witu_logo_dark.png
     - assets/images/homescreen/logo_witu.png
@@ -50,3 +53,12 @@ flutter:
     - assets/images/homescreen/degrade-20.png
     - assets/images/
     - .env
+
+# Configuraciones de build para iOS
+ios:
+  # Optimizaciones de build
+  build_settings:
+    ENABLE_BITCODE: false
+    IPHONEOS_DEPLOYMENT_TARGET: "13.0"
+    GCC_OPTIMIZATION_LEVEL: "0"
+    SWIFT_OPTIMIZATION_LEVEL: "-Onone"
