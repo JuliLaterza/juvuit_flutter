@@ -184,6 +184,30 @@ class _LoginScreenState extends State<LoginScreen> {
                 hintText: 'Contraseña',
                 controller: _passwordController,
               ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    // TODO: Implementar lógica de recuperación de contraseña
+                    print('Recuperar contraseña');
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    '¿Olvidaste tu contraseña?',
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
@@ -230,6 +254,35 @@ class _LoginScreenState extends State<LoginScreen> {
                       'Regístrate',
                       style: TextStyle(
                           color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // Separador "o inicia sesión con"
+              Row(
+                children: [
+                  Expanded(
+                    child: Divider(
+                      color: theme.colorScheme.outline.withOpacity(0.3),
+                      thickness: 1,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'o inicia sesión con:',
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface.withOpacity(0.6),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Divider(
+                      color: theme.colorScheme.outline.withOpacity(0.3),
+                      thickness: 1,
                     ),
                   ),
                 ],
