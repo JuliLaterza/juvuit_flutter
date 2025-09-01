@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "852726617261",
+    "project_id": "juvuit-flutter",
+    "storage_bucket": "juvuit-flutter.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:852726617261:android:b694a62b3135b71868e224",
+        "android_client_info": {
+          "package_name": "com.example.juvuit_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "852726617261-rh69s420u6oqldf77h96cri3i8m1d5f7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.juvuit_flutter",
+            "certificate_hash": "a23666ce9695211097fb29daa5b63c449feeba34"
+          }
+        },
+        {
+          "client_id": "852726617261-ev51a2c9bs47vd4qq2p0itcitn37er94.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATBhEy7uvuMRwA1kGJHkcxtd0C3yMrZ4w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "852726617261-cbb49dmfh3931polvfvlbv3rrll8int1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "852726617261-3ruqqs4hotn7846cp6t322a5ahq6ciif.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.witu.app"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:852726617261:android:2eb543bf73d9714168e224",
+        "android_client_info": {
+          "package_name": "com.witu.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "852726617261-67rvaa4fs4af3vjr2pc0916p0ul4c57k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.witu.app",
+            "certificate_hash": "a23666ce9695211097fb29daa5b63c449feeba34"
+          }
+        },
+        {
+          "client_id": "852726617261-ev51a2c9bs47vd4qq2p0itcitn37er94.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATBhEy7uvuMRwA1kGJHkcxtd0C3yMrZ4w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "852726617261-cbb49dmfh3931polvfvlbv3rrll8int1.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "852726617261-3ruqqs4hotn7846cp6t322a5ahq6ciif.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.witu.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
