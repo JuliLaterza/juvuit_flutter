@@ -6,6 +6,7 @@ import '../screens/event_info.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:juvuit_flutter/core/utils/routes.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EventCard extends StatefulWidget {
   final Event event;
@@ -316,11 +317,24 @@ class _EventCardState extends State<EventCard> {
                 ),
                 const SizedBox(width: 8),
                 OutlinedButton(
-                  onPressed: () {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Venta de entradas ${widget.event.title}')),
+                  onPressed: () async {
+                    final Uri ticketsUrl = Uri.parse('https://www.passline.com/eventos/cruza-polo-415632');
+                    try {
+                      final bool launched = await launchUrl(
+                        ticketsUrl,
+                        mode: LaunchMode.externalApplication,
                       );
+                      if (!launched && mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('No se pudo abrir el enlace de entradas.')),
+                        );
+                      }
+                    } catch (_) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Ocurrió un error al abrir el enlace.')),
+                        );
+                      }
                     }
                   },
                   style: OutlinedButton.styleFrom(
